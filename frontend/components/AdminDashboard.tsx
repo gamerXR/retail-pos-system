@@ -22,11 +22,10 @@ import backend from "~backend/client";
 
 interface Client {
   id: number;
-  clientId: string;
+  phoneNumber: string;
   clientName: string;
   email?: string;
   companyName?: string;
-  phone?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -55,11 +54,11 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [newClient, setNewClient] = useState({
+    phoneNumber: "",
     clientName: "",
     password: "",
     email: "",
-    companyName: "",
-    phone: ""
+    companyName: ""
   });
   const { toast } = useToast();
 
@@ -92,10 +91,10 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
   };
 
   const handleCreateClient = async () => {
-    if (!newClient.clientName || !newClient.password) {
+    if (!newClient.phoneNumber || !newClient.clientName || !newClient.password) {
       toast({
         title: "Error",
-        description: "Client Name and Password are required",
+        description: "Phone Number, Client Name and Password are required",
         variant: "destructive",
       });
       return;
@@ -103,24 +102,24 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
 
     try {
       const response = await backend.auth.createClient({
+        phoneNumber: newClient.phoneNumber,
         clientName: newClient.clientName,
         password: newClient.password,
         email: newClient.email || undefined,
-        companyName: newClient.companyName || undefined,
-        phone: newClient.phone || undefined
+        companyName: newClient.companyName || undefined
       });
 
       if (response.success) {
         toast({
           title: "Client Created",
-          description: `Client ID: ${response.client.clientId}`,
+          description: `Phone Number: ${response.client.phoneNumber}`,
         });
         setNewClient({
+          phoneNumber: "",
           clientName: "",
           password: "",
           email: "",
-          companyName: "",
-          phone: ""
+          companyName: ""
         });
         setShowCreateClient(false);
         loadData();
@@ -268,12 +267,10 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                              {client.phone && (
-                                <div className="flex items-center gap-2">
-                                  <Phone className="w-4 h-4" />
-                                  <span>{client.phone}</span>
-                                </div>
-                              )}
+                              <div className="flex items-center gap-2">
+                                <Phone className="w-4 h-4" />
+                                <span>{client.phoneNumber}</span>
+                              </div>
                               {client.email && (
                                 <div className="flex items-center gap-2">
                                   <Mail className="w-4 h-4" />
@@ -295,13 +292,13 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                             <div className="mt-3 p-2 bg-gray-50 rounded border">
                               <div className="flex items-center justify-between">
                                 <div>
-                                  <span className="text-xs text-gray-500">Client ID:</span>
-                                  <span className="ml-2 text-sm font-mono">{client.clientId}</span>
+                                  <span className="text-xs text-gray-500">Phone Number:</span>
+                                  <span className="ml-2 text-sm font-mono">{client.phoneNumber}</span>
                                 </div>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => copyToClipboard(client.clientId)}
+                                  onClick={() => copyToClipboard(client.phoneNumber)}
                                 >
                                   Copy
                                 </Button>
@@ -453,13 +450,13 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone Number
+                  Phone Number *
                 </label>
                 <Input
                   type="tel"
                   placeholder="Enter phone number"
-                  value={newClient.phone}
-                  onChange={(e) => setNewClient(prev => ({ ...prev, phone: e.target.value }))}
+                  value={newClient.phoneNumber}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, phoneNumber: e.target.value }))}
                 />
               </div>
 

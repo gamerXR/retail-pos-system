@@ -3,7 +3,7 @@ import { authDB } from "./db";
 import { posDB } from "../pos/db";
 
 export interface LoginRequest {
-  clientId: string;
+  phoneNumber: string;
   password: string;
 }
 
@@ -17,23 +17,23 @@ export const login = api<LoginRequest, LoginResponse>(
   async (req) => {
     const client = await authDB.queryRow<{
       id: number;
-      client_id: string;
+      phone_number: string;
       client_name: string;
       password_hash: string;
       status: string;
     }>`
-      SELECT id, client_id, client_name, password_hash, status
+      SELECT id, phone_number, client_name, password_hash, status
       FROM clients 
-      WHERE client_id = ${req.clientId}
+      WHERE phone_number = ${req.phoneNumber}
     `;
 
     if (!client) {
-      throw APIError.unauthenticated("Invalid client ID or password");
+      throw APIError.unauthenticated("Invalid phone number or password");
     }
 
     const passwordMatch = req.password === client.password_hash;
     if (!passwordMatch) {
-      throw APIError.unauthenticated("Invalid client ID or password");
+      throw APIError.unauthenticated("Invalid phone number or password");
     }
 
     if (client.status !== 'active') {

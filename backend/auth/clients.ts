@@ -2,20 +2,19 @@ import { api, APIError } from "encore.dev/api";
 import { authDB } from "./db";
 
 export interface CreateClientRequest {
+  phoneNumber: string;
   clientName: string;
   password: string;
   email?: string;
   companyName?: string;
-  phone?: string;
 }
 
 export interface Client {
   id: number;
-  clientId: string;
+  phoneNumber: string;
   clientName: string;
   email?: string;
   companyName?: string;
-  phone?: string;
   status: string;
   createdAt: string;
   updatedAt: string;
@@ -54,23 +53,25 @@ export const createClient = api<CreateClientRequest, CreateClientResponse>(
       throw APIError.invalidArgument("Password is required");
     }
 
-    const clientId = generateClientId();
+    if (!req.phoneNumber) {
+      throw APIError.invalidArgument("Phone number is required");
+    }
+
     const passwordHash = req.password;
 
     const client = await authDB.queryRow<{
       id: number;
-      client_id: string;
+      phone_number: string;
       client_name: string;
       email: string | null;
       company_name: string | null;
-      phone: string | null;
       status: string;
       created_at: Date;
       updated_at: Date;
     }>`
-      INSERT INTO clients (client_id, client_name, password_hash, email, company_name, phone)
-      VALUES (${clientId}, ${req.clientName}, ${passwordHash}, ${req.email}, ${req.companyName}, ${req.phone})
-      RETURNING id, client_id, client_name, email, company_name, phone, status, created_at, updated_at
+      INSERT INTO clients (phone_number, client_name, password_hash, email, company_name)
+      VALUES (${req.phoneNumber}, ${req.clientName}, ${passwordHash}, ${req.email}, ${req.companyName})
+      RETURNING id, phone_number, client_name, email, company_name, status, created_at, updated_at
     `;
 
     if (!client) {
@@ -80,11 +81,10 @@ export const createClient = api<CreateClientRequest, CreateClientResponse>(
     return {
       client: {
         id: client.id,
-        clientId: client.client_id,
+        phoneNumber: client.phone_number,
         clientName: client.client_name,
         email: client.email || undefined,
         companyName: client.company_name || undefined,
-        phone: client.phone || undefined,
         status: client.status,
         createdAt: client.created_at.toISOString(),
         updatedAt: client.updated_at.toISOString()
@@ -99,16 +99,15 @@ export const listClients = api<void, ListClientsResponse>(
   async () => {
     const clients = await authDB.queryAll<{
       id: number;
-      client_id: string;
+      phone_number: string;
       client_name: string;
       email: string | null;
       company_name: string | null;
-      phone: string | null;
       status: string;
       created_at: Date;
       updated_at: Date;
     }>`
-      SELECT id, client_id, client_name, email, company_name, phone, status, created_at, updated_at
+      SELECT id, phone_number, client_name, email, company_name, status, created_at, updated_at
       FROM clients
       ORDER BY created_at DESC
     `;
@@ -116,11 +115,10 @@ export const listClients = api<void, ListClientsResponse>(
     return {
       clients: clients.map(client => ({
         id: client.id,
-        clientId: client.client_id,
+        phoneNumber: client.phone_number,
         clientName: client.client_name,
         email: client.email || undefined,
         companyName: client.company_name || undefined,
-        phone: client.phone || undefined,
         status: client.status,
         createdAt: client.created_at.toISOString(),
         updatedAt: client.updated_at.toISOString()
@@ -190,8 +188,4 @@ export const getClientStats = api<void, ClientStatsResponse>(
   }
 );
 
-function generateClientId(): string {
-  const timestamp = Date.now().toString(36);
-  const randomPart = Math.random().toString(36).substring(2, 8);
-  return `CLI-${timestamp}-${randomPart}`.toUpperCase();
-}
+
