@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { Phone, Lock } from "lucide-react";
+import { Phone, Lock, Shield } from "lucide-react";
 import backend from "~backend/client";
 import VirtualKeyboard from "./VirtualKeyboard";
 import OpeningBalanceModal from "./OpeningBalanceModal";
+import AdminLoginModal from "./AdminLoginModal";
+import AdminDashboard from "./AdminDashboard";
 
 interface LoginPageProps {
   onLoginSuccess: () => void;
@@ -18,6 +20,8 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotMessage, setShowForgotMessage] = useState(false);
   const [showOpeningBalanceModal, setShowOpeningBalanceModal] = useState(false);
+  const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const { toast } = useToast();
 
   const handleLogin = async () => {
@@ -103,9 +107,20 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           </div>
           <h1 className="text-2xl font-semibold text-gray-800">NexPos</h1>
         </div>
-        <div className="flex items-center gap-2">
-          <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRkY0NDQ0Ii8+CjxyZWN0IHg9IjAiIHk9IjgiIHdpZHRoPSIyNCIgaGVpZ2h0PSI4IiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjAiIHk9IjE2IiB3aWR0aD0iMjQiIGhlaWdodD0iOCIgZmlsbD0iIzAwNDRGRiIvPgo8L3N2Zz4K" alt="English" className="w-6 h-6" />
-          <span className="text-gray-700">English</span>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowAdminLoginModal(true)}
+            className="bg-blue-500 text-white hover:bg-blue-600"
+          >
+            <Shield className="w-4 h-4 mr-2" />
+            Admin
+          </Button>
+          <div className="flex items-center gap-2">
+            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRkY0NDQ0Ii8+CjxyZWN0IHg9IjAiIHk9IjgiIHdpZHRoPSIyNCIgaGVpZ2h0PSI4IiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjAiIHk9IjE2IiB3aWR0aD0iMjQiIGhlaWdodD0iOCIgZmlsbD0iIzAwNDRGRiIvPgo8L3N2Zz4K" alt="English" className="w-6 h-6" />
+            <span className="text-gray-700">English</span>
+          </div>
         </div>
       </div>
 
@@ -170,6 +185,20 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
         isOpen={showOpeningBalanceModal}
         onClose={() => setShowOpeningBalanceModal(false)}
         onContinue={handleOpeningBalanceSet}
+      />
+
+      <AdminLoginModal
+        isOpen={showAdminLoginModal}
+        onClose={() => setShowAdminLoginModal(false)}
+        onSuccess={() => {
+          setShowAdminLoginModal(false);
+          setShowAdminDashboard(true);
+        }}
+      />
+
+      <AdminDashboard
+        isOpen={showAdminDashboard}
+        onClose={() => setShowAdminDashboard(false)}
       />
     </div>
   );

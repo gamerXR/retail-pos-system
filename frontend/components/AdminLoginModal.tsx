@@ -9,10 +9,11 @@ import backend from "~backend/client";
 interface AdminLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onLoginSuccess: () => void;
+  onLoginSuccess?: () => void;
+  onSuccess?: () => void;
 }
 
-export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }: AdminLoginModalProps) {
+export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess, onSuccess }: AdminLoginModalProps) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -40,7 +41,8 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }: Adm
           title: "Admin Access Granted",
           description: "Welcome to the admin dashboard",
         });
-        onLoginSuccess();
+        if (onLoginSuccess) onLoginSuccess();
+        if (onSuccess) onSuccess();
         handleClose();
       }
     } catch (error: any) {

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Grid3X3, List, Settings, Trash2, Keyboard, ChevronLeft, ChevronRight, Plus, Shield, Clock, AlertTriangle } from "lucide-react";
+import { Grid3X3, List, Settings, Trash2, Keyboard, ChevronLeft, ChevronRight, Plus, Clock, AlertTriangle } from "lucide-react";
 import backend from "~backend/client";
 import type { Product } from "~backend/pos/products";
 import type { Category } from "~backend/pos/categories";
@@ -23,8 +23,6 @@ import ReprintModal from "./ReprintModal";
 import ReturnModal from "./ReturnModal";
 import SettingsModal from "./SettingsModal";
 import CustomItemModal from "./CustomItemModal";
-import AdminLoginModal from "./AdminLoginModal";
-import AdminDashboard from "./AdminDashboard";
 
 interface SalesPageProps {
   onLogout?: () => void;
@@ -52,8 +50,6 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCustomItemModal, setShowCustomItemModal] = useState(false);
-  const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
-  const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [contextMenuProduct, setContextMenuProduct] = useState<Product | null>(null);
@@ -627,17 +623,6 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
             <Settings className="w-4 h-4" />
             Setting
           </Button>
-          {userType !== 'licensed' && (
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => setShowAdminLoginModal(true)}
-              className="bg-blue-500 text-white hover:bg-blue-600"
-            >
-              <Shield className="w-4 h-4" />
-              Admin
-            </Button>
-          )}
         </div>
       </div>
 
@@ -1072,17 +1057,6 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       <SettingsModal
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
-      />
-
-      <AdminLoginModal
-        isOpen={showAdminLoginModal}
-        onClose={() => setShowAdminLoginModal(false)}
-        onLoginSuccess={() => setShowAdminDashboard(true)}
-      />
-
-      <AdminDashboard
-        isOpen={showAdminDashboard}
-        onClose={() => setShowAdminDashboard(false)}
       />
     </div>
   );
