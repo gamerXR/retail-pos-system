@@ -1,0 +1,1 @@
+{"id": "retail-pos-system-mmn2", "lang": "typescript"}
