@@ -4,42 +4,43 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   Users, 
-  Key, 
-  Clock, 
   Plus, 
-  Eye, 
-  EyeOff, 
-  Trash2, 
-  CheckCircle, 
-  XCircle,
   Calendar,
   Building,
   Mail,
-  Phone
+  Phone,
+  BarChart3,
+  UserCheck,
+  UserX,
+  Clock,
+  Activity
 } from "lucide-react";
 import backend from "~backend/client";
 
-interface License {
+interface Client {
   id: number;
-  licenseKey: string;
-  phoneId: string;
+  clientId: string;
   clientName: string;
   email?: string;
   companyName?: string;
-  isActive: boolean;
-  expiresAt?: string;
+  phone?: string;
+  status: string;
   createdAt: string;
+  updatedAt: string;
 }
 
-interface TrialSession {
-  id: number;
-  deviceId: string;
-  startedAt: string;
-  expiresAt: string;
-  isActive: boolean;
-  timeRemaining?: number;
+interface ClientStats {
+  totalClients: number;
+  activeClients: number;
+  onHoldClients: number;
+  suspendedClients: number;
+  statusBreakdown: Array<{
+    status: string;
+    count: number;
+  }>;
 }
 
 interface AdminDashboardProps {
@@ -48,18 +49,17 @@ interface AdminDashboardProps {
 }
 
 export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps) {
-  const [activeTab, setActiveTab] = useState<"licenses" | "trials">("licenses");
-  const [licenses, setLicenses] = useState<License[]>([]);
-  const [trials, setTrials] = useState<TrialSession[]>([]);
-  const [showCreateLicense, setShowCreateLicense] = useState(false);
+  const [activeTab, setActiveTab] = useState<"clients" | "reports">("clients");
+  const [clients, setClients] = useState<Client[]>([]);
+  const [stats, setStats] = useState<ClientStats | null>(null);
+  const [showCreateClient, setShowCreateClient] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [newLicense, setNewLicense] = useState({
-    phoneId: "",
+  const [newClient, setNewClient] = useState({
     clientName: "",
     password: "",
     email: "",
     companyName: "",
-    expiresAt: ""
+    phone: ""
   });
   const { toast } = useToast();
 
@@ -72,12 +72,12 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
   const loadData = async () => {
     setIsLoading(true);
     try {
-      if (activeTab === "licenses") {
-        const response = await backend.auth.listLicenses();
-        setLicenses(response.licenses);
-      } else {
-        const response = await backend.auth.listTrialSessions();
-        setTrials(response.sessions);
+      if (activeTab === "clients") {
+        const response = await backend.auth.listClients();
+        setClients(response.clients);
+      } else if (activeTab === "reports") {
+        const statsResponse = await backend.auth.getClientStats();
+        setStats(statsResponse);
       }
     } catch (error) {
       console.error("Error loading data:", error);
@@ -91,91 +91,63 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
     }
   };
 
-  const handleCreateLicense = async () => {
-    if (!newLicense.phoneId || !newLicense.clientName || !newLicense.password) {
+  const handleCreateClient = async () => {
+    if (!newClient.clientName || !newClient.password) {
       toast({
         title: "Error",
-        description: "Phone ID, Client Name, and Password are required",
+        description: "Client Name and Password are required",
         variant: "destructive",
       });
       return;
     }
 
     try {
-      const response = await backend.auth.createLicense({
-        phoneId: newLicense.phoneId,
-        clientName: newLicense.clientName,
-        password: newLicense.password,
-        email: newLicense.email || undefined,
-        companyName: newLicense.companyName || undefined,
-        expiresAt: newLicense.expiresAt || undefined
+      const response = await backend.auth.createClient({
+        clientName: newClient.clientName,
+        password: newClient.password,
+        email: newClient.email || undefined,
+        companyName: newClient.companyName || undefined,
+        phone: newClient.phone || undefined
       });
 
       if (response.success) {
         toast({
-          title: "License Created",
-          description: `License key: ${response.license.licenseKey}`,
+          title: "Client Created",
+          description: `Client ID: ${response.client.clientId}`,
         });
-        setNewLicense({
-          phoneId: "",
+        setNewClient({
           clientName: "",
           password: "",
           email: "",
           companyName: "",
-          expiresAt: ""
+          phone: ""
         });
-        setShowCreateLicense(false);
+        setShowCreateClient(false);
         loadData();
       }
     } catch (error: any) {
-      console.error("Error creating license:", error);
+      console.error("Error creating client:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to create license",
+        description: error.message || "Failed to create client",
         variant: "destructive",
       });
     }
   };
 
-  const handleToggleLicense = async (licenseId: number, isActive: boolean) => {
+  const handleUpdateStatus = async (clientId: number, status: string) => {
     try {
-      if (isActive) {
-        await backend.auth.deactivateLicense({ id: licenseId });
-        toast({
-          title: "License Deactivated",
-          description: "License has been deactivated",
-        });
-      } else {
-        await backend.auth.activateLicense({ id: licenseId });
-        toast({
-          title: "License Activated",
-          description: "License has been activated",
-        });
-      }
-      loadData();
-    } catch (error) {
-      console.error("Error toggling license:", error);
+      await backend.auth.updateClientStatus({ id: clientId, status });
       toast({
-        title: "Error",
-        description: "Failed to update license status",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleTerminateTrial = async (trialId: number) => {
-    try {
-      await backend.auth.terminateTrialSession({ id: trialId });
-      toast({
-        title: "Trial Terminated",
-        description: "Trial session has been terminated",
+        title: "Status Updated",
+        description: `Client status updated to ${status}`,
       });
       loadData();
     } catch (error) {
-      console.error("Error terminating trial:", error);
+      console.error("Error updating status:", error);
       toast({
         title: "Error",
-        description: "Failed to terminate trial",
+        description: "Failed to update status",
         variant: "destructive",
       });
     }
@@ -183,15 +155,6 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
-  };
-
-  const formatTime = (minutes: number) => {
-    const hrs = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hrs > 0) {
-      return `${hrs}h ${mins}m`;
-    }
-    return `${mins}m`;
   };
 
   const copyToClipboard = (text: string) => {
@@ -202,123 +165,143 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
     });
   };
 
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "active":
+        return "default";
+      case "onhold":
+        return "secondary";
+      case "suspended":
+        return "destructive";
+      default:
+        return "outline";
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "text-green-600";
+      case "onhold":
+        return "text-yellow-600";
+      case "suspended":
+        return "text-red-600";
+      default:
+        return "text-gray-600";
+    }
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users className="w-5 h-5" />
-            Admin Dashboard - License Management
+            Admin Dashboard - Client Management
           </DialogTitle>
         </DialogHeader>
 
         <div className="flex h-[600px]">
-          {/* Sidebar */}
           <div className="w-64 bg-gray-50 border-r border-gray-200 p-4">
             <div className="space-y-2">
               <Button
-                variant={activeTab === "licenses" ? "default" : "ghost"}
+                variant={activeTab === "clients" ? "default" : "ghost"}
                 className={`w-full justify-start gap-2 ${
-                  activeTab === "licenses" ? "bg-blue-500 text-white" : ""
+                  activeTab === "clients" ? "bg-blue-500 text-white" : ""
                 }`}
-                onClick={() => setActiveTab("licenses")}
+                onClick={() => setActiveTab("clients")}
               >
-                <Key className="w-4 h-4" />
-                Licenses ({licenses.length})
+                <Users className="w-4 h-4" />
+                Clients ({clients.length})
               </Button>
               <Button
-                variant={activeTab === "trials" ? "default" : "ghost"}
+                variant={activeTab === "reports" ? "default" : "ghost"}
                 className={`w-full justify-start gap-2 ${
-                  activeTab === "trials" ? "bg-blue-500 text-white" : ""
+                  activeTab === "reports" ? "bg-blue-500 text-white" : ""
                 }`}
-                onClick={() => setActiveTab("trials")}
+                onClick={() => setActiveTab("reports")}
               >
-                <Clock className="w-4 h-4" />
-                Trial Sessions ({trials.length})
+                <BarChart3 className="w-4 h-4" />
+                Reports
               </Button>
             </div>
 
-            {activeTab === "licenses" && (
+            {activeTab === "clients" && (
               <div className="mt-6">
                 <Button
-                  onClick={() => setShowCreateLicense(true)}
+                  onClick={() => setShowCreateClient(true)}
                   className="w-full bg-green-500 hover:bg-green-600 text-white"
                 >
                   <Plus className="w-4 h-4 mr-2" />
-                  Create License
+                  Create Client
                 </Button>
               </div>
             )}
           </div>
 
-          {/* Main Content */}
           <div className="flex-1 p-6 overflow-y-auto">
             {isLoading ? (
               <div className="flex items-center justify-center h-full">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                 <span className="ml-3">Loading...</span>
               </div>
-            ) : activeTab === "licenses" ? (
+            ) : activeTab === "clients" ? (
               <div className="space-y-4">
-                <h3 className="text-lg font-semibold">License Management</h3>
-                {licenses.length === 0 ? (
+                <h3 className="text-lg font-semibold">Client Management</h3>
+                {clients.length === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    <Key className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No licenses created yet</p>
-                    <p className="text-sm mt-2">Create your first license to get started</p>
+                    <Users className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                    <p>No clients created yet</p>
+                    <p className="text-sm mt-2">Create your first client to get started</p>
                   </div>
                 ) : (
                   <div className="space-y-3">
-                    {licenses.map((license) => (
-                      <div key={license.id} className="bg-white border border-gray-200 rounded-lg p-4">
+                    {clients.map((client) => (
+                      <div key={client.id} className="bg-white border border-gray-200 rounded-lg p-4">
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <h4 className="font-medium text-gray-800">{license.clientName}</h4>
-                              <Badge variant={license.isActive ? "default" : "secondary"}>
-                                {license.isActive ? "Active" : "Inactive"}
+                              <h4 className="font-medium text-gray-800">{client.clientName}</h4>
+                              <Badge variant={getStatusBadgeVariant(client.status)}>
+                                {client.status.toUpperCase()}
                               </Badge>
-                              {license.expiresAt && new Date(license.expiresAt) < new Date() && (
-                                <Badge variant="destructive">Expired</Badge>
-                              )}
                             </div>
                             
                             <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                              <div className="flex items-center gap-2">
-                                <Phone className="w-4 h-4" />
-                                <span>Phone ID: {license.phoneId}</span>
-                              </div>
-                              {license.email && (
+                              {client.phone && (
                                 <div className="flex items-center gap-2">
-                                  <Mail className="w-4 h-4" />
-                                  <span>{license.email}</span>
+                                  <Phone className="w-4 h-4" />
+                                  <span>{client.phone}</span>
                                 </div>
                               )}
-                              {license.companyName && (
+                              {client.email && (
+                                <div className="flex items-center gap-2">
+                                  <Mail className="w-4 h-4" />
+                                  <span>{client.email}</span>
+                                </div>
+                              )}
+                              {client.companyName && (
                                 <div className="flex items-center gap-2">
                                   <Building className="w-4 h-4" />
-                                  <span>{license.companyName}</span>
+                                  <span>{client.companyName}</span>
                                 </div>
                               )}
                               <div className="flex items-center gap-2">
                                 <Calendar className="w-4 h-4" />
-                                <span>Created: {formatDate(license.createdAt)}</span>
+                                <span>Created: {formatDate(client.createdAt)}</span>
                               </div>
-                              {license.expiresAt && (
-                                <div className="flex items-center gap-2">
-                                  <Calendar className="w-4 h-4" />
-                                  <span>Expires: {formatDate(license.expiresAt)}</span>
-                                </div>
-                              )}
                             </div>
 
                             <div className="mt-3 p-2 bg-gray-50 rounded border">
                               <div className="flex items-center justify-between">
-                                <span className="text-sm font-mono">{license.licenseKey}</span>
+                                <div>
+                                  <span className="text-xs text-gray-500">Client ID:</span>
+                                  <span className="ml-2 text-sm font-mono">{client.clientId}</span>
+                                </div>
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => copyToClipboard(license.licenseKey)}
+                                  onClick={() => copyToClipboard(client.clientId)}
                                 >
                                   Copy
                                 </Button>
@@ -327,23 +310,20 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                           </div>
 
                           <div className="flex gap-2 ml-4">
-                            <Button
-                              size="sm"
-                              variant={license.isActive ? "destructive" : "default"}
-                              onClick={() => handleToggleLicense(license.id, license.isActive)}
+                            <Select
+                              value={client.status}
+                              onValueChange={(value) => handleUpdateStatus(client.id, value)}
                             >
-                              {license.isActive ? (
-                                <>
-                                  <XCircle className="w-4 h-4 mr-1" />
-                                  Deactivate
-                                </>
-                              ) : (
-                                <>
-                                  <CheckCircle className="w-4 h-4 mr-1" />
-                                  Activate
-                                </>
-                              )}
-                            </Button>
+                              <SelectTrigger className="w-[140px]">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="active">Active</SelectItem>
+                                <SelectItem value="onhold">On Hold</SelectItem>
+                                <SelectItem value="suspended">Suspended</SelectItem>
+                                <SelectItem value="inactive">Inactive</SelectItem>
+                              </SelectContent>
+                            </Select>
                           </div>
                         </div>
                       </div>
@@ -352,99 +332,110 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                 )}
               </div>
             ) : (
-              <div className="space-y-4">
-                <h3 className="text-lg font-semibold">Trial Sessions</h3>
-                {trials.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <Clock className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p>No trial sessions found</p>
-                    <p className="text-sm mt-2">Trial sessions will appear here when users start trials</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {trials.map((trial) => (
-                      <div key={trial.id} className="bg-white border border-gray-200 rounded-lg p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <h4 className="font-medium text-gray-800">Device: {trial.deviceId}</h4>
-                              <Badge variant={trial.isActive ? "default" : "secondary"}>
-                                {trial.isActive ? "Active" : "Expired"}
-                              </Badge>
-                              {trial.timeRemaining && trial.timeRemaining <= 5 && (
-                                <Badge variant="destructive">Ending Soon</Badge>
-                              )}
-                            </div>
-                            
-                            <div className="grid grid-cols-2 gap-4 text-sm text-gray-600">
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <span>Started: {formatDate(trial.startedAt)}</span>
-                              </div>
-                              <div className="flex items-center gap-2">
-                                <Calendar className="w-4 h-4" />
-                                <span>Expires: {formatDate(trial.expiresAt)}</span>
-                              </div>
-                              {trial.timeRemaining && (
-                                <div className="flex items-center gap-2">
-                                  <Clock className="w-4 h-4" />
-                                  <span className={trial.timeRemaining <= 5 ? "text-red-600 font-medium" : ""}>
-                                    Time Remaining: {formatTime(trial.timeRemaining)}
-                                  </span>
-                                </div>
-                              )}
-                            </div>
+              <div className="space-y-6">
+                <h3 className="text-lg font-semibold">Client Reports</h3>
+                
+                {stats && (
+                  <>
+                    <div className="grid grid-cols-4 gap-4">
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-blue-100 rounded-lg">
+                            <Users className="w-6 h-6 text-blue-600" />
                           </div>
-
-                          {trial.isActive && (
-                            <div className="flex gap-2 ml-4">
-                              <Button
-                                size="sm"
-                                variant="destructive"
-                                onClick={() => handleTerminateTrial(trial.id)}
-                              >
-                                <Trash2 className="w-4 h-4 mr-1" />
-                                Terminate
-                              </Button>
-                            </div>
-                          )}
+                          <div>
+                            <p className="text-sm text-gray-500">Total Clients</p>
+                            <p className="text-2xl font-bold text-gray-800">{stats.totalClients}</p>
+                          </div>
                         </div>
                       </div>
-                    ))}
-                  </div>
+
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-green-100 rounded-lg">
+                            <UserCheck className="w-6 h-6 text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Active</p>
+                            <p className="text-2xl font-bold text-gray-800">{stats.activeClients}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-yellow-100 rounded-lg">
+                            <Clock className="w-6 h-6 text-yellow-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">On Hold</p>
+                            <p className="text-2xl font-bold text-gray-800">{stats.onHoldClients}</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-white border border-gray-200 rounded-lg p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-red-100 rounded-lg">
+                            <UserX className="w-6 h-6 text-red-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-500">Suspended</p>
+                            <p className="text-2xl font-bold text-gray-800">{stats.suspendedClients}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="bg-white border border-gray-200 rounded-lg p-6">
+                      <h4 className="font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <Activity className="w-5 h-5" />
+                        Status Breakdown
+                      </h4>
+                      <div className="space-y-3">
+                        {stats.statusBreakdown.map((item) => (
+                          <div key={item.status} className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className={`w-3 h-3 rounded-full ${
+                                item.status === 'active' ? 'bg-green-500' :
+                                item.status === 'onhold' ? 'bg-yellow-500' :
+                                item.status === 'suspended' ? 'bg-red-500' :
+                                'bg-gray-500'
+                              }`} />
+                              <span className="capitalize text-gray-700">{item.status}</span>
+                            </div>
+                            <div className="flex items-center gap-4">
+                              <span className="text-gray-600">{item.count} clients</span>
+                              <span className="text-sm text-gray-500">
+                                ({stats.totalClients > 0 ? ((item.count / stats.totalClients) * 100).toFixed(1) : 0}%)
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
                 )}
               </div>
             )}
           </div>
         </div>
 
-        {/* Create License Modal */}
-        <Dialog open={showCreateLicense} onOpenChange={setShowCreateLicense}>
+        <Dialog open={showCreateClient} onOpenChange={setShowCreateClient}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
-              <DialogTitle>Create New License</DialogTitle>
+              <DialogTitle>Create New Client</DialogTitle>
             </DialogHeader>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Phone ID *
-                </label>
-                <Input
-                  placeholder="Enter unique phone ID"
-                  value={newLicense.phoneId}
-                  onChange={(e) => setNewLicense(prev => ({ ...prev, phoneId: e.target.value }))}
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Client Name *
                 </label>
                 <Input
                   placeholder="Enter client name"
-                  value={newLicense.clientName}
-                  onChange={(e) => setNewLicense(prev => ({ ...prev, clientName: e.target.value }))}
+                  value={newClient.clientName}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, clientName: e.target.value }))}
                 />
               </div>
 
@@ -455,8 +446,20 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                 <Input
                   type="password"
                   placeholder="Enter client password"
-                  value={newLicense.password}
-                  onChange={(e) => setNewLicense(prev => ({ ...prev, password: e.target.value }))}
+                  value={newClient.password}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, password: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number
+                </label>
+                <Input
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={newClient.phone}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, phone: e.target.value }))}
                 />
               </div>
 
@@ -467,8 +470,8 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                 <Input
                   type="email"
                   placeholder="Enter email address"
-                  value={newLicense.email}
-                  onChange={(e) => setNewLicense(prev => ({ ...prev, email: e.target.value }))}
+                  value={newClient.email}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, email: e.target.value }))}
                 />
               </div>
 
@@ -478,36 +481,24 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                 </label>
                 <Input
                   placeholder="Enter company name"
-                  value={newLicense.companyName}
-                  onChange={(e) => setNewLicense(prev => ({ ...prev, companyName: e.target.value }))}
+                  value={newClient.companyName}
+                  onChange={(e) => setNewClient(prev => ({ ...prev, companyName: e.target.value }))}
                 />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Expiration Date (Optional)
-                </label>
-                <Input
-                  type="datetime-local"
-                  value={newLicense.expiresAt}
-                  onChange={(e) => setNewLicense(prev => ({ ...prev, expiresAt: e.target.value }))}
-                />
-                <p className="text-xs text-gray-500 mt-1">Leave empty for permanent license</p>
               </div>
 
               <div className="flex gap-3 pt-4">
                 <Button
                   variant="outline"
-                  onClick={() => setShowCreateLicense(false)}
+                  onClick={() => setShowCreateClient(false)}
                   className="flex-1"
                 >
                   Cancel
                 </Button>
                 <Button
-                  onClick={handleCreateLicense}
+                  onClick={handleCreateClient}
                   className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                 >
-                  Create License
+                  Create Client
                 </Button>
               </div>
             </div>

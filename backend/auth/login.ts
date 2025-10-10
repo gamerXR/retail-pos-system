@@ -3,7 +3,7 @@ import { authDB } from "./db";
 import { posDB } from "../pos/db";
 
 export interface LoginRequest {
-  phoneNumber: string;
+  clientId: string;
   password: string;
 }
 
@@ -15,23 +15,29 @@ export interface LoginResponse {
 export const login = api<LoginRequest, LoginResponse>(
   { expose: true, method: "POST", path: "/auth/login" },
   async (req) => {
-    const user = await authDB.queryRow<{
+    const client = await authDB.queryRow<{
       id: number;
-      phone_number: string;
+      client_id: string;
+      client_name: string;
       password_hash: string;
+      status: string;
     }>`
-      SELECT id, phone_number, password_hash
-      FROM users 
-      WHERE phone_number = ${req.phoneNumber}
+      SELECT id, client_id, client_name, password_hash, status
+      FROM clients 
+      WHERE client_id = ${req.clientId}
     `;
 
-    if (!user) {
-      throw APIError.unauthenticated("Invalid phone number or password");
+    if (!client) {
+      throw APIError.unauthenticated("Invalid client ID or password");
     }
 
-    const passwordMatch = req.password === user.password_hash;
+    const passwordMatch = req.password === client.password_hash;
     if (!passwordMatch) {
-      throw APIError.unauthenticated("Invalid phone number or password");
+      throw APIError.unauthenticated("Invalid client ID or password");
+    }
+
+    if (client.status !== 'active') {
+      throw APIError.unauthenticated(`Account is ${client.status}. Please contact administrator.`);
     }
 
     return {

@@ -12,19 +12,19 @@ interface LoginPageProps {
 }
 
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [clientId, setClientId] = useState("");
   const [password, setPassword] = useState("");
-  const [activeField, setActiveField] = useState<"phone" | "password" | null>(null);
+  const [activeField, setActiveField] = useState<"clientId" | "password" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotMessage, setShowForgotMessage] = useState(false);
   const [showOpeningBalanceModal, setShowOpeningBalanceModal] = useState(false);
   const { toast } = useToast();
 
   const handleLogin = async () => {
-    if (!phoneNumber || !password) {
+    if (!clientId || !password) {
       toast({
         title: "Error",
-        description: "Please enter both phone number and password",
+        description: "Please enter both client ID and password",
         variant: "destructive",
       });
       return;
@@ -33,7 +33,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     setIsLoading(true);
     try {
       const response = await backend.auth.login({
-        phoneNumber,
+        clientId,
         password
       });
 
@@ -71,24 +71,24 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   };
 
   const handleKeyboardInput = (value: string) => {
-    if (activeField === "phone") {
-      setPhoneNumber(prev => prev + value);
+    if (activeField === "clientId") {
+      setClientId(prev => prev + value);
     } else if (activeField === "password") {
       setPassword(prev => prev + value);
     }
   };
 
   const handleKeyboardBackspace = () => {
-    if (activeField === "phone") {
-      setPhoneNumber(prev => prev.slice(0, -1));
+    if (activeField === "clientId") {
+      setClientId(prev => prev.slice(0, -1));
     } else if (activeField === "password") {
       setPassword(prev => prev.slice(0, -1));
     }
   };
 
   const handleKeyboardSpace = () => {
-    if (activeField === "phone") {
-      setPhoneNumber(prev => prev + " ");
+    if (activeField === "clientId") {
+      setClientId(prev => prev + " ");
     } else if (activeField === "password") {
       setPassword(prev => prev + " ");
     }
@@ -116,10 +116,10 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Phone Number"
-                value={phoneNumber}
-                onChange={(e) => setPhoneNumber(e.target.value)}
-                onFocus={() => setActiveField("phone")}
+                placeholder="Client ID"
+                value={clientId}
+                onChange={(e) => setClientId(e.target.value)}
+                onFocus={() => setActiveField("clientId")}
                 className="pl-12 h-14 text-lg border-gray-300"
               />
             </div>
