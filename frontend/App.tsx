@@ -6,18 +6,12 @@ export type AppPage = "login" | "sales";
 
 export default function App() {
   const [currentPage, setCurrentPage] = useState<AppPage>("login");
-  const [userType, setUserType] = useState<"licensed" | "trial" | null>(null);
 
-  const handleLoginSuccess = (type: "licensed" | "trial") => {
-    setUserType(type);
+  const handleLoginSuccess = () => {
     setCurrentPage("sales");
   };
 
   const handleLogout = () => {
-    setUserType(null);
-    // Clear ALL stored data on logout
-    localStorage.removeItem('licenseKey');
-    localStorage.removeItem('phoneId');
     localStorage.removeItem('userSession');
     localStorage.removeItem('currentUser');
     setCurrentPage("login");
@@ -28,7 +22,7 @@ export default function App() {
       case "login":
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
       case "sales":
-        return <SalesPage onLogout={handleLogout} userType={userType} />;
+        return <SalesPage onLogout={handleLogout} userType={null} />;
       default:
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
     }

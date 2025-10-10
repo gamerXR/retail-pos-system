@@ -67,7 +67,7 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }: Adm
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-blue-500" />
-            Admin Access
+            Super Admin Access
           </DialogTitle>
         </DialogHeader>
         
@@ -85,7 +85,7 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }: Adm
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="text"
-                placeholder="Admin Username"
+                placeholder="Super Admin Phone Number"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
                 className="pl-12 h-12"
@@ -96,24 +96,13 @@ export default function AdminLoginModal({ isOpen, onClose, onLoginSuccess }: Adm
               <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 type="password"
-                placeholder="Admin Password"
+                placeholder="Super Admin Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className="pl-12 h-12"
                 onKeyPress={(e) => e.key === "Enter" && handleLogin()}
               />
             </div>
-          </div>
-
-          {/* Default Credentials Info */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-            <p className="text-sm text-blue-700">
-              <strong>Default Credentials:</strong>
-            </p>
-            <p className="text-sm text-blue-600 mt-1">
-              Username: admin<br />
-              Password: admin123
-            </p>
           </div>
 
           {/* Action Buttons */}

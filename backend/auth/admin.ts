@@ -61,17 +61,15 @@ export interface ListTrialSessionsResponse {
 export const adminLogin = api<AdminLoginRequest, AdminLoginResponse>(
   { expose: true, method: "POST", path: "/auth/admin/login" },
   async (req) => {
-    // For demo purposes, using simple credentials
-    // In production, use proper password hashing
-    if (req.username === "admin" && req.password === "admin123") {
+    if (req.username === "6737165617" && req.password === "12345678") {
       return {
         success: true,
-        message: "Admin login successful",
-        token: "admin-token-" + Date.now() // Simple token for demo
+        message: "Super admin login successful",
+        token: "admin-token-" + Date.now()
       };
     }
 
-    throw APIError.unauthenticated("Invalid admin credentials");
+    throw APIError.unauthenticated("Invalid super admin credentials");
   }
 );
 

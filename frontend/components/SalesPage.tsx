@@ -69,7 +69,6 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   useEffect(() => {
     loadCategories();
     loadProducts();
-    checkTrialStatus();
     checkPrinterStatus();
     autoConnectPrinter();
   }, []);
@@ -82,44 +81,14 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
     }
   }, [selectedCategoryId]);
 
-  // Check trial status periodically
-  useEffect(() => {
-    const interval = setInterval(() => {
-      checkTrialStatus();
-    }, 60000); // Check every minute
-
-    return () => clearInterval(interval);
-  }, []);
-
   // Check printer status periodically
   useEffect(() => {
     const interval = setInterval(() => {
       checkPrinterStatus();
-    }, 30000); // Check every 30 seconds
+    }, 30000);
 
     return () => clearInterval(interval);
   }, []);
-
-  const checkTrialStatus = async () => {
-    try {
-      const response = await backend.auth.checkTrial({ deviceId });
-      if (response.isActive && response.timeRemaining) {
-        setTrialTimeRemaining(response.timeRemaining);
-        if (response.timeRemaining <= 5) {
-          toast({
-            title: "Trial Ending Soon",
-            description: `Only ${response.timeRemaining} minutes remaining. Please contact administrator for a license.`,
-            variant: "destructive",
-          });
-        }
-      } else {
-        setTrialTimeRemaining(null);
-      }
-    } catch (error) {
-      // Trial not found or expired
-      setTrialTimeRemaining(null);
-    }
-  };
 
   const autoConnectPrinter = async () => {
     try {
