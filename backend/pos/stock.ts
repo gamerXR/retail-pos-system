@@ -1,4 +1,6 @@
 import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "~encore/auth";
+import type { AuthData } from "../auth/auth";
 import { posDB } from "./db";
 
 export interface StockUpdateRequest {
@@ -20,16 +22,16 @@ export interface StockUpdateResponse {
 
 // Updates stock for multiple products.
 export const updateStock = api<BulkStockUpdateRequest, StockUpdateResponse>(
-  { expose: true, method: "POST", path: "/pos/stock/update" },
+  { auth: true, expose: true, method: "POST", path: "/pos/stock/update" },
   async (req) => {
+    const auth = getAuthData()! as AuthData;
     const tx = await posDB.begin();
     const updatedProducts: number[] = [];
     
     try {
       for (const update of req.updates) {
-        // Get current product
         const product = await tx.queryRow<{ id: number; quantity: number }>`
-          SELECT id, quantity FROM products WHERE id = ${update.productId}
+          SELECT id, quantity FROM products WHERE id = ${update.productId} AND client_id = ${auth.clientID}
         `;
 
         if (!product) {
@@ -60,11 +62,10 @@ export const updateStock = api<BulkStockUpdateRequest, StockUpdateResponse>(
             break;
         }
 
-        // Update product quantity
         await tx.exec`
           UPDATE products 
           SET quantity = ${newQuantity}
-          WHERE id = ${update.productId}
+          WHERE id = ${update.productId} AND client_id = ${auth.clientID}
         `;
 
         // Log stock movement (optional - you can create a stock_movements table later)

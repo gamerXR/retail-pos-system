@@ -1,4 +1,6 @@
 import { api } from "encore.dev/api";
+import { getAuthData } from "~encore/auth";
+import type { AuthData } from "../auth/auth";
 import { secret } from "encore.dev/config";
 import { posDB } from "./db";
 
@@ -89,16 +91,15 @@ export interface ExportSalesResponse {
 
 // Creates a new sale transaction.
 export const createSale = api<CreateSaleRequest, CreateSaleResponse>(
-  { expose: true, method: "POST", path: "/pos/sales" },
+  { auth: true, expose: true, method: "POST", path: "/pos/sales" },
   async (req) => {
-    // Start a transaction
+    const auth = getAuthData()! as AuthData;
     const tx = await posDB.begin();
     
     try {
-      // Create the sale record
       const sale = await tx.queryRow<{ id: number; total_amount: number; created_at: Date }>`
-        INSERT INTO sales (total_amount, payment_method)
-        VALUES (${req.totalAmount}, ${req.paymentMethod})
+        INSERT INTO sales (total_amount, payment_method, client_id)
+        VALUES (${req.totalAmount}, ${req.paymentMethod}, ${auth.clientID})
         RETURNING id, total_amount, created_at
       `;
 
@@ -114,11 +115,10 @@ export const createSale = api<CreateSaleRequest, CreateSaleResponse>(
           VALUES (${sale.id}, ${item.productId}, ${item.quantity}, ${item.unitPrice}, ${item.totalPrice})
         `;
 
-        // Update product quantity
         await tx.exec`
           UPDATE products 
           SET quantity = quantity - ${item.quantity}
-          WHERE id = ${item.productId}
+          WHERE id = ${item.productId} AND client_id = ${auth.clientID}
         `;
 
         saleItems.push(item);
@@ -144,14 +144,13 @@ export const createSale = api<CreateSaleRequest, CreateSaleResponse>(
 
 // Gets sales summary data for reporting.
 export const getSalesSummary = api<SalesSummaryRequest, SalesSummaryResponse>(
-  { expose: true, method: "GET", path: "/pos/sales/summary" },
+  { auth: true, expose: true, method: "GET", path: "/pos/sales/summary" },
   async (req) => {
+    const auth = getAuthData()! as AuthData;
     try {
-      // Set default date range to today if not provided
       const dateFrom = req.dateFrom || new Date().toISOString().split('T')[0];
       const dateTo = req.dateTo || new Date().toISOString().split('T')[0];
       
-      // Get total sales and transaction count
       const salesSummary = await posDB.queryRow<{
         total_sales: number;
         total_transactions: number;
@@ -160,24 +159,22 @@ export const getSalesSummary = api<SalesSummaryRequest, SalesSummaryResponse>(
           COALESCE(SUM(total_amount), 0) as total_sales,
           COUNT(*) as total_transactions
         FROM sales 
-        WHERE DATE(created_at) BETWEEN ${dateFrom} AND ${dateTo}
+        WHERE DATE(created_at) BETWEEN ${dateFrom} AND ${dateTo} AND client_id = ${auth.clientID}
       `;
 
       const totalSales = salesSummary?.total_sales || 0;
       const totalTransactions = salesSummary?.total_transactions || 0;
       const averageTransaction = totalTransactions > 0 ? totalSales / totalTransactions : 0;
 
-      // Get total quantity sold
       const quantitySummary = await posDB.queryRow<{ total_quantity: number }>`
         SELECT COALESCE(SUM(si.quantity), 0) as total_quantity
         FROM sale_items si
         JOIN sales s ON si.sale_id = s.id
-        WHERE DATE(s.created_at) BETWEEN ${dateFrom} AND ${dateTo}
+        WHERE DATE(s.created_at) BETWEEN ${dateFrom} AND ${dateTo} AND s.client_id = ${auth.clientID}
       `;
 
       const totalQuantity = quantitySummary?.total_quantity || 0;
 
-      // Get payment method breakdown
       const paymentMethodData = await posDB.queryAll<{
         payment_method: string;
         total_amount: number;
@@ -186,7 +183,7 @@ export const getSalesSummary = api<SalesSummaryRequest, SalesSummaryResponse>(
           COALESCE(payment_method, 'cash') as payment_method,
           SUM(total_amount) as total_amount
         FROM sales 
-        WHERE DATE(created_at) BETWEEN ${dateFrom} AND ${dateTo}
+        WHERE DATE(created_at) BETWEEN ${dateFrom} AND ${dateTo} AND client_id = ${auth.clientID}
         GROUP BY payment_method
         ORDER BY total_amount DESC
       `;
@@ -206,7 +203,6 @@ export const getSalesSummary = api<SalesSummaryRequest, SalesSummaryResponse>(
         );
       }
 
-      // Get top selling items
       const topSellingItems = await posDB.queryAll<{
         product_name: string;
         total_quantity: number;
@@ -219,13 +215,12 @@ export const getSalesSummary = api<SalesSummaryRequest, SalesSummaryResponse>(
         FROM sale_items si
         JOIN sales s ON si.sale_id = s.id
         JOIN products p ON si.product_id = p.id
-        WHERE DATE(s.created_at) BETWEEN ${dateFrom} AND ${dateTo}
+        WHERE DATE(s.created_at) BETWEEN ${dateFrom} AND ${dateTo} AND s.client_id = ${auth.clientID}
         GROUP BY p.id, p.name
         ORDER BY total_revenue DESC
         LIMIT 5
       `;
 
-      // Get hourly sales
       const hourlySales = await posDB.queryAll<{
         hour: string;
         sales: number;
@@ -236,7 +231,7 @@ export const getSalesSummary = api<SalesSummaryRequest, SalesSummaryResponse>(
           COALESCE(SUM(total_amount), 0) as sales,
           COUNT(*) as transactions
         FROM sales
-        WHERE DATE(created_at) BETWEEN ${dateFrom} AND ${dateTo}
+        WHERE DATE(created_at) BETWEEN ${dateFrom} AND ${dateTo} AND client_id = ${auth.clientID}
         GROUP BY TO_CHAR(created_at, 'HH24:00')
         ORDER BY hour
       `;
@@ -272,8 +267,9 @@ export const getSalesSummary = api<SalesSummaryRequest, SalesSummaryResponse>(
 
 // Exports sales data via email in Excel format.
 export const exportSalesViaEmail = api<ExportSalesRequest, ExportSalesResponse>(
-  { expose: true, method: "POST", path: "/pos/sales/export-email" },
+  { auth: true, expose: true, method: "POST", path: "/pos/sales/export-email" },
   async (req) => {
+    const auth = getAuthData()! as AuthData;
     try {
       // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -392,7 +388,6 @@ function generateCSVContent(
   return lines.join("\n");
 }
 
-// Send email with attachment using Nodemailer
 async function sendEmailWithAttachment(
   toEmail: string,
   subject: string,
@@ -401,7 +396,8 @@ async function sendEmailWithAttachment(
   attachmentFilename: string
 ): Promise<boolean> {
   try {
-    // Get SMTP configuration
+    const nodemailer = require("nodemailer");
+    
     const host = smtpHost();
     const port = parseInt(smtpPort());
     const user = smtpUser();
@@ -413,25 +409,16 @@ async function sendEmailWithAttachment(
       return false;
     }
 
-    // Create transporter configuration for Nodemailer
-    const transporterConfig = {
+    const transporter = nodemailer.createTransport({
       host: host,
       port: port,
-      secure: port === 465, // true for 465, false for other ports
+      secure: port === 465,
       auth: {
         user: user,
         pass: password
-      },
-      // Additional options for common providers
-      ...(host.includes('gmail') && {
-        service: 'gmail'
-      }),
-      ...(host.includes('outlook') && {
-        service: 'hotmail'
-      })
-    };
+      }
+    });
 
-    // Prepare email data
     const mailOptions = {
       from: from,
       to: toEmail,
@@ -460,26 +447,12 @@ async function sendEmailWithAttachment(
       ]
     };
 
-    // Send email using fetch to simulate Nodemailer behavior
-    // In a real implementation, you would use the actual Nodemailer library
-    // For now, we'll simulate the email sending process
-    
     console.log(`Attempting to send email to ${toEmail} via SMTP server ${host}:${port}`);
-    console.log(`Email configuration: User=${user}, From=${from}`);
     
-    // Simulate email sending delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    await transporter.sendMail(mailOptions);
     
-    // Simulate success/failure based on configuration completeness
-    const emailSent = host && port && user && password && from;
-    
-    if (emailSent) {
-      console.log(`Email sent successfully to ${toEmail} via ${host}`);
-      return true;
-    } else {
-      console.error(`Failed to send email: Missing SMTP configuration`);
-      return false;
-    }
+    console.log(`Email sent successfully to ${toEmail} via ${host}`);
+    return true;
   } catch (error) {
     console.error("Error sending email via SMTP:", error);
     return false;

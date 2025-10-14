@@ -1,6 +1,5 @@
-import { api, APIError } from "encore.dev/api";
+import { api, APIError, Cookie } from "encore.dev/api";
 import { authDB } from "./db";
-import { posDB } from "../pos/db";
 
 export interface LoginRequest {
   phoneNumber: string;
@@ -10,6 +9,9 @@ export interface LoginRequest {
 export interface LoginResponse {
   success: boolean;
   message: string;
+  session: Cookie<"session">;
+  clientName: string;
+  clientID: number;
 }
 
 export const login = api<LoginRequest, LoginResponse>(
@@ -42,7 +44,16 @@ export const login = api<LoginRequest, LoginResponse>(
 
     return {
       success: true,
-      message: "Login successful"
+      message: "Login successful",
+      session: {
+        value: req.phoneNumber,
+        expires: new Date(Date.now() + 3600 * 1000 * 24 * 30),
+        httpOnly: true,
+        secure: true,
+        sameSite: "Lax",
+      },
+      clientName: client.client_name,
+      clientID: client.id
     };
   }
 );

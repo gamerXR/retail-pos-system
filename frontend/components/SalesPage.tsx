@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Grid3X3, List, Settings, Trash2, Keyboard, ChevronLeft, ChevronRight, Plus, Clock, AlertTriangle } from "lucide-react";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import type { Product } from "~backend/pos/products";
 import type { Category } from "~backend/pos/categories";
 import AddCategoryModal from "./AddCategoryModal";
@@ -61,6 +61,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [printerConnected, setPrinterConnected] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   useEffect(() => {
     loadCategories();

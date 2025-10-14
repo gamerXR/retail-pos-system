@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, ChevronRight, Plus, Trash2, Edit, Keyboard } from "lucide-react";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import type { Product } from "~backend/pos/products";
 import type { Category } from "~backend/pos/categories";
 import StockQuantityModal from "./StockQuantityModal";
@@ -37,6 +37,7 @@ export default function StockPage({ onBack, onStockUpdate }: StockPageProps) {
   const [actionModalPosition, setActionModalPosition] = useState<{ x: number; y: number } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   useEffect(() => {
     loadCategories();

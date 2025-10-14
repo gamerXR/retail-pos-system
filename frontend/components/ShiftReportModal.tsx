@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, Printer } from "lucide-react";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 
 interface ShiftReportModalProps {
   isOpen: boolean;
@@ -29,6 +29,7 @@ export default function ShiftReportModal({ isOpen, onClose }: ShiftReportModalPr
   const [isLoading, setIsLoading] = useState(false);
   const [isClosingShift, setIsClosingShift] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   useEffect(() => {
     if (isOpen) {

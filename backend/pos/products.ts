@@ -1,4 +1,6 @@
 import { api, APIError } from "encore.dev/api";
+import { getAuthData } from "~encore/auth";
+import type { AuthData } from "../auth/auth";
 import { posDB } from "./db";
 
 export interface Product {
@@ -69,8 +71,9 @@ export interface ProductsByCategoryResponse {
 
 // Gets all products.
 export const getProducts = api<void, ProductsResponse>(
-  { expose: true, method: "GET", path: "/pos/products" },
+  { auth: true, expose: true, method: "GET", path: "/pos/products" },
   async () => {
+    const auth = getAuthData()! as AuthData;
     const products = await posDB.queryAll<Product>`
       SELECT 
         id, name, price, quantity, category_id as "categoryId",
@@ -79,6 +82,7 @@ export const getProducts = api<void, ProductsResponse>(
         shelf_life as "shelfLife", origin, ingredients, remarks, weighing,
         is_off_shelf as "isOffShelf", sort_order as "sortOrder"
       FROM products
+      WHERE client_id = ${auth.clientID}
       ORDER BY sort_order DESC, name
     `;
 
@@ -88,8 +92,9 @@ export const getProducts = api<void, ProductsResponse>(
 
 // Gets products by category.
 export const getProductsByCategory = api<{ categoryId: number }, ProductsByCategoryResponse>(
-  { expose: true, method: "GET", path: "/pos/products/category/:categoryId" },
+  { auth: true, expose: true, method: "GET", path: "/pos/products/category/:categoryId" },
   async (req) => {
+    const auth = getAuthData()! as AuthData;
     const products = await posDB.queryAll<Product>`
       SELECT 
         id, name, price, quantity, category_id as "categoryId",
@@ -98,7 +103,7 @@ export const getProductsByCategory = api<{ categoryId: number }, ProductsByCateg
         shelf_life as "shelfLife", origin, ingredients, remarks, weighing,
         is_off_shelf as "isOffShelf", sort_order as "sortOrder"
       FROM products
-      WHERE category_id = ${req.categoryId}
+      WHERE category_id = ${req.categoryId} AND client_id = ${auth.clientID}
       ORDER BY sort_order DESC, name
     `;
 
@@ -108,8 +113,9 @@ export const getProductsByCategory = api<{ categoryId: number }, ProductsByCateg
 
 // Gets a single product by ID.
 export const getProduct = api<{ id: number }, Product>(
-  { expose: true, method: "GET", path: "/pos/products/:id" },
+  { auth: true, expose: true, method: "GET", path: "/pos/products/:id" },
   async (req) => {
+    const auth = getAuthData()! as AuthData;
     const product = await posDB.queryRow<Product>`
       SELECT 
         id, name, price, quantity, category_id as "categoryId",
@@ -118,7 +124,7 @@ export const getProduct = api<{ id: number }, Product>(
         shelf_life as "shelfLife", origin, ingredients, remarks, weighing,
         is_off_shelf as "isOffShelf", sort_order as "sortOrder"
       FROM products
-      WHERE id = ${req.id}
+      WHERE id = ${req.id} AND client_id = ${auth.clientID}
     `;
 
     if (!product) {
@@ -131,13 +137,14 @@ export const getProduct = api<{ id: number }, Product>(
 
 // Creates a new product.
 export const createProduct = api<CreateProductRequest, Product>(
-  { expose: true, method: "POST", path: "/pos/products" },
+  { auth: true, expose: true, method: "POST", path: "/pos/products" },
   async (req) => {
-    // Check if product name already exists in the same category
+    const auth = getAuthData()! as AuthData;
+    
     if (req.categoryId) {
       const existingProduct = await posDB.queryRow<{ id: number }>`
         SELECT id FROM products 
-        WHERE LOWER(name) = LOWER(${req.name}) AND category_id = ${req.categoryId}
+        WHERE LOWER(name) = LOWER(${req.name}) AND category_id = ${req.categoryId} AND client_id = ${auth.clientID}
       `;
 
       if (existingProduct) {
@@ -149,14 +156,14 @@ export const createProduct = api<CreateProductRequest, Product>(
       INSERT INTO products (
         name, price, quantity, category_id, barcode, second_name, wholesale_price,
         start_qty, stock_price, total_amount, shelf_life, origin, ingredients, remarks, weighing,
-        is_off_shelf, sort_order
+        is_off_shelf, sort_order, client_id
       )
       VALUES (
         ${req.name}, ${req.price}, ${req.quantity || 0}, ${req.categoryId},
         ${req.barcode}, ${req.secondName}, ${req.wholesalePrice},
         ${req.startQty || 0}, ${req.stockPrice}, ${req.totalAmount},
         ${req.shelfLife}, ${req.origin}, ${req.ingredients}, ${req.remarks}, ${req.weighing || false},
-        FALSE, 0
+        FALSE, 0, ${auth.clientID}
       )
       RETURNING 
         id, name, price, quantity, category_id as "categoryId",
@@ -176,13 +183,14 @@ export const createProduct = api<CreateProductRequest, Product>(
 
 // Updates an existing product.
 export const updateProduct = api<UpdateProductRequest, Product>(
-  { expose: true, method: "PUT", path: "/pos/products/:id" },
+  { auth: true, expose: true, method: "PUT", path: "/pos/products/:id" },
   async (req) => {
-    // Check if product name already exists in the same category (excluding current product)
+    const auth = getAuthData()! as AuthData;
+    
     if (req.name && req.categoryId) {
       const existingProduct = await posDB.queryRow<{ id: number }>`
         SELECT id FROM products 
-        WHERE LOWER(name) = LOWER(${req.name}) AND category_id = ${req.categoryId} AND id != ${req.id}
+        WHERE LOWER(name) = LOWER(${req.name}) AND category_id = ${req.categoryId} AND id != ${req.id} AND client_id = ${auth.clientID}
       `;
 
       if (existingProduct) {
@@ -207,7 +215,7 @@ export const updateProduct = api<UpdateProductRequest, Product>(
         ingredients = COALESCE(${req.ingredients}, ingredients),
         remarks = COALESCE(${req.remarks}, remarks),
         weighing = COALESCE(${req.weighing}, weighing)
-      WHERE id = ${req.id}
+      WHERE id = ${req.id} AND client_id = ${auth.clientID}
       RETURNING 
         id, name, price, quantity, category_id as "categoryId",
         barcode, second_name as "secondName", wholesale_price as "wholesalePrice",
@@ -226,19 +234,21 @@ export const updateProduct = api<UpdateProductRequest, Product>(
 
 // Deletes a product.
 export const deleteProduct = api<{ id: number }, void>(
-  { expose: true, method: "DELETE", path: "/pos/products/:id" },
+  { auth: true, expose: true, method: "DELETE", path: "/pos/products/:id" },
   async (req) => {
-    await posDB.exec`DELETE FROM products WHERE id = ${req.id}`;
+    const auth = getAuthData()! as AuthData;
+    await posDB.exec`DELETE FROM products WHERE id = ${req.id} AND client_id = ${auth.clientID}`;
   }
 );
 
 // Moves product to first position in category (stick functionality).
 export const stickProduct = api<{ id: number }, Product>(
-  { expose: true, method: "POST", path: "/pos/products/:id/stick" },
+  { auth: true, expose: true, method: "POST", path: "/pos/products/:id/stick" },
   async (req) => {
-    // Get the product to check its category
+    const auth = getAuthData()! as AuthData;
+    
     const product = await posDB.queryRow<{ id: number; category_id: number }>`
-      SELECT id, category_id FROM products WHERE id = ${req.id}
+      SELECT id, category_id FROM products WHERE id = ${req.id} AND client_id = ${auth.clientID}
     `;
 
     if (!product) {
@@ -249,7 +259,7 @@ export const stickProduct = api<{ id: number }, Product>(
     const maxSortOrder = await posDB.queryRow<{ max_sort: number }>`
       SELECT COALESCE(MAX(sort_order), 0) as max_sort 
       FROM products 
-      WHERE category_id = ${product.category_id}
+      WHERE category_id = ${product.category_id} AND client_id = ${auth.clientID}
     `;
 
     const newSortOrder = (maxSortOrder?.max_sort || 0) + 1;
@@ -257,7 +267,7 @@ export const stickProduct = api<{ id: number }, Product>(
     // Update the product's sort_order to move it to the top
     const updatedProduct = await posDB.queryRow<Product>`
       UPDATE products SET sort_order = ${newSortOrder}
-      WHERE id = ${req.id}
+      WHERE id = ${req.id} AND client_id = ${auth.clientID}
       RETURNING 
         id, name, price, quantity, category_id as "categoryId",
         barcode, second_name as "secondName", wholesale_price as "wholesalePrice",
@@ -276,11 +286,12 @@ export const stickProduct = api<{ id: number }, Product>(
 
 // Toggles product off shelf status.
 export const toggleOffShelf = api<{ id: number }, Product>(
-  { expose: true, method: "POST", path: "/pos/products/:id/toggle-off-shelf" },
+  { auth: true, expose: true, method: "POST", path: "/pos/products/:id/toggle-off-shelf" },
   async (req) => {
+    const auth = getAuthData()! as AuthData;
     const updatedProduct = await posDB.queryRow<Product>`
       UPDATE products SET is_off_shelf = NOT is_off_shelf
-      WHERE id = ${req.id}
+      WHERE id = ${req.id} AND client_id = ${auth.clientID}
       RETURNING 
         id, name, price, quantity, category_id as "categoryId",
         barcode, second_name as "secondName", wholesale_price as "wholesalePrice",

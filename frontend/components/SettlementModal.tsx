@@ -4,7 +4,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, Settings } from "lucide-react";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import type { Product } from "~backend/pos/products";
 import PaymentOptionsModal from "./PaymentOptionsModal";
 import OtherPaymentModal from "./OtherPaymentModal";
@@ -65,6 +65,7 @@ export default function SettlementModal({
     { id: "card", name: "Card", enabled: true },
   ]);
   const { toast } = useToast();
+  const backend = useBackend();
 
   const subtotal = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   const totalDiscount = promotion + customReduce + customDiscount;

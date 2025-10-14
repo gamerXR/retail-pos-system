@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Phone, Lock, Shield } from "lucide-react";
+import { useAuth } from "../lib/auth";
 import backend from "~backend/client";
 import VirtualKeyboard from "./VirtualKeyboard";
 import OpeningBalanceModal from "./OpeningBalanceModal";
@@ -23,6 +24,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const { toast } = useToast();
+  const { login } = useAuth();
 
   const handleLogin = async () => {
     if (!phoneNumber || !password) {
@@ -42,9 +44,11 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       });
 
       if (response.success) {
+        login(phoneNumber, response.clientName, response.clientID);
+        
         toast({
           title: "Login Successful",
-          description: "Welcome back!",
+          description: `Welcome back, ${response.clientName}!`,
         });
         
         setShowOpeningBalanceModal(true);

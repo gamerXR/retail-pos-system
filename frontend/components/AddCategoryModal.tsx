@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import type { Category } from "~backend/pos/categories";
 
 interface AddCategoryModalProps {
@@ -16,6 +16,7 @@ export default function AddCategoryModal({ isOpen, onClose, onCategoryCreated }:
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

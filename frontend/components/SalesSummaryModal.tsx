@@ -4,7 +4,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, Calendar, User, Printer, Download, Check, AlertCircle } from "lucide-react";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import ExportModal from "./ExportModal";
 import EmailExportModal from "./EmailExportModal";
 
@@ -48,6 +48,7 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
   const [showExportModal, setShowExportModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   const dateOptions = [
     { value: "today", label: "Today" },

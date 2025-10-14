@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import NumericKeypad from "./NumericKeypad";
 
 interface OpeningBalancePageProps {
@@ -13,6 +13,7 @@ export default function OpeningBalancePage({ onContinue }: OpeningBalancePagePro
   const [amount, setAmount] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   const openCashDrawer = async () => {
     try {

@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import NumericKeypad from "./NumericKeypad";
 import { openCashDrawer } from "../lib/hardware";
 
@@ -17,6 +17,7 @@ export default function OpeningBalanceModal({ isOpen, onClose, onContinue }: Ope
   const [amount, setAmount] = useState("0");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   const handleSetBalance = async () => {
     const numericAmount = parseFloat(amount);

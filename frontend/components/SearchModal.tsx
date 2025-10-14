@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import type { Product } from "~backend/pos/products";
 
 interface SearchModalProps {
@@ -20,6 +20,7 @@ export default function SearchModal({ isOpen, onClose, onProductSelect }: Search
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   useEffect(() => {
     if (isOpen) {

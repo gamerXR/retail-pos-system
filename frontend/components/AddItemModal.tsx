@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { Plus, QrCode } from "lucide-react";
-import backend from "~backend/client";
+import { useBackend } from "../lib/auth";
 import type { Product } from "~backend/pos/products";
 import type { Category } from "~backend/pos/categories";
 
@@ -46,6 +46,7 @@ export default function AddItemModal({
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   useEffect(() => {
     if (selectedCategoryId) {
