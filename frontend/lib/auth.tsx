@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useMemo, ReactNode } from "react";
 import backend from "~backend/client";
 
 interface AuthContextType {
@@ -48,5 +48,9 @@ export function useAuth() {
 }
 
 export function useBackend() {
-  return backend;
+  const { sessionToken, isAuthenticated } = useAuth();
+  return useMemo(() => {
+    if (!isAuthenticated || !sessionToken) return backend;
+    return backend.with({auth: {authorization: `Bearer ${sessionToken}`}});
+  }, [isAuthenticated, sessionToken]);
 }
