@@ -1043,6 +1043,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       <ShiftReportModal
         isOpen={showShiftReportModal}
         onClose={() => setShowShiftReportModal(false)}
+        onLogout={onLogout || (() => {})}
       />
 
       <ReprintModal

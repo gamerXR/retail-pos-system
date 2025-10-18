@@ -4,20 +4,12 @@ import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, Search, Printer, Calendar } from "lucide-react";
+import { useBackend } from "../lib/auth";
+import type { Receipt } from "~backend/pos/receipts";
 
 interface ReprintModalProps {
   isOpen: boolean;
   onClose: () => void;
-}
-
-interface Receipt {
-  id: number;
-  orderNumber: string;
-  date: string;
-  time: string;
-  total: number;
-  paymentMethod: string;
-  itemCount: number;
 }
 
 export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
@@ -27,6 +19,7 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const backend = useBackend();
 
   useEffect(() => {
     if (isOpen && searchType === "date") {
@@ -37,50 +30,17 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
   const searchReceiptsByDate = async () => {
     setIsLoading(true);
     try {
-      // TODO: Implement actual API call to search receipts by date
-      // For now, we'll simulate the data
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const response = await backend.pos.searchReceipts({ date: searchDate });
       
-      const mockReceipts: Receipt[] = [
-        {
-          id: 1,
-          orderNumber: "ORD-001",
-          date: searchDate,
-          time: "09:15 AM",
-          total: 25.50,
-          paymentMethod: "Cash",
-          itemCount: 3
-        },
-        {
-          id: 2,
-          orderNumber: "ORD-002",
-          date: searchDate,
-          time: "10:30 AM",
-          total: 45.75,
-          paymentMethod: "Member",
-          itemCount: 5
-        },
-        {
-          id: 3,
-          orderNumber: "ORD-003",
-          date: searchDate,
-          time: "11:45 AM",
-          total: 12.25,
-          paymentMethod: "Cash",
-          itemCount: 2
-        },
-        {
-          id: 4,
-          orderNumber: "ORD-004",
-          date: searchDate,
-          time: "02:20 PM",
-          total: 67.90,
-          paymentMethod: "Others",
-          itemCount: 8
-        }
-      ];
-      
-      setReceipts(mockReceipts);
+      if (response.success) {
+        setReceipts(response.receipts);
+      } else {
+        toast({
+          title: "Error",
+          description: "Failed to search receipts",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error searching receipts:", error);
       toast({
@@ -88,6 +48,7 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
         description: "Failed to search receipts",
         variant: "destructive",
       });
+      setReceipts([]);
     } finally {
       setIsLoading(false);
     }
@@ -105,21 +66,19 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
 
     setIsLoading(true);
     try {
-      // TODO: Implement actual API call to search receipt by order number
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const orderNum = orderNumber.replace(/\D/g, '');
+      const response = await backend.pos.searchReceipts({ orderNumber: orderNum });
       
-      // Simulate finding a receipt
-      const mockReceipt: Receipt = {
-        id: 1,
-        orderNumber: orderNumber.toUpperCase(),
-        date: "2024-01-15",
-        time: "02:30 PM",
-        total: 35.75,
-        paymentMethod: "Cash",
-        itemCount: 4
-      };
-      
-      setReceipts([mockReceipt]);
+      if (response.success && response.receipts.length > 0) {
+        setReceipts(response.receipts);
+      } else {
+        toast({
+          title: "Not Found",
+          description: "Receipt not found",
+          variant: "destructive",
+        });
+        setReceipts([]);
+      }
     } catch (error) {
       console.error("Error searching receipt:", error);
       toast({
@@ -134,18 +93,112 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
   };
 
   const handleReprint = (receipt: Receipt) => {
-    toast({
-      title: "Reprinting Receipt",
-      description: `Reprinting order ${receipt.orderNumber}...`,
-    });
+    const printContent = generateReceiptContent(receipt);
     
-    // TODO: Implement actual reprint functionality
-    setTimeout(() => {
-      toast({
-        title: "Receipt Reprinted",
-        description: `Order ${receipt.orderNumber} has been reprinted successfully`,
-      });
-    }, 1500);
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Receipt - ${receipt.orderNumber}</title>
+            <style>
+              body { 
+                margin: 0; 
+                padding: 20px; 
+                font-family: monospace;
+                font-size: 12px;
+                line-height: 1.4;
+              }
+              @media print {
+                @page {
+                  size: 80mm auto;
+                  margin: 3mm;
+                }
+                body { padding: 0; }
+              }
+              .header { text-align: center; margin-bottom: 20px; }
+              .section { margin-bottom: 15px; }
+              .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
+              .separator { border-top: 1px dashed #000; margin: 10px 0; }
+              .total { font-weight: bold; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            ${printContent}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+        toast({
+          title: "Receipt Reprinted",
+          description: `Order ${receipt.orderNumber} has been reprinted`,
+        });
+      }, 500);
+    }
+  };
+
+  const generateReceiptContent = (receipt: Receipt) => {
+    return `
+      <div class="header">
+        <h2>SALES RECEIPT</h2>
+        <div>Order: ${receipt.orderNumber}</div>
+      </div>
+      
+      <div class="section">
+        <div class="row">
+          <span>Date:</span>
+          <span>${new Date(receipt.date).toLocaleDateString()}</span>
+        </div>
+        <div class="row">
+          <span>Time:</span>
+          <span>${receipt.time}</span>
+        </div>
+        <div class="row">
+          <span>Payment:</span>
+          <span>${receipt.paymentMethod}</span>
+        </div>
+      </div>
+      
+      <div class="separator"></div>
+      
+      <div class="section">
+        ${receipt.items.map(item => `
+          <div class="row">
+            <span>${item.productName}</span>
+          </div>
+          <div class="row" style="padding-left: 10px; font-size: 11px;">
+            <span>${item.quantity} x $${item.unitPrice.toFixed(2)}</span>
+            <span>$${item.totalPrice.toFixed(2)}</span>
+          </div>
+        `).join('')}
+      </div>
+      
+      <div class="separator"></div>
+      
+      <div class="section">
+        <div class="row total">
+          <span>Total:</span>
+          <span>$${receipt.total.toFixed(2)}</span>
+        </div>
+        <div class="row">
+          <span>Items:</span>
+          <span>${receipt.itemCount}</span>
+        </div>
+      </div>
+      
+      <div class="separator"></div>
+      
+      <div style="text-align: center; margin-top: 20px;">
+        <div>*** Thank You ***</div>
+        <div style="font-size: 10px; margin-top: 10px;">
+          Reprinted: ${new Date().toLocaleString()}
+        </div>
+      </div>
+    `;
   };
 
   const handleSearch = () => {

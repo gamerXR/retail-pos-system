@@ -4,11 +4,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, Printer } from "lucide-react";
-import { useBackend } from "../lib/auth";
+import { useBackend, useAuth } from "../lib/auth";
 
 interface ShiftReportModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onLogout: () => void;
 }
 
 interface ShiftData {
@@ -23,13 +24,14 @@ interface ShiftData {
   user: string;
 }
 
-export default function ShiftReportModal({ isOpen, onClose }: ShiftReportModalProps) {
+export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftReportModalProps) {
   const [shiftData, setShiftData] = useState<ShiftData | null>(null);
   const [printReceipt, setPrintReceipt] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [isClosingShift, setIsClosingShift] = useState(false);
   const { toast } = useToast();
   const backend = useBackend();
+  const { logout } = useAuth();
 
   useEffect(() => {
     if (isOpen) {
@@ -213,17 +215,24 @@ export default function ShiftReportModal({ isOpen, onClose }: ShiftReportModalPr
       // Print receipt if enabled
       if (printReceipt) {
         handlePrint();
+        // Wait for print to complete
+        await new Promise(resolve => setTimeout(resolve, 1500));
       }
-      
-      // Simulate day closing process
-      await new Promise(resolve => setTimeout(resolve, 2000));
       
       toast({
         title: "Day Closing Complete",
-        description: "Shift has been closed successfully",
+        description: "Logging out...",
       });
       
+      // Wait a moment before logout
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Close modal
       onClose();
+      
+      // Logout and return to login page
+      logout();
+      onLogout();
     } catch (error) {
       console.error("Error closing shift:", error);
       toast({
@@ -231,7 +240,6 @@ export default function ShiftReportModal({ isOpen, onClose }: ShiftReportModalPr
         description: "Failed to close shift",
         variant: "destructive",
       });
-    } finally {
       setIsClosingShift(false);
     }
   };
