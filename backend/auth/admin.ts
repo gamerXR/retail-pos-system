@@ -59,7 +59,7 @@ export interface ListTrialSessionsResponse {
 
 // Admin login endpoint.
 export const adminLogin = api<AdminLoginRequest, AdminLoginResponse>(
-  { expose: true, method: "POST", path: "/auth/admin/login" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/login" },
   async (req) => {
     if (req.username === "6737165617" && req.password === "12345678") {
       return {
@@ -75,7 +75,7 @@ export const adminLogin = api<AdminLoginRequest, AdminLoginResponse>(
 
 // Creates a new license for a client.
 export const createLicense = api<CreateLicenseRequest, CreateLicenseResponse>(
-  { expose: true, method: "POST", path: "/auth/admin/licenses" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/licenses" },
   async (req) => {
     // Check if phone ID already exists
     const existingLicense = await authDB.queryRow<{ id: number }>`
@@ -145,7 +145,7 @@ export const createLicense = api<CreateLicenseRequest, CreateLicenseResponse>(
 
 // Gets all licenses.
 export const listLicenses = api<void, ListLicensesResponse>(
-  { expose: true, method: "GET", path: "/auth/admin/licenses" },
+  { auth: false, expose: true, method: "GET", path: "/auth/admin/licenses" },
   async () => {
     const licenses = await authDB.queryAll<{
       id: number;
@@ -182,7 +182,7 @@ export const listLicenses = api<void, ListLicensesResponse>(
 
 // Gets all trial sessions.
 export const listTrialSessions = api<void, ListTrialSessionsResponse>(
-  { expose: true, method: "GET", path: "/auth/admin/trials" },
+  { auth: false, expose: true, method: "GET", path: "/auth/admin/trials" },
   async () => {
     const sessions = await authDB.queryAll<{
       id: number;
@@ -220,7 +220,7 @@ export const listTrialSessions = api<void, ListTrialSessionsResponse>(
 
 // Deactivates a license.
 export const deactivateLicense = api<{ id: number }, { success: boolean }>(
-  { expose: true, method: "POST", path: "/auth/admin/licenses/:id/deactivate" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/licenses/:id/deactivate" },
   async (req) => {
     await authDB.exec`
       UPDATE licenses 
@@ -234,7 +234,7 @@ export const deactivateLicense = api<{ id: number }, { success: boolean }>(
 
 // Activates a license.
 export const activateLicense = api<{ id: number }, { success: boolean }>(
-  { expose: true, method: "POST", path: "/auth/admin/licenses/:id/activate" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/licenses/:id/activate" },
   async (req) => {
     await authDB.exec`
       UPDATE licenses 
@@ -248,7 +248,7 @@ export const activateLicense = api<{ id: number }, { success: boolean }>(
 
 // Terminates a trial session.
 export const terminateTrialSession = api<{ id: number }, { success: boolean }>(
-  { expose: true, method: "POST", path: "/auth/admin/trials/:id/terminate" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/trials/:id/terminate" },
   async (req) => {
     await authDB.exec`
       UPDATE trial_sessions 

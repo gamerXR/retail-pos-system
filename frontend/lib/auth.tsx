@@ -48,13 +48,5 @@ export function useAuth() {
 }
 
 export function useBackend() {
-  const { sessionToken } = useAuth();
-  
-  if (!sessionToken) {
-    return backend;
-  }
-  
-  return backend.with({
-    auth: { session: { value: sessionToken } }
-  });
+  return backend;
 }

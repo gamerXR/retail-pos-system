@@ -15,7 +15,7 @@ export interface LoginResponse {
 }
 
 export const login = api<LoginRequest, LoginResponse>(
-  { expose: true, method: "POST", path: "/auth/login" },
+  { auth: false, expose: true, method: "POST", path: "/auth/login" },
   async (req) => {
     const client = await authDB.queryRow<{
       id: number;

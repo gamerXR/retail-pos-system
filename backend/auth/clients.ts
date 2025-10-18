@@ -47,7 +47,7 @@ export interface ClientStatsResponse {
 }
 
 export const createClient = api<CreateClientRequest, CreateClientResponse>(
-  { expose: true, method: "POST", path: "/auth/admin/clients" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/clients" },
   async (req) => {
     if (!req.password) {
       throw APIError.invalidArgument("Password is required");
@@ -95,7 +95,7 @@ export const createClient = api<CreateClientRequest, CreateClientResponse>(
 );
 
 export const listClients = api<void, ListClientsResponse>(
-  { expose: true, method: "GET", path: "/auth/admin/clients" },
+  { auth: false, expose: true, method: "GET", path: "/auth/admin/clients" },
   async () => {
     const clients = await authDB.queryAll<{
       id: number;
@@ -129,7 +129,7 @@ export const listClients = api<void, ListClientsResponse>(
 );
 
 export const updateClientStatus = api<UpdateClientStatusRequest, { success: boolean }>(
-  { expose: true, method: "POST", path: "/auth/admin/clients/:id/status" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/clients/:id/status" },
   async (req) => {
     const validStatuses = ['active', 'onhold', 'suspended', 'inactive'];
     if (!validStatuses.includes(req.status)) {
@@ -147,7 +147,7 @@ export const updateClientStatus = api<UpdateClientStatusRequest, { success: bool
 );
 
 export const getClientStats = api<void, ClientStatsResponse>(
-  { expose: true, method: "GET", path: "/auth/admin/clients/stats" },
+  { auth: false, expose: true, method: "GET", path: "/auth/admin/clients/stats" },
   async () => {
     const totalResult = await authDB.queryRow<{ count: number }>`
       SELECT COUNT(*) as count FROM clients
@@ -197,7 +197,7 @@ export interface UpdateClientRequest {
 }
 
 export const updateClient = api<UpdateClientRequest, { success: boolean; client: Client }>(
-  { expose: true, method: "PUT", path: "/auth/admin/clients/:id" },
+  { auth: false, expose: true, method: "PUT", path: "/auth/admin/clients/:id" },
   async (req) => {
     const client = await authDB.queryRow<{
       id: number;
@@ -245,7 +245,7 @@ export interface DeleteClientRequest {
 }
 
 export const deleteClient = api<DeleteClientRequest, { success: boolean }>(
-  { expose: true, method: "DELETE", path: "/auth/admin/clients/:id" },
+  { auth: false, expose: true, method: "DELETE", path: "/auth/admin/clients/:id" },
   async (req) => {
     await authDB.exec`
       DELETE FROM clients WHERE id = ${req.id}
@@ -260,7 +260,7 @@ export interface ResetPasswordRequest {
 }
 
 export const resetClientPassword = api<ResetPasswordRequest, { success: boolean }>(
-  { expose: true, method: "POST", path: "/auth/admin/clients/:id/reset-password" },
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/clients/:id/reset-password" },
   async (req) => {
     const defaultPassword = "123456";
     
