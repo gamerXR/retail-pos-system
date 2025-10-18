@@ -52,11 +52,19 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
   const [clients, setClients] = useState<Client[]>([]);
   const [stats, setStats] = useState<ClientStats | null>(null);
   const [showCreateClient, setShowCreateClient] = useState(false);
+  const [showEditClient, setShowEditClient] = useState(false);
+  const [editingClient, setEditingClient] = useState<Client | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [newClient, setNewClient] = useState({
     phoneNumber: "",
     clientName: "",
     password: "",
+    email: "",
+    companyName: ""
+  });
+  const [editClient, setEditClient] = useState({
+    phoneNumber: "",
+    clientName: "",
     email: "",
     companyName: ""
   });
@@ -147,6 +155,98 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
       toast({
         title: "Error",
         description: "Failed to update status",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleEditClient = (client: Client) => {
+    setEditingClient(client);
+    setEditClient({
+      phoneNumber: client.phoneNumber,
+      clientName: client.clientName,
+      email: client.email || "",
+      companyName: client.companyName || ""
+    });
+    setShowEditClient(true);
+  };
+
+  const handleUpdateClient = async () => {
+    if (!editingClient) return;
+
+    if (!editClient.phoneNumber || !editClient.clientName) {
+      toast({
+        title: "Error",
+        description: "Phone Number and Client Name are required",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      await backend.auth.updateClient({
+        id: editingClient.id,
+        phoneNumber: editClient.phoneNumber,
+        clientName: editClient.clientName,
+        email: editClient.email || undefined,
+        companyName: editClient.companyName || undefined
+      });
+
+      toast({
+        title: "Client Updated",
+        description: "Client details updated successfully",
+      });
+      setShowEditClient(false);
+      setEditingClient(null);
+      loadData();
+    } catch (error: any) {
+      console.error("Error updating client:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update client",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteClient = async (clientId: number) => {
+    if (!confirm("Are you sure you want to delete this client? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      await backend.auth.deleteClient({ id: clientId });
+      toast({
+        title: "Client Deleted",
+        description: "Client deleted successfully",
+      });
+      loadData();
+    } catch (error: any) {
+      console.error("Error deleting client:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete client",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleResetPassword = async (clientId: number) => {
+    if (!confirm("Are you sure you want to reset this client's password to 123456?")) {
+      return;
+    }
+
+    try {
+      await backend.auth.resetClientPassword({ id: clientId });
+      toast({
+        title: "Password Reset",
+        description: "Client password has been reset to 123456",
+      });
+    } catch (error: any) {
+      console.error("Error resetting password:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset password",
         variant: "destructive",
       });
     }
@@ -306,7 +406,7 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                             </div>
                           </div>
 
-                          <div className="flex gap-2 ml-4">
+                          <div className="flex flex-col gap-2 ml-4">
                             <Select
                               value={client.status}
                               onValueChange={(value) => handleUpdateStatus(client.id, value)}
@@ -321,6 +421,35 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                                 <SelectItem value="inactive">Inactive</SelectItem>
                               </SelectContent>
                             </Select>
+                            <div className="flex gap-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1"
+                                onClick={() => handleEditClient(client)}
+                                title="Edit Client"
+                              >
+                                <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 text-orange-600 hover:text-orange-700"
+                                onClick={() => handleResetPassword(client.id)}
+                                title="Reset Password to 123456"
+                              >
+                                <KeyRound className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 text-red-600 hover:text-red-700"
+                                onClick={() => handleDeleteClient(client.id)}
+                                title="Delete Client"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -496,6 +625,78 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                   className="flex-1 bg-green-500 hover:bg-green-600 text-white"
                 >
                   Create Client
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={showEditClient} onOpenChange={setShowEditClient}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Edit Client</DialogTitle>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Client Name *
+                </label>
+                <Input
+                  placeholder="Enter client name"
+                  value={editClient.clientName}
+                  onChange={(e) => setEditClient(prev => ({ ...prev, clientName: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Phone Number *
+                </label>
+                <Input
+                  type="tel"
+                  placeholder="Enter phone number"
+                  value={editClient.phoneNumber}
+                  onChange={(e) => setEditClient(prev => ({ ...prev, phoneNumber: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Email
+                </label>
+                <Input
+                  type="email"
+                  placeholder="Enter email address"
+                  value={editClient.email}
+                  onChange={(e) => setEditClient(prev => ({ ...prev, email: e.target.value }))}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Company Name
+                </label>
+                <Input
+                  placeholder="Enter company name"
+                  value={editClient.companyName}
+                  onChange={(e) => setEditClient(prev => ({ ...prev, companyName: e.target.value }))}
+                />
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowEditClient(false)}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleUpdateClient}
+                  className="flex-1 bg-blue-500 hover:bg-blue-600 text-white"
+                >
+                  Update Client
                 </Button>
               </div>
             </div>

@@ -188,4 +188,89 @@ export const getClientStats = api<void, ClientStatsResponse>(
   }
 );
 
+export interface UpdateClientRequest {
+  id: number;
+  clientName?: string;
+  phoneNumber?: string;
+  email?: string;
+  companyName?: string;
+}
+
+export const updateClient = api<UpdateClientRequest, { success: boolean; client: Client }>(
+  { expose: true, method: "PUT", path: "/auth/admin/clients/:id" },
+  async (req) => {
+    const client = await authDB.queryRow<{
+      id: number;
+      phone_number: string;
+      client_name: string;
+      email: string | null;
+      company_name: string | null;
+      status: string;
+      created_at: Date;
+      updated_at: Date;
+    }>`
+      UPDATE clients 
+      SET 
+        client_name = COALESCE(${req.clientName}, client_name),
+        phone_number = COALESCE(${req.phoneNumber}, phone_number),
+        email = COALESCE(${req.email}, email),
+        company_name = COALESCE(${req.companyName}, company_name),
+        updated_at = NOW()
+      WHERE id = ${req.id}
+      RETURNING id, phone_number, client_name, email, company_name, status, created_at, updated_at
+    `;
+
+    if (!client) {
+      throw APIError.notFound("Client not found");
+    }
+
+    return {
+      success: true,
+      client: {
+        id: client.id,
+        phoneNumber: client.phone_number,
+        clientName: client.client_name,
+        email: client.email || undefined,
+        companyName: client.company_name || undefined,
+        status: client.status,
+        createdAt: client.created_at.toISOString(),
+        updatedAt: client.updated_at.toISOString()
+      }
+    };
+  }
+);
+
+export interface DeleteClientRequest {
+  id: number;
+}
+
+export const deleteClient = api<DeleteClientRequest, { success: boolean }>(
+  { expose: true, method: "DELETE", path: "/auth/admin/clients/:id" },
+  async (req) => {
+    await authDB.exec`
+      DELETE FROM clients WHERE id = ${req.id}
+    `;
+
+    return { success: true };
+  }
+);
+
+export interface ResetPasswordRequest {
+  id: number;
+}
+
+export const resetClientPassword = api<ResetPasswordRequest, { success: boolean }>(
+  { expose: true, method: "POST", path: "/auth/admin/clients/:id/reset-password" },
+  async (req) => {
+    const defaultPassword = "123456";
+    
+    await authDB.exec`
+      UPDATE clients 
+      SET password_hash = ${defaultPassword}, updated_at = NOW()
+      WHERE id = ${req.id}
+    `;
+
+    return { success: true };
+  }
+);
 
