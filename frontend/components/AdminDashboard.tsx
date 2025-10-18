@@ -16,7 +16,10 @@ import {
   UserCheck,
   UserX,
   Clock,
-  Activity
+  Activity,
+  Edit,
+  Trash2,
+  KeyRound
 } from "lucide-react";
 import backend from "~backend/client";
 
