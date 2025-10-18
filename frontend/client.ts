@@ -290,6 +290,7 @@ import {
     toggleOffShelf as api_pos_products_toggleOffShelf,
     updateProduct as api_pos_products_updateProduct
 } from "~backend/pos/products";
+import { searchReceipts as api_pos_receipts_searchReceipts } from "~backend/pos/receipts";
 import {
     createSale as api_pos_sales_createSale,
     exportSalesViaEmail as api_pos_sales_exportSalesViaEmail,
@@ -317,6 +318,7 @@ export namespace pos {
             this.getProducts = this.getProducts.bind(this)
             this.getProductsByCategory = this.getProductsByCategory.bind(this)
             this.getSalesSummary = this.getSalesSummary.bind(this)
+            this.searchReceipts = this.searchReceipts.bind(this)
             this.setOpeningBalance = this.setOpeningBalance.bind(this)
             this.stickProduct = this.stickProduct.bind(this)
             this.toggleOffShelf = this.toggleOffShelf.bind(this)
@@ -443,6 +445,18 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/sales/summary`, {query, method: "GET", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_sales_getSalesSummary>
+        }
+
+        public async searchReceipts(params: RequestType<typeof api_pos_receipts_searchReceipts>): Promise<ResponseType<typeof api_pos_receipts_searchReceipts>> {
+            // Convert our params into the objects we need for the request
+            const query = makeRecord<string, string | string[]>({
+                date:        params.date,
+                orderNumber: params.orderNumber,
+            })
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/receipts/search`, {query, method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_receipts_searchReceipts>
         }
 
         /**
