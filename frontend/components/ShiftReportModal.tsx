@@ -20,7 +20,7 @@ interface ShiftData {
   dayStart: string;
   shiftStart: string;
   currentTime: string;
-  tills: number;
+  openingBalance: number;
   user: string;
 }
 
@@ -69,7 +69,7 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
           dayStart: `${today.split('-').reverse().join('-')} ${shiftStartTime}`,
           shiftStart: `${today.split('-').reverse().join('-')} ${shiftStartTime}`,
           currentTime: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString('en-GB', { hour12: false }),
-          tills: 0.00,
+          openingBalance: 0.00,
           user: "Admin"
         };
         
@@ -165,8 +165,8 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
           <span>${shiftData.user}</span>
         </div>
         <div class="row">
-          <span>Tills:</span>
-          <span>$${shiftData.tills.toFixed(2)}</span>
+          <span>Opening Balance:</span>
+          <span>$${shiftData.openingBalance.toFixed(2)}</span>
         </div>
       </div>
       
@@ -346,8 +346,8 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
                     <span className="font-medium">{shiftData.currentTime}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Tills:</span>
-                    <span className="font-medium">${shiftData.tills.toFixed(2)}</span>
+                    <span className="text-gray-600">Opening Balance:</span>
+                    <span className="font-medium">${shiftData.openingBalance.toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">User:</span>
