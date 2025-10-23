@@ -3,6 +3,7 @@ import { getAuthData } from "~encore/auth";
 import type { AuthData } from "../auth/auth";
 import { secret } from "encore.dev/config";
 import { posDB } from "./db";
+import nodemailer from "nodemailer";
 
 // Email service configuration using SMTP
 const smtpHost = secret("SMTPHost");
@@ -396,8 +397,6 @@ async function sendEmailWithAttachment(
   attachmentFilename: string
 ): Promise<boolean> {
   try {
-    const nodemailer = require("nodemailer");
-    
     const host = smtpHost();
     const port = parseInt(smtpPort());
     const user = smtpUser();
