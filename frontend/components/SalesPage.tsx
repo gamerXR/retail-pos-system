@@ -593,10 +593,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       {/* Header */}
       <div className="bg-white shadow-sm p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-blue-500 rounded-lg flex items-center justify-center">
-            <span className="text-white text-xl">😊</span>
-          </div>
-          <h1 className="text-2xl font-semibold text-gray-800">Halo</h1>
+          <img src="/nexpos-logo.png" alt="NexPos Logo" className="h-16" />
         </div>
         
         <div className="flex items-center gap-4">
