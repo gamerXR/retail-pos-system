@@ -106,7 +106,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="bg-white shadow-sm p-4 flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <img src="/nexpos-logo.png" alt="NexPos Logo" className="h-10" />
+          <img src="/nexpos-logo.png" alt="NexPos Logo" className="h-16" />
         </div>
         <div className="flex items-center gap-3">
           <Button
