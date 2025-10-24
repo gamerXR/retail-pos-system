@@ -49,6 +49,9 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
         dateTo: today
       });
 
+      // Get opening balance
+      const openingBalanceResponse = await backend.pos.getOpeningBalance();
+
       if (response.success) {
         const data = response.data;
         
@@ -69,7 +72,7 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
           dayStart: `${today.split('-').reverse().join('-')} ${shiftStartTime}`,
           shiftStart: `${today.split('-').reverse().join('-')} ${shiftStartTime}`,
           currentTime: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString('en-GB', { hour12: false }),
-          openingBalance: 0.00,
+          openingBalance: openingBalanceResponse.amount,
           user: "Admin"
         };
         
