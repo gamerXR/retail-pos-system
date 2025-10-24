@@ -17,8 +17,10 @@ interface ReceiptSettings {
   size: "58mm" | "80mm";
   printCopies: number;
   topLogo: string;
-  title: string;
-  header: string;
+  topLogoFile?: string;
+  companyName: string;
+  address: string;
+  telephone: string;
   headerSize: "Small" | "Medium" | "Large";
   fontSize: "Small" | "Medium" | "Large";
   displayUnitPrice: boolean;
@@ -30,8 +32,9 @@ export default function CashierReceiptModal({ isOpen, onClose }: CashierReceiptM
     size: "80mm",
     printCopies: 1,
     topLogo: "None",
-    title: "shop",
-    header: "POSX SOLUTION",
+    companyName: "POSX SOLUTION",
+    address: "Unit 4, First Floor, Jin Pg Babu Raja, Kg Kiarong, Brunei Darussalam",
+    telephone: "+673 818 4877",
     headerSize: "Large",
     fontSize: "Small",
     displayUnitPrice: true,
@@ -128,23 +131,34 @@ export default function CashierReceiptModal({ isOpen, onClose }: CashierReceiptM
       <div style="font-family: monospace; font-size: ${settings.fontSize === 'Small' ? '12px' : settings.fontSize === 'Medium' ? '14px' : '16px'}; line-height: 1.2; width: ${settings.size === '58mm' ? '56mm' : '76mm'}; margin: 0 auto; word-break: break-word;">
     `;
 
-    // Header
-    if (settings.header) {
+    // Top Logo
+    if (settings.topLogoFile) {
+      content += `
+        <div style="text-align: center; margin-bottom: 10px;">
+          <img src="${settings.topLogoFile}" alt="Logo" style="max-width: 80%; max-height: 60px; margin: 0 auto; display: block;" />
+        </div>
+      `;
+    }
+
+    // Company Name
+    if (settings.companyName) {
       content += `
         <div style="text-align: center; margin-bottom: 10px; font-size: ${settings.headerSize === 'Small' ? '14px' : settings.headerSize === 'Medium' ? '18px' : '22px'}; font-weight: bold;">
-          ${settings.header}
+          ${settings.companyName}
         </div>
       `;
     }
 
     // Store info
-    content += `
-      <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
-        Unit 4, First Floor, Jin Pg Babu Raja, Kg<br>
-        Kiarong, Brunei Darussalam<br>
-        Tel +673 818 4877
-      </div>
-    `;
+    if (settings.address || settings.telephone) {
+      content += `
+        <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
+          ${settings.address ? settings.address.replace(/\n/g, '<br>') : ''}
+          ${settings.address && settings.telephone ? '<br>' : ''}
+          ${settings.telephone ? 'Tel ' + settings.telephone : ''}
+        </div>
+      `;
+    }
 
     // Separator
     content += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
@@ -281,10 +295,9 @@ export default function CashierReceiptModal({ isOpen, onClose }: CashierReceiptM
     
     return `Number ${receiptNumber}
 ${'-'.repeat(42)}
-${settings.header}
-Unit 4, First Floor, Jin Pg Babu Raja, Kg
-Kiarong, Brunei Darussalam
-Tel +673 818 4877
+${settings.companyName}
+${settings.address}
+Tel ${settings.telephone}
 ${'-'.repeat(42)}
 ${currentDate} ${currentTime}
 ${'-'.repeat(42)}
@@ -359,37 +372,75 @@ ${settings.footer}`;
               </div>
 
               {/* Top Logo */}
-              <div className="flex items-center justify-between">
+              <div className="space-y-2">
                 <label className="text-sm font-medium text-gray-700">Top Logo</label>
-                <Select value={settings.topLogo} onValueChange={(value) => updateSetting("topLogo", value)}>
-                  <SelectTrigger className="w-32">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="None">None</SelectItem>
-                    <SelectItem value="Logo1">Logo 1</SelectItem>
-                    <SelectItem value="Logo2">Logo 2</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          updateSetting("topLogoFile", reader.result as string);
+                          updateSetting("topLogo", "Custom");
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  {settings.topLogoFile && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        updateSetting("topLogoFile", undefined);
+                        updateSetting("topLogo", "None");
+                      }}
+                    >
+                      Clear
+                    </Button>
+                  )}
+                </div>
+                {settings.topLogoFile && (
+                  <div className="flex justify-center">
+                    <img src={settings.topLogoFile} alt="Logo preview" className="max-h-20 object-contain" />
+                  </div>
+                )}
               </div>
 
-              {/* Title */}
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Title</label>
+              {/* Company Name (Header) */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Company Name</label>
                 <Input
-                  value={settings.title}
-                  onChange={(e) => updateSetting("title", e.target.value)}
-                  className="w-32"
+                  value={settings.companyName}
+                  onChange={(e) => updateSetting("companyName", e.target.value)}
+                  className="w-full"
+                  placeholder="Enter company name"
                 />
               </div>
 
-              {/* Header */}
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Header</label>
+              {/* Address */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Address</label>
+                <Textarea
+                  value={settings.address}
+                  onChange={(e) => updateSetting("address", e.target.value)}
+                  className="w-full h-20"
+                  placeholder="Enter company address"
+                />
+              </div>
+
+              {/* Telephone */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Telephone Number</label>
                 <Input
-                  value={settings.header}
-                  onChange={(e) => updateSetting("header", e.target.value)}
-                  className="w-48"
+                  value={settings.telephone}
+                  onChange={(e) => updateSetting("telephone", e.target.value)}
+                  className="w-full"
+                  placeholder="Enter telephone number"
                 />
               </div>
 
