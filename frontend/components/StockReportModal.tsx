@@ -14,6 +14,11 @@ interface StockReportModalProps {
   onClose: () => void;
 }
 
+interface Employee {
+  phoneNumber: string;
+  name: string;
+}
+
 export default function StockReportModal({ isOpen, onClose }: StockReportModalProps) {
   const [dateFilter, setDateFilter] = useState<"today" | "shift">("today");
   const [fromDate, setFromDate] = useState("");
@@ -25,6 +30,7 @@ export default function StockReportModal({ isOpen, onClose }: StockReportModalPr
   const [filteredMovements, setFilteredMovements] = useState<StockMovement[]>([]);
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [isLoading, setIsLoading] = useState(false);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const { toast } = useToast();
   const backend = useBackend();
 
@@ -34,6 +40,7 @@ export default function StockReportModal({ isOpen, onClose }: StockReportModalPr
       const todayStr = today.toISOString().split('T')[0];
       setFromDate(todayStr + ' 00:00');
       setToDate(todayStr + ' 18:44');
+      loadEmployees();
       loadStockHistory();
     }
   }, [isOpen]);
@@ -41,6 +48,15 @@ export default function StockReportModal({ isOpen, onClose }: StockReportModalPr
   useEffect(() => {
     filterMovements();
   }, [movements, searchQuery]);
+
+  const loadEmployees = async () => {
+    try {
+      const response = await backend.auth.getEmployees();
+      setEmployees(response.employees);
+    } catch (error) {
+      console.error("Error loading employees:", error);
+    }
+  };
 
   const loadStockHistory = async () => {
     setIsLoading(true);
@@ -208,7 +224,11 @@ export default function StockReportModal({ isOpen, onClose }: StockReportModalPr
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
               >
                 <option value="All">All</option>
-                <option value="6737165617">6737165617</option>
+                {employees.map((emp) => (
+                  <option key={emp.phoneNumber} value={emp.phoneNumber}>
+                    {emp.name}
+                  </option>
+                ))}
               </select>
             </div>
 
