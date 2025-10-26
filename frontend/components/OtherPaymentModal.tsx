@@ -69,7 +69,9 @@ export default function OtherPaymentModal({
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
-                      <span className="text-orange-600 text-lg">💳</span>
+                      <span className="text-orange-600 text-lg">
+                        {option.id === "qr-code" ? "📱" : "💳"}
+                      </span>
                     </div>
                     <span className="font-medium text-gray-800">{option.name}</span>
                   </div>
