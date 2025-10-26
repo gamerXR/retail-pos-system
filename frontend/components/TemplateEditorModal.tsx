@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronLeft, Type, Image as ImageIcon, Minus, Square, Grid, Undo, Redo, MoveUp, MoveDown, ZoomIn, ZoomOut, RotateCcw, Edit3, Trash2 } from "lucide-react";
+import { ChevronLeft, Type, Image as ImageIcon, Minus, Square, Grid, MoveUp, MoveDown, ZoomIn, ZoomOut, RotateCcw, Edit3, Trash2 } from "lucide-react";
 
 interface Template {
   id: string;
@@ -43,7 +43,8 @@ export default function TemplateEditorModal({
   const [labelGap, setLabelGap] = useState("Gap Paper,2mm");
   const [elements, setElements] = useState<TemplateElement[]>([]);
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
-  const [showAttributeSelection, setShowAttributeSelection] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
     if (template) {
@@ -56,8 +57,9 @@ export default function TemplateEditorModal({
       setPaperWidth(40);
       setPaperHeight(30);
       setElements([]);
+      setSelectedElement(null);
     }
-  }, [template]);
+  }, [template, isOpen]);
 
   const attributes = [
     { id: 'product-name', label: 'Product name' },
@@ -78,17 +80,13 @@ export default function TemplateEditorModal({
     const newElement: TemplateElement = {
       id: `${type}-${Date.now()}`,
       type,
-      x: 10,
-      y: 10,
-      width: type === 'text' ? 100 : type === 'line' ? 150 : 80,
-      height: type === 'text' ? 20 : type === 'line' ? 2 : 60,
+      x: 5,
+      y: 5,
+      width: type === 'text' ? 50 : type === 'line' ? 30 : type === 'barcode' ? 30 : 20,
+      height: type === 'text' ? 8 : type === 'line' ? 1 : type === 'barcode' ? 10 : 15,
       content: type === 'text' ? 'Text' : '',
       fontSize: 12,
     };
-
-    if (type === 'attribute') {
-      setShowAttributeSelection(true);
-    }
 
     setElements([...elements, newElement]);
     setSelectedElement(newElement.id);
@@ -101,18 +99,17 @@ export default function TemplateEditorModal({
     const newElement: TemplateElement = {
       id: `attribute-${Date.now()}`,
       type: 'attribute',
-      x: 10,
-      y: 10,
-      width: 100,
-      height: 20,
+      x: 5,
+      y: 5,
+      width: 50,
+      height: 8,
       content: attribute.label,
-      fontSize: 12,
+      fontSize: 11,
       attribute: attributeId,
     };
 
     setElements([...elements, newElement]);
     setSelectedElement(newElement.id);
-    setShowAttributeSelection(false);
   };
 
   const deleteSelectedElement = () => {
@@ -173,6 +170,49 @@ export default function TemplateEditorModal({
     }
   };
 
+  const handleMouseDown = (elementId: string, e: React.MouseEvent) => {
+    e.preventDefault();
+    setSelectedElement(elementId);
+    setIsDragging(true);
+    
+    const element = elements.find(el => el.id === elementId);
+    if (element) {
+      const rect = (e.target as HTMLElement).getBoundingClientRect();
+      setDragOffset({
+        x: e.clientX - rect.left,
+        y: e.clientY - rect.top,
+      });
+    }
+  };
+
+  const handleMouseMove = (e: React.MouseEvent) => {
+    if (!isDragging || !selectedElement) return;
+
+    const canvas = document.getElementById('label-canvas');
+    if (!canvas) return;
+
+    const rect = canvas.getBoundingClientRect();
+    const scale = 5;
+    
+    const newX = ((e.clientX - rect.left - dragOffset.x) / scale);
+    const newY = ((e.clientY - rect.top - dragOffset.y) / scale);
+
+    setElements(elements.map(el => {
+      if (el.id === selectedElement) {
+        return {
+          ...el,
+          x: Math.max(0, Math.min(paperWidth - (el.width || 0), newX)),
+          y: Math.max(0, Math.min(paperHeight - (el.height || 0), newY)),
+        };
+      }
+      return el;
+    }));
+  };
+
+  const handleMouseUp = () => {
+    setIsDragging(false);
+  };
+
   const scale = 5;
 
   return (
@@ -206,33 +246,37 @@ export default function TemplateEditorModal({
 
         <div className="flex gap-4 h-[75vh]">
           <div className="flex-1 bg-gray-50 rounded-lg p-4 overflow-auto relative">
-            <div className="absolute top-0 left-0 right-0 h-8 bg-white border-b flex items-center px-4 text-xs text-gray-600">
+            <div className="absolute top-0 left-0 right-0 h-8 bg-white border-b flex items-center px-4 text-xs text-gray-600 z-10">
               {Array.from({ length: Math.ceil(paperWidth / 10) + 1 }, (_, i) => (
-                <div key={i} className="absolute" style={{ left: `${i * 10 * scale}px` }}>
+                <div key={i} className="absolute" style={{ left: `${i * 10 * scale + 32}px` }}>
                   {i * 10}
                 </div>
               ))}
             </div>
 
-            <div className="absolute top-8 left-0 bottom-0 w-8 bg-white border-r flex flex-col text-xs text-gray-600">
+            <div className="absolute top-8 left-0 bottom-0 w-8 bg-white border-r flex flex-col text-xs text-gray-600 z-10">
               {Array.from({ length: Math.ceil(paperHeight / 10) + 1 }, (_, i) => (
-                <div key={i} className="absolute" style={{ top: `${i * 10 * scale}px` }}>
+                <div key={i} className="absolute" style={{ top: `${i * 10 * scale + 32}px` }}>
                   {i * 10}
                 </div>
               ))}
             </div>
 
             <div 
+              id="label-canvas"
               className="relative bg-white border-2 border-gray-300 ml-8 mt-8"
               style={{ 
                 width: `${paperWidth * scale}mm`, 
                 height: `${paperHeight * scale}mm`,
               }}
+              onMouseMove={handleMouseMove}
+              onMouseUp={handleMouseUp}
+              onMouseLeave={handleMouseUp}
             >
               {elements.map(element => (
                 <div
                   key={element.id}
-                  className={`absolute cursor-move border ${selectedElement === element.id ? 'border-blue-500 border-2' : 'border-gray-300'}`}
+                  className={`absolute cursor-move border ${selectedElement === element.id ? 'border-blue-500 border-2 bg-blue-50' : 'border-gray-300'}`}
                   style={{
                     left: `${element.x * scale}mm`,
                     top: `${element.y * scale}mm`,
@@ -240,13 +284,13 @@ export default function TemplateEditorModal({
                     height: element.height ? `${element.height * scale}mm` : 'auto',
                     fontSize: element.fontSize ? `${element.fontSize}px` : '12px',
                   }}
-                  onClick={() => setSelectedElement(element.id)}
+                  onMouseDown={(e) => handleMouseDown(element.id, e)}
                 >
                   {element.type === 'text' && (
-                    <div className="p-1">{element.content}</div>
+                    <div className="p-1 select-none">{element.content}</div>
                   )}
                   {element.type === 'attribute' && (
-                    <div className="p-1 bg-blue-50">{element.content}</div>
+                    <div className="p-1 bg-blue-100 select-none font-semibold">{element.content}</div>
                   )}
                   {element.type === 'line' && (
                     <div className="w-full h-full bg-black"></div>
@@ -255,9 +299,12 @@ export default function TemplateEditorModal({
                     <div className="w-full h-full border-2 border-black"></div>
                   )}
                   {element.type === 'barcode' && (
-                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-white text-xs">
+                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-white text-xs select-none">
                       ||||||||||
                     </div>
+                  )}
+                  {element.type === 'background' && (
+                    <div className="w-full h-full bg-gray-200"></div>
                   )}
                 </div>
               ))}
@@ -284,12 +331,6 @@ export default function TemplateEditorModal({
                 <ZoomOut className="w-4 h-4" />
               </Button>
               <div className="w-px bg-gray-300 mx-1"></div>
-              <Button variant="ghost" size="sm" title="Rotate">
-                <RotateCcw className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm" title="Edit">
-                <Edit3 className="w-4 h-4" />
-              </Button>
               <Button variant="ghost" size="sm" onClick={deleteSelectedElement} className="text-red-500" title="Delete">
                 <Trash2 className="w-4 h-4" />
               </Button>
@@ -327,15 +368,13 @@ export default function TemplateEditorModal({
               <div className="text-sm font-medium text-gray-400 mb-3">Item Attribute</div>
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {attributes.map((attr) => (
-                  <label key={attr.id} className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded">
-                    <input
-                      type="radio"
-                      name="attribute"
-                      onClick={() => addAttributeElement(attr.id)}
-                      className="w-4 h-4"
-                    />
+                  <button
+                    key={attr.id}
+                    onClick={() => addAttributeElement(attr.id)}
+                    className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded border"
+                  >
                     <span>{attr.label}</span>
-                  </label>
+                  </button>
                 ))}
               </div>
 
