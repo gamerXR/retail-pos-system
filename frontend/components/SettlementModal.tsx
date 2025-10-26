@@ -8,6 +8,7 @@ import { useBackend } from "../lib/auth";
 import type { Product } from "~backend/pos/products";
 import PaymentOptionsModal from "./PaymentOptionsModal";
 import OtherPaymentModal from "./OtherPaymentModal";
+import QRPaymentModal from "./QRPaymentModal";
 
 interface CartItem {
   product: Product;
@@ -63,7 +64,10 @@ export default function SettlementModal({
     { id: "mastercard", name: "MasterCard", enabled: true },
     { id: "quickpay", name: "QuickPay", enabled: true },
     { id: "card", name: "Card", enabled: true },
+    { id: "qr-code", name: "QR Code Payment", enabled: true },
+    { id: "ding", name: "DING!", enabled: true },
   ]);
+  const [showQRPaymentModal, setShowQRPaymentModal] = useState(false);
   const { toast } = useToast();
   const backend = useBackend();
 
@@ -101,6 +105,10 @@ export default function SettlementModal({
   const handleOtherPaymentSelect = (paymentName: string) => {
     setSelectedOtherPayment(paymentName);
     setShowOtherPaymentModal(false);
+    
+    if (paymentName === "QR Code Payment" || paymentName === "DING!") {
+      setShowQRPaymentModal(true);
+    }
   };
 
   const handlePaymentOptionsUpdate = (options: PaymentOption[]) => {
@@ -653,6 +661,18 @@ export default function SettlementModal({
         onClose={() => setShowOtherPaymentModal(false)}
         onSelect={handleOtherPaymentSelect}
         paymentOptions={paymentOptions}
+      />
+
+      {/* QR Payment Modal */}
+      <QRPaymentModal
+        isOpen={showQRPaymentModal}
+        onClose={() => {
+          setShowQRPaymentModal(false);
+          setPaymentMethod("cash");
+          setSelectedOtherPayment("");
+        }}
+        onConfirm={handleFinish}
+        totalAmount={actualAmount}
       />
     </>
   );

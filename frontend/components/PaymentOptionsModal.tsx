@@ -26,6 +26,7 @@ export default function PaymentOptionsModal({ isOpen, onClose, onSave }: Payment
     { id: "quickpay", name: "QuickPay", enabled: true },
     { id: "card", name: "Card", enabled: true },
     { id: "qr-code", name: "QR Code Payment", enabled: true },
+    { id: "ding", name: "DING!", enabled: true },
   ]);
   const [newPaymentName, setNewPaymentName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
