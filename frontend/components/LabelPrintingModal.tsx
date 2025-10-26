@@ -457,7 +457,7 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
       <SearchModal
         isOpen={showProductSearch}
         onClose={() => setShowProductSearch(false)}
-        onSelect={handleProductSelect}
+        onProductSelect={handleProductSelect}
       />
     </>
   );
