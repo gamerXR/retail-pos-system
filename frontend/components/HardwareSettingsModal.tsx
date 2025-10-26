@@ -15,6 +15,7 @@ import {
   Settings
 } from "lucide-react";
 import CashierReceiptModal from "./CashierReceiptModal";
+import LabelPrintingModal from "./LabelPrintingModal";
 
 interface HardwareSettingsModalProps {
   isOpen: boolean;
@@ -23,11 +24,17 @@ interface HardwareSettingsModalProps {
 
 export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSettingsModalProps) {
   const [showCashierReceipt, setShowCashierReceipt] = useState(false);
+  const [showLabelPrinting, setShowLabelPrinting] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
     if (action === "Cashier Receipts") {
       setShowCashierReceipt(true);
+      return;
+    }
+    
+    if (action === "Barcode Receipt") {
+      setShowLabelPrinting(true);
       return;
     }
     
@@ -133,6 +140,12 @@ export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSetti
       <CashierReceiptModal
         isOpen={showCashierReceipt}
         onClose={() => setShowCashierReceipt(false)}
+      />
+
+      {/* Label Printing Modal */}
+      <LabelPrintingModal
+        isOpen={showLabelPrinting}
+        onClose={() => setShowLabelPrinting(false)}
       />
     </>
   );
