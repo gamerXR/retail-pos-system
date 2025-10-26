@@ -141,7 +141,6 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
       price: number | null;
       remarks: string | null;
       employee: string;
-      employee_name: string;
       created_at: Date;
       original_quantity: number;
       current_quantity: number;
@@ -155,13 +154,11 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
         sm.price,
         sm.remarks,
         sm.employee,
-        COALESCE(c.client_name, sm.employee) as employee_name,
         sm.created_at,
         0 as original_quantity,
         p.quantity as current_quantity
       FROM stock_movements sm
       JOIN products p ON sm.product_id = p.id
-      LEFT JOIN auth.clients c ON sm.employee = c.phone_number
       WHERE sm.client_id = ${auth.clientID.toString()}
       ORDER BY sm.created_at DESC
     `;
@@ -193,6 +190,7 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
       }
       
       if (include) {
+        const employeeName = m.employee === '6737165617' ? 'Admin' : m.employee;
         results.push({
           id: m.id,
           productId: m.product_id,
@@ -201,7 +199,7 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
           action: m.action,
           price: m.price || undefined,
           remarks: m.remarks || undefined,
-          employee: m.employee_name,
+          employee: employeeName,
           createdAt: m.created_at.toISOString(),
           originalQuantity: m.original_quantity,
           currentQuantity: m.current_quantity

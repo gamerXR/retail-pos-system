@@ -52,7 +52,8 @@ export default function StockReportModal({ isOpen, onClose }: StockReportModalPr
   const loadEmployees = async () => {
     try {
       const response = await backend.auth.getEmployees();
-      setEmployees(response.employees);
+      const adminOnly = response.employees.filter(emp => emp.phoneNumber === '6737165617');
+      setEmployees(adminOnly);
     } catch (error) {
       console.error("Error loading employees:", error);
     }
