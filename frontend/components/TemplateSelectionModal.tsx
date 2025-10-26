@@ -46,14 +46,7 @@ export default function TemplateSelectionModal({
     }
   };
 
-  const predefinedTemplates: Template[] = [
-    { id: 'small-item-name', name: 'Small Item(25*15)', width: 25, height: 15, type: 'predefined' },
-    { id: 'small-item-price', name: 'Small Item(25*15)', width: 25, height: 15, type: 'predefined' },
-    { id: 'small-item-barcode', name: 'Small Item(25*15)', width: 25, height: 15, type: 'predefined' },
-    { id: 'weighing-class', name: 'Weighing Class(40*30)', width: 40, height: 30, type: 'predefined' },
-    { id: 'normal-item', name: 'Normal Item(40*30)', width: 40, height: 30, type: 'predefined' },
-    { id: 'fresh-food', name: 'Fresh Food(40*30)', width: 40, height: 30, type: 'predefined' },
-  ];
+  const predefinedTemplates: Template[] = [];
 
   const handleTemplateSelect = (template: Template) => {
     onSelect(template);

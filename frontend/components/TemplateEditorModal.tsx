@@ -22,6 +22,7 @@ interface TemplateElement {
   content?: string;
   fontSize?: number;
   attribute?: string;
+  barcodeType?: 'UPC' | 'EAN' | 'Code 39' | 'Code 128' | 'ITF' | 'Code 93' | 'Codabar' | 'GS1 DataBar' | 'MSI Plessey';
 }
 
 interface TemplateEditorModalProps {
@@ -45,6 +46,7 @@ export default function TemplateEditorModal({
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
+  const [showBarcodeTypeMenu, setShowBarcodeTypeMenu] = useState(false);
 
   useEffect(() => {
     if (template) {
@@ -110,7 +112,7 @@ export default function TemplateEditorModal({
     { id: 'material-description', label: 'Material description' },
   ];
 
-  const addElement = (type: TemplateElement['type']) => {
+  const addElement = (type: TemplateElement['type'], barcodeType?: TemplateElement['barcodeType']) => {
     const newElement: TemplateElement = {
       id: `${type}-${Date.now()}`,
       type,
@@ -120,6 +122,7 @@ export default function TemplateEditorModal({
       height: type === 'text' ? 8 : type === 'line' ? 1 : type === 'barcode' ? 10 : 15,
       content: type === 'text' ? 'Text' : '',
       fontSize: 12,
+      barcodeType: type === 'barcode' ? (barcodeType || 'Code 128') : undefined,
     };
 
     setElements([...elements, newElement]);
@@ -333,8 +336,9 @@ export default function TemplateEditorModal({
                     <div className="w-full h-full border-2 border-black"></div>
                   )}
                   {element.type === 'barcode' && (
-                    <div className="w-full h-full bg-gray-800 flex items-center justify-center text-white text-xs select-none">
-                      ||||||||||
+                    <div className="w-full h-full bg-gray-800 flex flex-col items-center justify-center text-white select-none">
+                      <div className="text-xs">||||||||||</div>
+                      {element.barcodeType && <div className="text-[8px] mt-1">{element.barcodeType}</div>}
                     </div>
                   )}
                   {element.type === 'background' && (
@@ -412,7 +416,49 @@ export default function TemplateEditorModal({
                 ))}
               </div>
 
-              <div className="text-sm font-medium text-gray-400 mb-3">Add other items</div>
+              <div className="text-sm font-medium text-gray-400 mb-3">Quick Add Items</div>
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <button
+                  onClick={() => addAttributeElement('product-name')}
+                  className="flex items-center justify-center gap-2 p-3 border-2 border-blue-500 bg-blue-50 rounded hover:bg-blue-100 font-medium text-sm"
+                >
+                  Name
+                </button>
+                <button
+                  onClick={() => addAttributeElement('unit-price')}
+                  className="flex items-center justify-center gap-2 p-3 border-2 border-green-500 bg-green-50 rounded hover:bg-green-100 font-medium text-sm"
+                >
+                  Price
+                </button>
+                <button
+                  onClick={() => setShowBarcodeTypeMenu(!showBarcodeTypeMenu)}
+                  className="flex items-center justify-center gap-2 p-3 border-2 border-orange-500 bg-orange-50 rounded hover:bg-orange-100 font-medium text-sm"
+                >
+                  Barcode
+                </button>
+              </div>
+
+              {showBarcodeTypeMenu && (
+                <div className="mb-4 p-3 border rounded bg-gray-50">
+                  <div className="text-xs font-medium text-gray-600 mb-2">Select Barcode Type:</div>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['UPC', 'EAN', 'Code 39', 'Code 128', 'ITF', 'Code 93', 'Codabar', 'GS1 DataBar', 'MSI Plessey'].map((type) => (
+                      <button
+                        key={type}
+                        onClick={() => {
+                          addElement('barcode', type as TemplateElement['barcodeType']);
+                          setShowBarcodeTypeMenu(false);
+                        }}
+                        className="px-3 py-2 text-xs border rounded hover:bg-white hover:border-orange-500"
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="text-sm font-medium text-gray-400 mb-3">Other Elements</div>
               <div className="grid grid-cols-5 gap-2">
                 <button
                   onClick={() => addElement('text')}

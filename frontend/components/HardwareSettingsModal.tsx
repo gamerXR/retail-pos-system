@@ -27,24 +27,18 @@ export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSetti
   const [showLabelPrinting, setShowLabelPrinting] = useState(false);
   const { toast } = useToast();
 
-  const handleMenuAction = (action: string) => {
-    if (action === "Printers") {
-      setShowLabelPrinting(true);
-      return;
-    }
-    
-    toast({
-      title: "Feature",
-      description: `${action} functionality will be implemented soon`,
-    });
-  };
-
   const hardwareItems = [
     {
-      icon: Printer,
-      label: "Printers",
-      action: "Printers",
-      color: "bg-blue-500"
+      icon: Receipt,
+      label: "Cashier Receipt",
+      action: "Cashier Receipt",
+      color: "bg-green-500"
+    },
+    {
+      icon: Tag,
+      label: "Barcode Receipt",
+      action: "Barcode Receipt",
+      color: "bg-orange-500"
     }
   ];
 
@@ -72,7 +66,13 @@ export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSetti
                     key={item.action}
                     variant="ghost"
                     className="h-20 flex items-center justify-between p-4 border border-gray-200 hover:bg-gray-50"
-                    onClick={() => handleMenuAction(item.action)}
+                    onClick={() => {
+                      if (item.action === "Cashier Receipt") {
+                        setShowCashierReceipt(true);
+                      } else if (item.action === "Barcode Receipt") {
+                        setShowLabelPrinting(true);
+                      }
+                    }}
                   >
                     <div className="flex items-center gap-4">
                       <div className={`w-12 h-12 ${item.color} rounded-lg flex items-center justify-center`}>
