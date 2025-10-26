@@ -109,13 +109,23 @@ import {
     createClient as api_auth_clients_createClient,
     deleteClient as api_auth_clients_deleteClient,
     getClientStats as api_auth_clients_getClientStats,
+    getQRCode as api_auth_clients_getQRCode,
     listClients as api_auth_clients_listClients,
     resetClientPassword as api_auth_clients_resetClientPassword,
     updateClient as api_auth_clients_updateClient,
-    updateClientStatus as api_auth_clients_updateClientStatus
+    updateClientStatus as api_auth_clients_updateClientStatus,
+    uploadQRCode as api_auth_clients_uploadQRCode
 } from "~backend/auth/clients";
 import { getEmployees as api_auth_employees_getEmployees } from "~backend/auth/employees";
 import { login as api_auth_login_login } from "~backend/auth/login";
+import {
+    createSalesperson as api_auth_salespersons_createSalesperson,
+    deleteSalesperson as api_auth_salespersons_deleteSalesperson,
+    listSalespersons as api_auth_salespersons_listSalespersons,
+    salespersonLogin as api_auth_salespersons_salespersonLogin,
+    updateSalesperson as api_auth_salespersons_updateSalesperson,
+    updateSalespersonPassword as api_auth_salespersons_updateSalespersonPassword
+} from "~backend/auth/salespersons";
 
 export namespace auth {
 
@@ -128,18 +138,26 @@ export namespace auth {
             this.adminLogin = this.adminLogin.bind(this)
             this.createClient = this.createClient.bind(this)
             this.createLicense = this.createLicense.bind(this)
+            this.createSalesperson = this.createSalesperson.bind(this)
             this.deactivateLicense = this.deactivateLicense.bind(this)
             this.deleteClient = this.deleteClient.bind(this)
+            this.deleteSalesperson = this.deleteSalesperson.bind(this)
             this.getClientStats = this.getClientStats.bind(this)
             this.getEmployees = this.getEmployees.bind(this)
+            this.getQRCode = this.getQRCode.bind(this)
             this.listClients = this.listClients.bind(this)
             this.listLicenses = this.listLicenses.bind(this)
+            this.listSalespersons = this.listSalespersons.bind(this)
             this.listTrialSessions = this.listTrialSessions.bind(this)
             this.login = this.login.bind(this)
             this.resetClientPassword = this.resetClientPassword.bind(this)
+            this.salespersonLogin = this.salespersonLogin.bind(this)
             this.terminateTrialSession = this.terminateTrialSession.bind(this)
             this.updateClient = this.updateClient.bind(this)
             this.updateClientStatus = this.updateClientStatus.bind(this)
+            this.updateSalesperson = this.updateSalesperson.bind(this)
+            this.updateSalespersonPassword = this.updateSalespersonPassword.bind(this)
+            this.uploadQRCode = this.uploadQRCode.bind(this)
         }
 
         /**
@@ -175,6 +193,12 @@ export namespace auth {
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_admin_createLicense>
         }
 
+        public async createSalesperson(params: RequestType<typeof api_auth_salespersons_createSalesperson>): Promise<ResponseType<typeof api_auth_salespersons_createSalesperson>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/salespersons`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_salespersons_createSalesperson>
+        }
+
         /**
          * Deactivates a license.
          */
@@ -190,6 +214,12 @@ export namespace auth {
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_clients_deleteClient>
         }
 
+        public async deleteSalesperson(params: { id: number }): Promise<ResponseType<typeof api_auth_salespersons_deleteSalesperson>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/salespersons/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_salespersons_deleteSalesperson>
+        }
+
         public async getClientStats(): Promise<ResponseType<typeof api_auth_clients_getClientStats>> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/auth/admin/clients/stats`, {method: "GET", body: undefined})
@@ -200,6 +230,12 @@ export namespace auth {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/auth/employees`, {method: "GET", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_employees_getEmployees>
+        }
+
+        public async getQRCode(params: { id: number }): Promise<ResponseType<typeof api_auth_clients_getQRCode>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/admin/clients/${encodeURIComponent(params.id)}/qr-code`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_clients_getQRCode>
         }
 
         public async listClients(): Promise<ResponseType<typeof api_auth_clients_listClients>> {
@@ -215,6 +251,12 @@ export namespace auth {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/auth/admin/licenses`, {method: "GET", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_admin_listLicenses>
+        }
+
+        public async listSalespersons(): Promise<ResponseType<typeof api_auth_salespersons_listSalespersons>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/salespersons`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_salespersons_listSalespersons>
         }
 
         /**
@@ -236,6 +278,12 @@ export namespace auth {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/auth/admin/clients/${encodeURIComponent(params.id)}/reset-password`, {method: "POST", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_clients_resetClientPassword>
+        }
+
+        public async salespersonLogin(params: RequestType<typeof api_auth_salespersons_salespersonLogin>): Promise<ResponseType<typeof api_auth_salespersons_salespersonLogin>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/salesperson/login`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_salespersons_salespersonLogin>
         }
 
         /**
@@ -270,6 +318,43 @@ export namespace auth {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/auth/admin/clients/${encodeURIComponent(params.id)}/status`, {method: "POST", body: JSON.stringify(body)})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_clients_updateClientStatus>
+        }
+
+        public async updateSalesperson(params: RequestType<typeof api_auth_salespersons_updateSalesperson>): Promise<ResponseType<typeof api_auth_salespersons_updateSalesperson>> {
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                canGiveDiscounts:  params.canGiveDiscounts,
+                canProcessReturns: params.canProcessReturns,
+                isActive:          params.isActive,
+                name:              params.name,
+                phoneNumber:       params.phoneNumber,
+            }
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/salespersons/${encodeURIComponent(params.id)}`, {method: "PUT", body: JSON.stringify(body)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_salespersons_updateSalesperson>
+        }
+
+        public async updateSalespersonPassword(params: RequestType<typeof api_auth_salespersons_updateSalespersonPassword>): Promise<ResponseType<typeof api_auth_salespersons_updateSalespersonPassword>> {
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                password: params.password,
+            }
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/salespersons/${encodeURIComponent(params.id)}/password`, {method: "POST", body: JSON.stringify(body)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_salespersons_updateSalespersonPassword>
+        }
+
+        public async uploadQRCode(params: RequestType<typeof api_auth_clients_uploadQRCode>): Promise<ResponseType<typeof api_auth_clients_uploadQRCode>> {
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                qrCodeImage: params.qrCodeImage,
+            }
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/admin/clients/${encodeURIComponent(params.id)}/qr-code`, {method: "POST", body: JSON.stringify(body)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_clients_uploadQRCode>
         }
     }
 }
