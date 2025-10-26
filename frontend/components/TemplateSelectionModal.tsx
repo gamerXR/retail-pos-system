@@ -46,7 +46,15 @@ export default function TemplateSelectionModal({
     }
   };
 
-  const predefinedTemplates: Template[] = [];
+  const predefinedTemplates: Template[] = [
+    {
+      id: 'barcode-centered',
+      name: '商品名 + Barcode + Price',
+      width: 40,
+      height: 30,
+      type: 'predefined'
+    }
+  ];
 
   const handleTemplateSelect = (template: Template) => {
     onSelect(template);
@@ -92,6 +100,59 @@ export default function TemplateSelectionModal({
 
   const renderTemplatePreview = (template: Template) => {
     switch (template.id) {
+      case 'barcode-centered':
+        return (
+          <div className="w-full h-28 bg-white border-2 border-gray-300 rounded p-2 text-xs flex flex-col items-center justify-center">
+            <div className="font-bold text-sm mb-2">商品名</div>
+            <div className="h-10 bg-white w-full mb-1 flex items-center justify-center text-black text-[10px] border border-gray-200">
+              <svg className="w-full h-full" viewBox="0 0 100 40">
+                <rect x="2" y="5" width="1" height="25" fill="black"/>
+                <rect x="4" y="5" width="2" height="25" fill="black"/>
+                <rect x="7" y="5" width="1" height="25" fill="black"/>
+                <rect x="9" y="5" width="1" height="25" fill="black"/>
+                <rect x="11" y="5" width="2" height="25" fill="black"/>
+                <rect x="14" y="5" width="1" height="25" fill="black"/>
+                <rect x="16" y="5" width="1" height="25" fill="black"/>
+                <rect x="18" y="5" width="2" height="25" fill="black"/>
+                <rect x="21" y="5" width="1" height="25" fill="black"/>
+                <rect x="23" y="5" width="2" height="25" fill="black"/>
+                <rect x="26" y="5" width="1" height="25" fill="black"/>
+                <rect x="28" y="5" width="1" height="25" fill="black"/>
+                <rect x="30" y="5" width="2" height="25" fill="black"/>
+                <rect x="33" y="5" width="1" height="25" fill="black"/>
+                <rect x="35" y="5" width="2" height="25" fill="black"/>
+                <rect x="38" y="5" width="1" height="25" fill="black"/>
+                <rect x="40" y="5" width="1" height="25" fill="black"/>
+                <rect x="42" y="5" width="2" height="25" fill="black"/>
+                <rect x="45" y="5" width="1" height="25" fill="black"/>
+                <rect x="47" y="5" width="1" height="25" fill="black"/>
+                <rect x="49" y="5" width="2" height="25" fill="black"/>
+                <rect x="52" y="5" width="1" height="25" fill="black"/>
+                <rect x="54" y="5" width="2" height="25" fill="black"/>
+                <rect x="57" y="5" width="1" height="25" fill="black"/>
+                <rect x="59" y="5" width="1" height="25" fill="black"/>
+                <rect x="61" y="5" width="2" height="25" fill="black"/>
+                <rect x="64" y="5" width="1" height="25" fill="black"/>
+                <rect x="66" y="5" width="2" height="25" fill="black"/>
+                <rect x="69" y="5" width="1" height="25" fill="black"/>
+                <rect x="71" y="5" width="1" height="25" fill="black"/>
+                <rect x="73" y="5" width="2" height="25" fill="black"/>
+                <rect x="76" y="5" width="1" height="25" fill="black"/>
+                <rect x="78" y="5" width="1" height="25" fill="black"/>
+                <rect x="80" y="5" width="2" height="25" fill="black"/>
+                <rect x="83" y="5" width="1" height="25" fill="black"/>
+                <rect x="85" y="5" width="2" height="25" fill="black"/>
+                <rect x="88" y="5" width="1" height="25" fill="black"/>
+                <rect x="90" y="5" width="1" height="25" fill="black"/>
+                <rect x="92" y="5" width="2" height="25" fill="black"/>
+                <rect x="95" y="5" width="1" height="25" fill="black"/>
+                <rect x="97" y="5" width="1" height="25" fill="black"/>
+              </svg>
+            </div>
+            <div className="text-[9px] font-semibold mb-1">6701234567891</div>
+            <div className="text-base font-bold">$ 2.00</div>
+          </div>
+        );
       case 'small-item-name':
         return (
           <div className="w-full h-28 bg-white border rounded p-2 text-xs">
