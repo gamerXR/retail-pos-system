@@ -51,6 +51,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       return;
     }
 
+    if (action === "Barcode Receipt") {
+      setShowHardwareSettings(true);
+      return;
+    }
+
     if (action === "Stock Report") {
       setShowStockReport(true);
       return;
@@ -165,12 +170,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         return [
           { label: "Printers", action: "Printer Settings" },
           { label: "Cashier Receipts", action: "Cashier Receipts" },
-          { label: "Tag Receipts", action: "Tag Receipts" },
-          { label: "Barcode Receipt", action: "Barcode Receipt" },
-          { label: "Weighing Scale", action: "Weighing Scale" },
-          { label: "Card Reader", action: "Card Reader" },
-          { label: "Dual Screen", action: "Dual Screen" },
-          { label: "Customer Display Settings", action: "Customer Display Settings" }
+          { label: "Barcode Receipt", action: "Barcode Receipt" }
         ];
       case "Data Processing":
         return [

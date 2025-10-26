@@ -28,11 +28,6 @@ export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSetti
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
-    if (action === "Cashier Receipts") {
-      setShowCashierReceipt(true);
-      return;
-    }
-    
     if (action === "Printers") {
       setShowLabelPrinting(true);
       return;
@@ -50,48 +45,6 @@ export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSetti
       label: "Printers",
       action: "Printers",
       color: "bg-blue-500"
-    },
-    {
-      icon: Receipt,
-      label: "Cashier Receipts",
-      action: "Cashier Receipts",
-      color: "bg-green-500"
-    },
-    {
-      icon: Tag,
-      label: "Tag Receipts",
-      action: "Tag Receipts",
-      color: "bg-purple-500"
-    },
-    {
-      icon: QrCode,
-      label: "Barcode Receipt",
-      action: "Barcode Receipt",
-      color: "bg-orange-500"
-    },
-    {
-      icon: Scale,
-      label: "Weighing Scale",
-      action: "Weighing Scale",
-      color: "bg-yellow-500"
-    },
-    {
-      icon: CreditCard,
-      label: "Card Reader",
-      action: "Card Reader",
-      color: "bg-red-500"
-    },
-    {
-      icon: Monitor,
-      label: "Dual Screen",
-      action: "Dual Screen",
-      color: "bg-indigo-500"
-    },
-    {
-      icon: Settings,
-      label: "Customer Display Settings",
-      action: "Customer Display Settings",
-      color: "bg-gray-500"
     }
   ];
 
