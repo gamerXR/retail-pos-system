@@ -132,6 +132,28 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
   async (req) => {
     const auth = getAuthData()! as AuthData;
     
+    let whereConditions = [`sm.client_id = ${auth.clientID}`];
+    
+    if (req.startDate) {
+      whereConditions.push(`sm.created_at >= ${req.startDate}`);
+    }
+    
+    if (req.endDate) {
+      whereConditions.push(`sm.created_at <= ${req.endDate}`);
+    }
+    
+    if (req.employee && req.employee !== 'All') {
+      whereConditions.push(`u.phone_number = ${req.employee}`);
+    }
+    
+    if (req.reason && req.reason !== 'All') {
+      whereConditions.push(`sm.action = ${req.reason}`);
+    }
+    
+    if (req.itemId) {
+      whereConditions.push(`sm.product_id = ${req.itemId}`);
+    }
+
     const movements = await posDB.query<{
       id: number;
       product_id: number;
@@ -141,6 +163,7 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
       price: number | null;
       remarks: string | null;
       employee: string;
+      employee_name: string;
       created_at: Date;
       original_quantity: number;
       current_quantity: number;
@@ -154,12 +177,14 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
         sm.price,
         sm.remarks,
         sm.employee,
+        COALESCE(u.phone_number, sm.employee) as employee_name,
         sm.created_at,
         0 as original_quantity,
         p.quantity as current_quantity
       FROM stock_movements sm
       JOIN products p ON sm.product_id = p.id
-      WHERE sm.client_id = ${auth.clientID}
+      LEFT JOIN auth.users u ON sm.employee = CAST(u.id AS VARCHAR)
+      WHERE ${posDB.raw(whereConditions.join(' AND '))}
       ORDER BY sm.created_at DESC
     `;
 
@@ -173,7 +198,7 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
         action: m.action,
         price: m.price || undefined,
         remarks: m.remarks || undefined,
-        employee: m.employee,
+        employee: m.employee_name,
         createdAt: m.created_at.toISOString(),
         originalQuantity: m.original_quantity,
         currentQuantity: m.current_quantity
