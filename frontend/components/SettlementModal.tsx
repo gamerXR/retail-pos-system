@@ -49,6 +49,12 @@ export default function SettlementModal({
   const [promotion, setPromotion] = useState(0);
   const [customReduce, setCustomReduce] = useState(0);
   const [customDiscount, setCustomDiscount] = useState(0);
+  const [showCustomReduceModal, setShowCustomReduceModal] = useState(false);
+  const [showCustomDiscountModal, setShowCustomDiscountModal] = useState(false);
+  const [showRemarksModal, setShowRemarksModal] = useState(false);
+  const [remarks, setRemarks] = useState("");
+  const [tempCustomReduce, setTempCustomReduce] = useState("");
+  const [tempCustomDiscount, setTempCustomDiscount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "member" | "others">("cash");
   const [selectedOtherPayment, setSelectedOtherPayment] = useState<string>("");
   const [printReceipt, setPrintReceipt] = useState(true);
@@ -72,7 +78,8 @@ export default function SettlementModal({
   const backend = useBackend();
 
   const subtotal = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
-  const totalDiscount = promotion + customReduce + customDiscount;
+  const discountAmount = (subtotal * customDiscount) / 100;
+  const totalDiscount = promotion + customReduce + discountAmount;
   const actualAmount = subtotal - totalDiscount;
   const paid = parseFloat(paidAmount) || 0;
   const change = paid - actualAmount;
@@ -259,10 +266,36 @@ export default function SettlementModal({
             <span>Subtotal</span>
             <span>$${subtotal.toFixed(2)}</span>
           </div>
+      `;
+      
+      if (customReduce > 0) {
+        receiptContent += `
           <div style="display: flex; justify-content: space-between;">
-            <span>Discount</span>
-            <span>-$${totalDiscount.toFixed(2)}</span>
+            <span>Custom Reduce</span>
+            <span>-$${customReduce.toFixed(2)}</span>
           </div>
+        `;
+      }
+      
+      if (customDiscount > 0) {
+        receiptContent += `
+          <div style="display: flex; justify-content: space-between;">
+            <span>Custom Discount (${customDiscount}%)</span>
+            <span>-$${discountAmount.toFixed(2)}</span>
+          </div>
+        `;
+      }
+      
+      if (promotion > 0) {
+        receiptContent += `
+          <div style="display: flex; justify-content: space-between;">
+            <span>Promotion</span>
+            <span>-$${promotion.toFixed(2)}</span>
+          </div>
+        `;
+      }
+      
+      receiptContent += `
         </div>
       `;
     }
@@ -295,6 +328,15 @@ export default function SettlementModal({
 
     // Separator
     receiptContent += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
+
+    // Remarks
+    if (remarks) {
+      receiptContent += `
+        <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
+          Remarks: ${remarks}
+        </div>
+      `;
+    }
 
     // Sales person
     if (salesPerson && salesPerson !== "None") {
@@ -411,9 +453,12 @@ export default function SettlementModal({
         totalAmount: actualAmount,
         paymentMethod: getPaymentMethodForAPI(),
         promotion: promotion > 0 ? promotion : undefined,
-        discount: (customReduce + customDiscount) > 0 ? (customReduce + customDiscount) : undefined,
+        discount: (customReduce + discountAmount) > 0 ? (customReduce + discountAmount) : undefined,
+        customReduce: customReduce > 0 ? customReduce : undefined,
+        customDiscount: customDiscount > 0 ? customDiscount : undefined,
         printReceipt: printReceipt,
-        salesPerson: salesPerson !== "None" ? salesPerson : undefined
+        salesPerson: salesPerson !== "None" ? salesPerson : undefined,
+        remarks: remarks || undefined
       });
 
       toast({
@@ -491,11 +536,21 @@ export default function SettlementModal({
 
               {/* Custom Buttons */}
               <div className="flex gap-4">
-                <Button variant="outline" className="flex-1">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowCustomReduceModal(true)}
+                >
                   Custom Reduce
+                  {customReduce > 0 && <span className="ml-2 text-orange-500">(-${customReduce.toFixed(2)})</span>}
                 </Button>
-                <Button variant="outline" className="flex-1">
+                <Button 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => setShowCustomDiscountModal(true)}
+                >
                   Custom Discount
+                  {customDiscount > 0 && <span className="ml-2 text-orange-500">(-{customDiscount}%)</span>}
                 </Button>
               </div>
 
@@ -572,6 +627,21 @@ export default function SettlementModal({
               <div className="flex justify-between items-center">
                 <span className="text-lg">Sales Person</span>
                 <span className="text-orange-500">{salesPerson}</span>
+              </div>
+
+              {/* Remarks */}
+              <div>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setShowRemarksModal(true)}
+                >
+                  Remarks
+                  {remarks && <span className="ml-2 text-orange-500">✓</span>}
+                </Button>
+                {remarks && (
+                  <div className="mt-2 text-sm text-gray-600 italic">"{remarks}"</div>
+                )}
               </div>
 
               {/* Change Display */}
@@ -674,6 +744,147 @@ export default function SettlementModal({
         onConfirm={handleFinish}
         totalAmount={actualAmount}
       />
+
+      {/* Custom Reduce Modal */}
+      <Dialog open={showCustomReduceModal} onOpenChange={setShowCustomReduceModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Custom Reduce (Amount)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Enter amount to deduct:</label>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                max={subtotal}
+                value={tempCustomReduce}
+                onChange={(e) => setTempCustomReduce(e.target.value)}
+                className="w-full mt-2 px-3 py-2 border rounded-md"
+                placeholder="0.00"
+                autoFocus
+              />
+            </div>
+            <div className="text-sm text-gray-600">
+              Current subtotal: ${subtotal.toFixed(2)}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setTempCustomReduce("");
+                  setShowCustomReduceModal(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-red-500 hover:bg-red-600"
+                onClick={() => {
+                  const amount = parseFloat(tempCustomReduce) || 0;
+                  setCustomReduce(Math.min(amount, subtotal));
+                  setTempCustomReduce("");
+                  setShowCustomReduceModal(false);
+                }}
+              >
+                Apply
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Discount Modal */}
+      <Dialog open={showCustomDiscountModal} onOpenChange={setShowCustomDiscountModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Custom Discount (Percentage)</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Enter discount percentage:</label>
+              <input
+                type="number"
+                step="0.1"
+                min="0"
+                max="100"
+                value={tempCustomDiscount}
+                onChange={(e) => setTempCustomDiscount(e.target.value)}
+                className="w-full mt-2 px-3 py-2 border rounded-md"
+                placeholder="0"
+                autoFocus
+              />
+            </div>
+            <div className="text-sm text-gray-600">
+              Current subtotal: ${subtotal.toFixed(2)}<br />
+              {tempCustomDiscount && parseFloat(tempCustomDiscount) > 0 && (
+                <>Discount amount: ${((subtotal * parseFloat(tempCustomDiscount)) / 100).toFixed(2)}</>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => {
+                  setTempCustomDiscount("");
+                  setShowCustomDiscountModal(false);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-red-500 hover:bg-red-600"
+                onClick={() => {
+                  const percentage = parseFloat(tempCustomDiscount) || 0;
+                  setCustomDiscount(Math.min(percentage, 100));
+                  setTempCustomDiscount("");
+                  setShowCustomDiscountModal(false);
+                }}
+              >
+                Apply
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Remarks Modal */}
+      <Dialog open={showRemarksModal} onOpenChange={setShowRemarksModal}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Add Remarks</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium">Remarks:</label>
+              <textarea
+                value={remarks}
+                onChange={(e) => setRemarks(e.target.value)}
+                className="w-full mt-2 px-3 py-2 border rounded-md min-h-[100px]"
+                placeholder="Enter any remarks for this sale..."
+                autoFocus
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowRemarksModal(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                className="flex-1 bg-red-500 hover:bg-red-600"
+                onClick={() => setShowRemarksModal(false)}
+              >
+                Save
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

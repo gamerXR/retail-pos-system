@@ -285,6 +285,12 @@ import {
     updateCategory as api_pos_categories_updateCategory
 } from "~backend/pos/categories";
 import {
+    createTemplate as api_pos_label_templates_createTemplate,
+    deleteTemplate as api_pos_label_templates_deleteTemplate,
+    listTemplates as api_pos_label_templates_listTemplates,
+    updateTemplate as api_pos_label_templates_updateTemplate
+} from "~backend/pos/label_templates";
+import {
     getOpeningBalance as api_pos_opening_balance_getOpeningBalance,
     setOpeningBalance as api_pos_opening_balance_setOpeningBalance
 } from "~backend/pos/opening_balance";
@@ -320,8 +326,10 @@ export namespace pos {
             this.createCategory = this.createCategory.bind(this)
             this.createProduct = this.createProduct.bind(this)
             this.createSale = this.createSale.bind(this)
+            this.createTemplate = this.createTemplate.bind(this)
             this.deleteCategory = this.deleteCategory.bind(this)
             this.deleteProduct = this.deleteProduct.bind(this)
+            this.deleteTemplate = this.deleteTemplate.bind(this)
             this.exportSalesViaEmail = this.exportSalesViaEmail.bind(this)
             this.getCategories = this.getCategories.bind(this)
             this.getFlatCategories = this.getFlatCategories.bind(this)
@@ -332,6 +340,7 @@ export namespace pos {
             this.getProductsByCategory = this.getProductsByCategory.bind(this)
             this.getSalesSummary = this.getSalesSummary.bind(this)
             this.getStockHistory = this.getStockHistory.bind(this)
+            this.listTemplates = this.listTemplates.bind(this)
             this.searchReceipts = this.searchReceipts.bind(this)
             this.setOpeningBalance = this.setOpeningBalance.bind(this)
             this.stickProduct = this.stickProduct.bind(this)
@@ -339,6 +348,7 @@ export namespace pos {
             this.updateCategory = this.updateCategory.bind(this)
             this.updateProduct = this.updateProduct.bind(this)
             this.updateStock = this.updateStock.bind(this)
+            this.updateTemplate = this.updateTemplate.bind(this)
         }
 
         /**
@@ -368,6 +378,12 @@ export namespace pos {
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_sales_createSale>
         }
 
+        public async createTemplate(params: RequestType<typeof api_pos_label_templates_createTemplate>): Promise<ResponseType<typeof api_pos_label_templates_createTemplate>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/label-templates`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_label_templates_createTemplate>
+        }
+
         /**
          * Deletes a category.
          */
@@ -380,6 +396,12 @@ export namespace pos {
          */
         public async deleteProduct(params: { id: number }): Promise<void> {
             await this.baseClient.callTypedAPI(`/pos/products/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+        }
+
+        public async deleteTemplate(params: { id: string }): Promise<ResponseType<typeof api_pos_label_templates_deleteTemplate>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/label-templates/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_label_templates_deleteTemplate>
         }
 
         /**
@@ -473,6 +495,12 @@ export namespace pos {
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_stock_getStockHistory>
         }
 
+        public async listTemplates(): Promise<ResponseType<typeof api_pos_label_templates_listTemplates>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/label-templates`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_label_templates_listTemplates>
+        }
+
         public async searchReceipts(params: RequestType<typeof api_pos_receipts_searchReceipts>): Promise<ResponseType<typeof api_pos_receipts_searchReceipts>> {
             // Convert our params into the objects we need for the request
             const query = makeRecord<string, string | string[]>({
@@ -562,6 +590,20 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/stock/update`, {method: "POST", body: JSON.stringify(params)})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_stock_updateStock>
+        }
+
+        public async updateTemplate(params: RequestType<typeof api_pos_label_templates_updateTemplate>): Promise<ResponseType<typeof api_pos_label_templates_updateTemplate>> {
+            // Construct the body with only the fields which we want encoded within the body (excluding query string or header fields)
+            const body: Record<string, any> = {
+                elements: params.elements,
+                height:   params.height,
+                name:     params.name,
+                width:    params.width,
+            }
+
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/label-templates/${encodeURIComponent(params.id)}`, {method: "PUT", body: JSON.stringify(body)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_label_templates_updateTemplate>
         }
     }
 }
