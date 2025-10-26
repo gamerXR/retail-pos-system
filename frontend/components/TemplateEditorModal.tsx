@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { ChevronLeft, Type, Image as ImageIcon, Minus, Square, Grid, MoveUp, MoveDown, ZoomIn, ZoomOut, RotateCcw, Edit3, Trash2 } from "lucide-react";
+import { ChevronLeft, ArrowLeft, ArrowRight, ArrowUp, ArrowDown, Plus, Minus as MinusIcon, RotateCcw, Edit3, X, Type, Image as ImageIcon, Minus, Square, Grid } from "lucide-react";
 
 interface Template {
   id: string;
@@ -46,7 +46,6 @@ export default function TemplateEditorModal({
   const [selectedElement, setSelectedElement] = useState<string | null>(null);
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 });
-  const [showBarcodeTypeMenu, setShowBarcodeTypeMenu] = useState(false);
 
   useEffect(() => {
     if (template) {
@@ -55,44 +54,10 @@ export default function TemplateEditorModal({
       setPaperHeight(template.height);
       setElements(template.elements || []);
     } else {
-      setTemplateName("Retail Barcode Label");
-      setPaperWidth(25);
-      setPaperHeight(35);
-      setElements([
-        {
-          id: 'name-1',
-          type: 'attribute',
-          x: 2,
-          y: 2,
-          width: 21,
-          height: 6,
-          content: 'Product name',
-          fontSize: 14,
-          attribute: 'product-name',
-        },
-        {
-          id: 'price-1',
-          type: 'attribute',
-          x: 2,
-          y: 10,
-          width: 21,
-          height: 6,
-          content: 'Unit Price',
-          fontSize: 16,
-          attribute: 'unit-price',
-        },
-        {
-          id: 'barcode-1',
-          type: 'attribute',
-          x: 2,
-          y: 18,
-          width: 21,
-          height: 15,
-          content: 'Barcode',
-          fontSize: 12,
-          attribute: 'barcode',
-        }
-      ]);
+      setTemplateName("Custom template");
+      setPaperWidth(40);
+      setPaperHeight(30);
+      setElements([]);
       setSelectedElement(null);
     }
   }, [template, isOpen]);
@@ -199,6 +164,7 @@ export default function TemplateEditorModal({
       elements,
     };
     onSave(savedTemplate);
+    onClose();
   };
 
   const handleDelete = () => {
@@ -254,36 +220,34 @@ export default function TemplateEditorModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden">
-        <DialogHeader>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Button variant="ghost" size="sm" onClick={onClose}>
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <DialogTitle>Edit template</DialogTitle>
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                onClick={handleDelete}
-                className="text-red-500 border-red-500"
-              >
-                Delete
-              </Button>
-              <Button
-                onClick={handleSave}
-                className="bg-red-500 hover:bg-red-600 text-white"
-              >
-                Save
-              </Button>
-            </div>
+      <DialogContent className="max-w-[95vw] max-h-[95vh] overflow-hidden p-0">
+        <div className="flex items-center justify-between px-6 py-4 border-b bg-white">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={onClose} className="p-0 h-auto hover:bg-transparent">
+              <ChevronLeft className="w-6 h-6" />
+            </Button>
+            <h2 className="text-xl font-medium">Edit template</h2>
           </div>
-        </DialogHeader>
+          <div className="flex gap-3">
+            <Button
+              variant="outline"
+              onClick={handleDelete}
+              className="text-gray-700 border-gray-300 hover:bg-gray-50"
+            >
+              Delete
+            </Button>
+            <Button
+              onClick={handleSave}
+              className="bg-orange-500 hover:bg-orange-600 text-white px-6"
+            >
+              Save
+            </Button>
+          </div>
+        </div>
 
-        <div className="flex gap-4 h-[75vh]">
-          <div className="flex-1 bg-gray-50 rounded-lg p-4 overflow-auto relative">
-            <div className="absolute top-0 left-0 right-0 h-8 bg-white border-b flex items-center px-4 text-xs text-gray-600 z-10">
+        <div className="flex gap-0 h-[80vh]">
+          <div className="flex-1 bg-gray-50 overflow-auto relative">
+            <div className="absolute top-0 left-0 right-0 h-8 bg-white border-b flex items-center px-4 text-xs text-gray-500 z-10">
               {Array.from({ length: Math.ceil(paperWidth / 10) + 1 }, (_, i) => (
                 <div key={i} className="absolute" style={{ left: `${i * 10 * scale + 32}px` }}>
                   {i * 10}
@@ -291,7 +255,7 @@ export default function TemplateEditorModal({
               ))}
             </div>
 
-            <div className="absolute top-8 left-0 bottom-0 w-8 bg-white border-r flex flex-col text-xs text-gray-600 z-10">
+            <div className="absolute top-8 left-0 bottom-0 w-8 bg-white border-r flex flex-col text-xs text-gray-500 z-10">
               {Array.from({ length: Math.ceil(paperHeight / 10) + 1 }, (_, i) => (
                 <div key={i} className="absolute" style={{ top: `${i * 10 * scale + 32}px` }}>
                   {i * 10}
@@ -313,7 +277,7 @@ export default function TemplateEditorModal({
               {elements.map(element => (
                 <div
                   key={element.id}
-                  className={`absolute cursor-move border ${selectedElement === element.id ? 'border-blue-500 border-2 bg-blue-50' : 'border-gray-300'}`}
+                  className={`absolute cursor-move border ${selectedElement === element.id ? 'border-orange-500 border-2 bg-orange-50' : 'border-gray-300'}`}
                   style={{
                     left: `${element.x * scale}mm`,
                     top: `${element.y * scale}mm`,
@@ -327,7 +291,7 @@ export default function TemplateEditorModal({
                     <div className="p-1 select-none">{element.content}</div>
                   )}
                   {element.type === 'attribute' && (
-                    <div className="p-1 bg-blue-100 select-none font-semibold">{element.content}</div>
+                    <div className="p-1 select-none font-semibold">{element.content}</div>
                   )}
                   {element.type === 'line' && (
                     <div className="w-full h-full bg-black"></div>
@@ -344,157 +308,130 @@ export default function TemplateEditorModal({
                   {element.type === 'background' && (
                     <div className="w-full h-full bg-gray-200"></div>
                   )}
+                  {element.type === 'image' && (
+                    <div className="w-full h-full bg-gray-100 border-2 border-dashed border-gray-400 flex items-center justify-center">
+                      <ImageIcon className="w-6 h-6 text-gray-400" />
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
 
-            <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 flex gap-2 bg-white border rounded-lg p-2 shadow-lg">
-              <Button variant="ghost" size="sm" onClick={() => moveElement('left')} title="Move Left">
-                <ChevronLeft className="w-4 h-4" />
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-1 bg-white border rounded-lg p-1 shadow-lg">
+              <Button variant="ghost" size="sm" onClick={() => moveElement('left')} className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                <ArrowLeft className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => moveElement('right')} title="Move Right">
-                <ChevronLeft className="w-4 h-4 rotate-180" />
+              <Button variant="ghost" size="sm" onClick={() => moveElement('right')} className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                <ArrowRight className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => moveElement('up')} title="Move Up">
-                <MoveUp className="w-4 h-4" />
+              <Button variant="ghost" size="sm" onClick={() => moveElement('up')} className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                <ArrowUp className="w-5 h-5" />
               </Button>
-              <Button variant="ghost" size="sm" onClick={() => moveElement('down')} title="Move Down">
-                <MoveDown className="w-4 h-4" />
-              </Button>
-              <div className="w-px bg-gray-300 mx-1"></div>
-              <Button variant="ghost" size="sm" onClick={() => adjustFontSize(true)} title="Increase Font">
-                <ZoomIn className="w-4 h-4" />
-              </Button>
-              <Button variant="ghost" size="sm" onClick={() => adjustFontSize(false)} title="Decrease Font">
-                <ZoomOut className="w-4 h-4" />
+              <Button variant="ghost" size="sm" onClick={() => moveElement('down')} className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                <ArrowDown className="w-5 h-5" />
               </Button>
               <div className="w-px bg-gray-300 mx-1"></div>
-              <Button variant="ghost" size="sm" onClick={deleteSelectedElement} className="text-red-500" title="Delete">
-                <Trash2 className="w-4 h-4" />
+              <Button variant="ghost" size="sm" onClick={() => adjustFontSize(true)} className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50 font-bold text-lg">
+                A+
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => adjustFontSize(false)} className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50 font-bold text-lg">
+                A-
+              </Button>
+              <div className="w-px bg-gray-300 mx-1"></div>
+              <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="sm" className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                <Edit3 className="w-5 h-5" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={deleteSelectedElement} className="h-10 w-10 p-0 text-orange-500 hover:text-orange-600 hover:bg-orange-50">
+                <X className="w-5 h-5" />
               </Button>
             </div>
           </div>
 
-          <div className="w-96 space-y-4 overflow-y-auto">
-            <div className="bg-white rounded-lg border p-4">
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium">Template name</label>
-                <input
-                  type="text"
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                  className="px-2 py-1 border rounded text-sm text-teal-600"
-                />
-              </div>
-
-              <div className="flex items-center justify-between mb-2">
-                <label className="text-sm font-medium">Paper width</label>
-                <div className="text-sm text-orange-500">
-                  {paperWidth} X {paperHeight} <span className="text-gray-400 ml-1">mm</span>
+          <div className="w-96 bg-white border-l overflow-y-auto">
+            <div className="p-4 space-y-4">
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-700">Template name</label>
+                  <input
+                    type="text"
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    className="px-2 py-1 border rounded text-sm text-teal-600 w-40"
+                  />
                 </div>
-              </div>
 
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium">Label gap</label>
-                <div className="text-sm text-orange-500 cursor-pointer">
-                  {labelGap} <span>›</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg border p-4">
-              <div className="text-sm font-medium text-gray-400 mb-3">Item Attribute</div>
-              <div className="grid grid-cols-2 gap-2 mb-4">
-                {attributes.map((attr) => (
-                  <button
-                    key={attr.id}
-                    onClick={() => addAttributeElement(attr.id)}
-                    className="flex items-center gap-2 text-sm cursor-pointer hover:bg-gray-50 p-2 rounded border"
-                  >
-                    <span>{attr.label}</span>
-                  </button>
-                ))}
-              </div>
-
-              <div className="text-sm font-medium text-gray-400 mb-3">Quick Add Items</div>
-              <div className="grid grid-cols-3 gap-2 mb-4">
-                <button
-                  onClick={() => addAttributeElement('product-name')}
-                  className="flex items-center justify-center gap-2 p-3 border-2 border-blue-500 bg-blue-50 rounded hover:bg-blue-100 font-medium text-sm"
-                >
-                  Name
-                </button>
-                <button
-                  onClick={() => addAttributeElement('unit-price')}
-                  className="flex items-center justify-center gap-2 p-3 border-2 border-green-500 bg-green-50 rounded hover:bg-green-100 font-medium text-sm"
-                >
-                  Price
-                </button>
-                <button
-                  onClick={() => setShowBarcodeTypeMenu(!showBarcodeTypeMenu)}
-                  className="flex items-center justify-center gap-2 p-3 border-2 border-orange-500 bg-orange-50 rounded hover:bg-orange-100 font-medium text-sm"
-                >
-                  Barcode
-                </button>
-              </div>
-
-              {showBarcodeTypeMenu && (
-                <div className="mb-4 p-3 border rounded bg-gray-50">
-                  <div className="text-xs font-medium text-gray-600 mb-2">Select Barcode Type:</div>
-                  <div className="grid grid-cols-2 gap-2">
-                    {['UPC', 'EAN', 'Code 39', 'Code 128', 'ITF', 'Code 93', 'Codabar', 'GS1 DataBar', 'MSI Plessey'].map((type) => (
-                      <button
-                        key={type}
-                        onClick={() => {
-                          addElement('barcode', type as TemplateElement['barcodeType']);
-                          setShowBarcodeTypeMenu(false);
-                        }}
-                        className="px-3 py-2 text-xs border rounded hover:bg-white hover:border-orange-500"
-                      >
-                        {type}
-                      </button>
-                    ))}
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-700">Paper width</label>
+                  <div className="text-sm text-orange-500 font-medium">
+                    {paperWidth} X {paperHeight} <span className="text-gray-400 ml-1">mm</span>
                   </div>
                 </div>
-              )}
 
-              <div className="text-sm font-medium text-gray-400 mb-3">Other Elements</div>
-              <div className="grid grid-cols-5 gap-2">
-                <button
-                  onClick={() => addElement('text')}
-                  className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50"
-                >
-                  <Type className="w-6 h-6 text-orange-500" />
-                  <span className="text-xs">Text</span>
-                </button>
-                <button
-                  onClick={() => addElement('image')}
-                  className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50"
-                >
-                  <ImageIcon className="w-6 h-6 text-orange-500" />
-                  <span className="text-xs">Image</span>
-                </button>
-                <button
-                  onClick={() => addElement('line')}
-                  className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50"
-                >
-                  <Minus className="w-6 h-6 text-orange-500" />
-                  <span className="text-xs">Line</span>
-                </button>
-                <button
-                  onClick={() => addElement('rectangle')}
-                  className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50"
-                >
-                  <Square className="w-6 h-6 text-orange-500" />
-                  <span className="text-xs">Rectangle</span>
-                </button>
-                <button
-                  onClick={() => addElement('background')}
-                  className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50"
-                >
-                  <Grid className="w-6 h-6 text-orange-500" />
-                  <span className="text-xs">Background</span>
-                </button>
+                <div className="flex items-center justify-between">
+                  <label className="text-sm text-gray-700">Label gap</label>
+                  <div className="text-sm text-orange-500 cursor-pointer font-medium">
+                    {labelGap} <span>›</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="text-sm text-gray-400 mb-3">Item Attribute</div>
+                <div className="grid grid-cols-2 gap-2">
+                  {attributes.map((attr) => (
+                    <button
+                      key={attr.id}
+                      onClick={() => addAttributeElement(attr.id)}
+                      className="flex items-center justify-center text-xs p-2 rounded border border-gray-200 hover:bg-gray-50 hover:border-orange-300"
+                    >
+                      <span>{attr.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="border-t pt-4">
+                <div className="text-sm text-gray-400 mb-3">Add other items</div>
+                <div className="grid grid-cols-5 gap-2">
+                  <button
+                    onClick={() => addElement('text')}
+                    className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50 hover:border-orange-300"
+                  >
+                    <Type className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs text-gray-600">Text</span>
+                  </button>
+                  <button
+                    onClick={() => addElement('image')}
+                    className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50 hover:border-orange-300"
+                  >
+                    <ImageIcon className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs text-gray-600">Image</span>
+                  </button>
+                  <button
+                    onClick={() => addElement('line')}
+                    className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50 hover:border-orange-300"
+                  >
+                    <Minus className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs text-gray-600">Line</span>
+                  </button>
+                  <button
+                    onClick={() => addElement('rectangle')}
+                    className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50 hover:border-orange-300"
+                  >
+                    <Square className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs text-gray-600">Rectangle</span>
+                  </button>
+                  <button
+                    onClick={() => addElement('background')}
+                    className="flex flex-col items-center gap-1 p-3 border rounded hover:bg-gray-50 hover:border-orange-300"
+                  >
+                    <Grid className="w-6 h-6 text-orange-500" />
+                    <span className="text-xs text-gray-600">Background</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
