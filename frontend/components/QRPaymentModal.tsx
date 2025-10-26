@@ -1,7 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ChevronLeft, CheckCircle2 } from "lucide-react";
+import { useAuth } from "@/lib/auth";
+import backend from "~backend/client";
 
 interface QRPaymentModalProps {
   isOpen: boolean;
@@ -17,6 +19,28 @@ export default function QRPaymentModal({
   totalAmount 
 }: QRPaymentModalProps) {
   const [isConfirming, setIsConfirming] = useState(false);
+  const [qrCodeImage, setQrCodeImage] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { clientID } = useAuth();
+
+  useEffect(() => {
+    const fetchQRCode = async () => {
+      if (!isOpen || !clientID) return;
+      
+      setIsLoading(true);
+      try {
+        const response = await backend.auth.getQRCode({ id: clientID });
+        setQrCodeImage(response.qrCodeImage);
+      } catch (error) {
+        console.error("Error fetching QR code:", error);
+        setQrCodeImage(null);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchQRCode();
+  }, [isOpen, clientID]);
 
   const handleConfirmPayment = () => {
     setIsConfirming(true);
@@ -54,23 +78,27 @@ export default function QRPaymentModal({
 
           <div className="bg-white border-2 border-gray-200 rounded-lg p-6 flex flex-col items-center">
             <div className="bg-gray-100 w-64 h-64 rounded-lg flex items-center justify-center mb-4">
-              <img 
-                src="/qr-payment.png" 
-                alt="Payment QR Code"
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                  e.currentTarget.style.display = 'none';
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) {
-                    parent.innerHTML = `
-                      <div class="text-center p-4">
-                        <div class="text-6xl mb-4">📱</div>
-                        <p class="text-sm text-gray-500">Upload QR code to<br/>/frontend/public/qr-payment.png</p>
-                      </div>
-                    `;
-                  }
-                }}
-              />
+              {isLoading ? (
+                <div className="flex flex-col items-center">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mb-2"></div>
+                  <p className="text-sm text-gray-500">Loading QR code...</p>
+                </div>
+              ) : qrCodeImage ? (
+                <img 
+                  src={qrCodeImage} 
+                  alt="Payment QR Code"
+                  className="w-full h-full object-contain"
+                />
+              ) : (
+                <div className="text-center p-4">
+                  <div className="text-6xl mb-4">📱</div>
+                  <p className="text-sm text-gray-500">
+                    No QR code uploaded yet
+                    <br />
+                    Contact admin to upload QR code
+                  </p>
+                </div>
+              )}
             </div>
             
             <div className="text-center">

@@ -19,9 +19,11 @@ import {
   Activity,
   Edit,
   Trash2,
-  KeyRound
+  KeyRound,
+  QrCode
 } from "lucide-react";
 import backend from "~backend/client";
+import QRCodeUploadModal from "./QRCodeUploadModal";
 
 interface Client {
   id: number;
@@ -30,6 +32,7 @@ interface Client {
   email?: string;
   companyName?: string;
   status: string;
+  qrCodeImage?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +60,8 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
   const [showCreateClient, setShowCreateClient] = useState(false);
   const [showEditClient, setShowEditClient] = useState(false);
   const [editingClient, setEditingClient] = useState<Client | null>(null);
+  const [showQRUpload, setShowQRUpload] = useState(false);
+  const [selectedClientForQR, setSelectedClientForQR] = useState<{ id: number; name: string } | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [newClient, setNewClient] = useState({
     phoneNumber: "",
@@ -255,6 +260,11 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
     }
   };
 
+  const handleUploadQR = (clientId: number, clientName: string) => {
+    setSelectedClientForQR({ id: clientId, name: clientName });
+    setShowQRUpload(true);
+  };
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
@@ -424,7 +434,7 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                                 <SelectItem value="inactive">Inactive</SelectItem>
                               </SelectContent>
                             </Select>
-                            <div className="flex gap-1">
+                            <div className="flex gap-1 flex-wrap">
                               <Button
                                 size="sm"
                                 variant="outline"
@@ -433,6 +443,15 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
                                 title="Edit Client"
                               >
                                 <Edit className="w-4 h-4" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                className="flex-1 text-blue-600 hover:text-blue-700"
+                                onClick={() => handleUploadQR(client.id, client.clientName)}
+                                title="Upload QR Payment Code"
+                              >
+                                <QrCode className="w-4 h-4" />
                               </Button>
                               <Button
                                 size="sm"
@@ -705,6 +724,19 @@ export default function AdminDashboard({ isOpen, onClose }: AdminDashboardProps)
             </div>
           </DialogContent>
         </Dialog>
+
+        {selectedClientForQR && (
+          <QRCodeUploadModal
+            isOpen={showQRUpload}
+            onClose={() => {
+              setShowQRUpload(false);
+              setSelectedClientForQR(null);
+            }}
+            clientId={selectedClientForQR.id}
+            clientName={selectedClientForQR.name}
+            onSuccess={() => loadData()}
+          />
+        )}
       </DialogContent>
     </Dialog>
   );

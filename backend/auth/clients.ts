@@ -16,6 +16,7 @@ export interface Client {
   email?: string;
   companyName?: string;
   status: string;
+  qrCodeImage?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -66,12 +67,13 @@ export const createClient = api<CreateClientRequest, CreateClientResponse>(
       email: string | null;
       company_name: string | null;
       status: string;
+      qr_code_image: string | null;
       created_at: Date;
       updated_at: Date;
     }>`
       INSERT INTO clients (phone_number, client_name, password_hash, email, company_name)
       VALUES (${req.phoneNumber}, ${req.clientName}, ${passwordHash}, ${req.email}, ${req.companyName})
-      RETURNING id, phone_number, client_name, email, company_name, status, created_at, updated_at
+      RETURNING id, phone_number, client_name, email, company_name, status, qr_code_image, created_at, updated_at
     `;
 
     if (!client) {
@@ -86,6 +88,7 @@ export const createClient = api<CreateClientRequest, CreateClientResponse>(
         email: client.email || undefined,
         companyName: client.company_name || undefined,
         status: client.status,
+        qrCodeImage: client.qr_code_image || undefined,
         createdAt: client.created_at.toISOString(),
         updatedAt: client.updated_at.toISOString()
       },
@@ -104,10 +107,11 @@ export const listClients = api<void, ListClientsResponse>(
       email: string | null;
       company_name: string | null;
       status: string;
+      qr_code_image: string | null;
       created_at: Date;
       updated_at: Date;
     }>`
-      SELECT id, phone_number, client_name, email, company_name, status, created_at, updated_at
+      SELECT id, phone_number, client_name, email, company_name, status, qr_code_image, created_at, updated_at
       FROM clients
       ORDER BY created_at DESC
     `;
@@ -120,6 +124,7 @@ export const listClients = api<void, ListClientsResponse>(
         email: client.email || undefined,
         companyName: client.company_name || undefined,
         status: client.status,
+        qrCodeImage: client.qr_code_image || undefined,
         createdAt: client.created_at.toISOString(),
         updatedAt: client.updated_at.toISOString()
       })),
@@ -206,6 +211,7 @@ export const updateClient = api<UpdateClientRequest, { success: boolean; client:
       email: string | null;
       company_name: string | null;
       status: string;
+      qr_code_image: string | null;
       created_at: Date;
       updated_at: Date;
     }>`
@@ -217,7 +223,7 @@ export const updateClient = api<UpdateClientRequest, { success: boolean; client:
         company_name = COALESCE(${req.companyName}, company_name),
         updated_at = NOW()
       WHERE id = ${req.id}
-      RETURNING id, phone_number, client_name, email, company_name, status, created_at, updated_at
+      RETURNING id, phone_number, client_name, email, company_name, status, qr_code_image, created_at, updated_at
     `;
 
     if (!client) {
@@ -233,6 +239,7 @@ export const updateClient = api<UpdateClientRequest, { success: boolean; client:
         email: client.email || undefined,
         companyName: client.company_name || undefined,
         status: client.status,
+        qrCodeImage: client.qr_code_image || undefined,
         createdAt: client.created_at.toISOString(),
         updatedAt: client.updated_at.toISOString()
       }
@@ -271,6 +278,43 @@ export const resetClientPassword = api<ResetPasswordRequest, { success: boolean 
     `;
 
     return { success: true };
+  }
+);
+
+export interface UploadQRCodeRequest {
+  id: number;
+  qrCodeImage: string;
+}
+
+export const uploadQRCode = api<UploadQRCodeRequest, { success: boolean; qrCodeImage: string }>(
+  { auth: false, expose: true, method: "POST", path: "/auth/admin/clients/:id/qr-code" },
+  async (req) => {
+    if (!req.qrCodeImage) {
+      throw APIError.invalidArgument("QR code image is required");
+    }
+
+    await authDB.exec`
+      UPDATE clients 
+      SET qr_code_image = ${req.qrCodeImage}, updated_at = NOW()
+      WHERE id = ${req.id}
+    `;
+
+    return { success: true, qrCodeImage: req.qrCodeImage };
+  }
+);
+
+export interface GetQRCodeRequest {
+  id: number;
+}
+
+export const getQRCode = api<GetQRCodeRequest, { qrCodeImage: string | null }>(
+  { auth: false, expose: true, method: "GET", path: "/auth/admin/clients/:id/qr-code" },
+  async (req) => {
+    const result = await authDB.queryRow<{ qr_code_image: string | null }>`
+      SELECT qr_code_image FROM clients WHERE id = ${req.id}
+    `;
+
+    return { qrCodeImage: result?.qr_code_image || null };
   }
 );
 
