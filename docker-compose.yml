@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_URL=postgresql://posuser:${DB_PASSWORD:-changeme123}@db:5432/retail_pos
+      - ENCORE_RUNTIME_ENVIRONMENT=production
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - pos-network
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_DB=retail_pos
+      - POSTGRES_USER=posuser
+      - POSTGRES_PASSWORD=${DB_PASSWORD:-changeme123}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U posuser -d retail_pos"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - pos-network
+    ports:
+      - "5432:5432"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  pos-network:
+    driver: bridge
