@@ -18,6 +18,8 @@ import {
 import SalesSummaryModal from "./SalesSummaryModal";
 import HardwareSettingsModal from "./HardwareSettingsModal";
 import CashierReceiptModal from "./CashierReceiptModal";
+import StockReportModal from "./StockReportModal";
+import LowStockAlertModal from "./LowStockAlertModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -29,6 +31,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [showSalesSummary, setShowSalesSummary] = useState(false);
   const [showHardwareSettings, setShowHardwareSettings] = useState(false);
   const [showCashierReceipt, setShowCashierReceipt] = useState(false);
+  const [showStockReport, setShowStockReport] = useState(false);
+  const [showLowStockAlert, setShowLowStockAlert] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -44,6 +48,16 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     if (action === "Cashier Receipts") {
       setShowCashierReceipt(true);
+      return;
+    }
+
+    if (action === "Stock Report") {
+      setShowStockReport(true);
+      return;
+    }
+
+    if (action === "Low Stock Alert") {
+      setShowLowStockAlert(true);
       return;
     }
     
@@ -123,12 +137,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         ];
       case "Stock":
         return [
-          { label: "Stock In", action: "Stock In" },
-          { label: "Stock Out", action: "Stock Out" },
-          { label: "Stock Loss", action: "Stock Loss" },
           { label: "Stock Report", action: "Stock Report" },
-          { label: "Low Stock Alert", action: "Low Stock Alert" },
-          { label: "Stock Adjustment", action: "Stock Adjustment" }
+          { label: "Low Stock Alert", action: "Low Stock Alert" }
         ];
       case "Promotion":
         return [
@@ -265,6 +275,18 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       <CashierReceiptModal
         isOpen={showCashierReceipt}
         onClose={() => setShowCashierReceipt(false)}
+      />
+
+      {/* Stock Report Modal */}
+      <StockReportModal
+        isOpen={showStockReport}
+        onClose={() => setShowStockReport(false)}
+      />
+
+      {/* Low Stock Alert Modal */}
+      <LowStockAlertModal
+        isOpen={showLowStockAlert}
+        onClose={() => setShowLowStockAlert(false)}
       />
     </>
   );

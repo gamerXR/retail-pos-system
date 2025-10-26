@@ -20,6 +20,44 @@ export interface StockUpdateResponse {
   updatedProducts: number[];
 }
 
+export interface StockMovement {
+  id: number;
+  productId: number;
+  productName: string;
+  quantity: number;
+  action: string;
+  price?: number;
+  remarks?: string;
+  employee: string;
+  createdAt: string;
+  originalQuantity: number;
+  currentQuantity: number;
+}
+
+export interface StockHistoryRequest {
+  startDate?: string;
+  endDate?: string;
+  shift?: string;
+  employee?: string;
+  reason?: string;
+  itemId?: number;
+}
+
+export interface StockHistoryResponse {
+  movements: StockMovement[];
+}
+
+export interface LowStockItem {
+  id: number;
+  name: string;
+  quantity: number;
+  price: number;
+}
+
+export interface LowStockResponse {
+  items: LowStockItem[];
+}
+
 // Updates stock for multiple products.
 export const updateStock = api<BulkStockUpdateRequest, StockUpdateResponse>(
   { auth: true, expose: true, method: "POST", path: "/pos/stock/update" },
@@ -68,8 +106,11 @@ export const updateStock = api<BulkStockUpdateRequest, StockUpdateResponse>(
           WHERE id = ${update.productId} AND client_id = ${auth.clientID}
         `;
 
-        // Log stock movement (optional - you can create a stock_movements table later)
-        // For now, we'll just track the updated products
+        await tx.exec`
+          INSERT INTO stock_movements (product_id, client_id, quantity, action, price, remarks, employee)
+          VALUES (${update.productId}, ${auth.clientID}, ${update.quantity}, ${update.action}, ${update.price || 0}, ${update.remarks || ''}, ${auth.userID})
+        `;
+
         updatedProducts.push(update.productId);
       }
 
@@ -83,5 +124,97 @@ export const updateStock = api<BulkStockUpdateRequest, StockUpdateResponse>(
       await tx.rollback();
       throw error;
     }
+  }
+);
+
+export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
+  { auth: true, expose: true, method: "POST", path: "/pos/stock/history" },
+  async (req) => {
+    const auth = getAuthData()! as AuthData;
+    
+    const movements = await posDB.query<{
+      id: number;
+      product_id: number;
+      product_name: string;
+      quantity: number;
+      action: string;
+      price: number | null;
+      remarks: string | null;
+      employee: string;
+      created_at: Date;
+      original_quantity: number;
+      current_quantity: number;
+    }>`
+      SELECT 
+        sm.id,
+        sm.product_id,
+        p.name as product_name,
+        sm.quantity,
+        sm.action,
+        sm.price,
+        sm.remarks,
+        sm.employee,
+        sm.created_at,
+        0 as original_quantity,
+        p.quantity as current_quantity
+      FROM stock_movements sm
+      JOIN products p ON sm.product_id = p.id
+      WHERE sm.client_id = ${auth.clientID}
+      ORDER BY sm.created_at DESC
+    `;
+
+    const results: StockMovement[] = [];
+    for await (const m of movements) {
+      results.push({
+        id: m.id,
+        productId: m.product_id,
+        productName: m.product_name,
+        quantity: m.quantity,
+        action: m.action,
+        price: m.price || undefined,
+        remarks: m.remarks || undefined,
+        employee: m.employee,
+        createdAt: m.created_at.toISOString(),
+        originalQuantity: m.original_quantity,
+        currentQuantity: m.current_quantity
+      });
+    }
+
+    return {
+      movements: results
+    };
+  }
+);
+
+export const getLowStock = api<void, LowStockResponse>(
+  { auth: true, expose: true, method: "GET", path: "/pos/stock/low" },
+  async () => {
+    const auth = getAuthData()! as AuthData;
+    
+    const items = await posDB.query<{
+      id: number;
+      name: string;
+      quantity: number;
+      price: number;
+    }>`
+      SELECT id, name, quantity, price
+      FROM products
+      WHERE client_id = ${auth.clientID} AND quantity <= 5
+      ORDER BY quantity ASC, name ASC
+    `;
+
+    const results: LowStockItem[] = [];
+    for await (const item of items) {
+      results.push({
+        id: item.id,
+        name: item.name,
+        quantity: item.quantity,
+        price: item.price
+      });
+    }
+
+    return {
+      items: results
+    };
   }
 );

@@ -114,6 +114,7 @@ import {
     updateClient as api_auth_clients_updateClient,
     updateClientStatus as api_auth_clients_updateClientStatus
 } from "~backend/auth/clients";
+import { getEmployees as api_auth_employees_getEmployees } from "~backend/auth/employees";
 import { login as api_auth_login_login } from "~backend/auth/login";
 
 export namespace auth {
@@ -130,6 +131,7 @@ export namespace auth {
             this.deactivateLicense = this.deactivateLicense.bind(this)
             this.deleteClient = this.deleteClient.bind(this)
             this.getClientStats = this.getClientStats.bind(this)
+            this.getEmployees = this.getEmployees.bind(this)
             this.listClients = this.listClients.bind(this)
             this.listLicenses = this.listLicenses.bind(this)
             this.listTrialSessions = this.listTrialSessions.bind(this)
@@ -192,6 +194,12 @@ export namespace auth {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/auth/admin/clients/stats`, {method: "GET", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_clients_getClientStats>
+        }
+
+        public async getEmployees(): Promise<ResponseType<typeof api_auth_employees_getEmployees>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/auth/employees`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_employees_getEmployees>
         }
 
         public async listClients(): Promise<ResponseType<typeof api_auth_clients_listClients>> {
@@ -296,7 +304,11 @@ import {
     exportSalesViaEmail as api_pos_sales_exportSalesViaEmail,
     getSalesSummary as api_pos_sales_getSalesSummary
 } from "~backend/pos/sales";
-import { updateStock as api_pos_stock_updateStock } from "~backend/pos/stock";
+import {
+    getLowStock as api_pos_stock_getLowStock,
+    getStockHistory as api_pos_stock_getStockHistory,
+    updateStock as api_pos_stock_updateStock
+} from "~backend/pos/stock";
 
 export namespace pos {
 
@@ -313,11 +325,13 @@ export namespace pos {
             this.exportSalesViaEmail = this.exportSalesViaEmail.bind(this)
             this.getCategories = this.getCategories.bind(this)
             this.getFlatCategories = this.getFlatCategories.bind(this)
+            this.getLowStock = this.getLowStock.bind(this)
             this.getOpeningBalance = this.getOpeningBalance.bind(this)
             this.getProduct = this.getProduct.bind(this)
             this.getProducts = this.getProducts.bind(this)
             this.getProductsByCategory = this.getProductsByCategory.bind(this)
             this.getSalesSummary = this.getSalesSummary.bind(this)
+            this.getStockHistory = this.getStockHistory.bind(this)
             this.searchReceipts = this.searchReceipts.bind(this)
             this.setOpeningBalance = this.setOpeningBalance.bind(this)
             this.stickProduct = this.stickProduct.bind(this)
@@ -395,6 +409,12 @@ export namespace pos {
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_categories_getFlatCategories>
         }
 
+        public async getLowStock(): Promise<ResponseType<typeof api_pos_stock_getLowStock>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/stock/low`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_stock_getLowStock>
+        }
+
         /**
          * Gets the latest opening balance.
          */
@@ -445,6 +465,12 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/sales/summary`, {query, method: "GET", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_sales_getSalesSummary>
+        }
+
+        public async getStockHistory(params: RequestType<typeof api_pos_stock_getStockHistory>): Promise<ResponseType<typeof api_pos_stock_getStockHistory>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/stock/history`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_stock_getStockHistory>
         }
 
         public async searchReceipts(params: RequestType<typeof api_pos_receipts_searchReceipts>): Promise<ResponseType<typeof api_pos_receipts_searchReceipts>> {
