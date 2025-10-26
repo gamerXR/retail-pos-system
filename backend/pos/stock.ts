@@ -132,28 +132,6 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
   async (req) => {
     const auth = getAuthData()! as AuthData;
     
-    let whereConditions = [`sm.client_id = ${auth.clientID}`];
-    
-    if (req.startDate) {
-      whereConditions.push(`sm.created_at >= ${req.startDate}`);
-    }
-    
-    if (req.endDate) {
-      whereConditions.push(`sm.created_at <= ${req.endDate}`);
-    }
-    
-    if (req.employee && req.employee !== 'All') {
-      whereConditions.push(`sm.employee = ${req.employee}`);
-    }
-    
-    if (req.reason && req.reason !== 'All') {
-      whereConditions.push(`sm.action = ${req.reason}`);
-    }
-    
-    if (req.itemId) {
-      whereConditions.push(`sm.product_id = ${req.itemId}`);
-    }
-
     const movements = await posDB.query<{
       id: number;
       product_id: number;
@@ -184,25 +162,51 @@ export const getStockHistory = api<StockHistoryRequest, StockHistoryResponse>(
       FROM stock_movements sm
       JOIN products p ON sm.product_id = p.id
       LEFT JOIN auth.clients c ON sm.employee = c.phone_number
-      WHERE ${posDB.raw(whereConditions.join(' AND '))}
+      WHERE sm.client_id = ${auth.clientID.toString()}
       ORDER BY sm.created_at DESC
     `;
 
     const results: StockMovement[] = [];
     for await (const m of movements) {
-      results.push({
-        id: m.id,
-        productId: m.product_id,
-        productName: m.product_name,
-        quantity: m.quantity,
-        action: m.action,
-        price: m.price || undefined,
-        remarks: m.remarks || undefined,
-        employee: m.employee_name,
-        createdAt: m.created_at.toISOString(),
-        originalQuantity: m.original_quantity,
-        currentQuantity: m.current_quantity
-      });
+      let include = true;
+      
+      if (req.startDate) {
+        const startDate = new Date(req.startDate);
+        if (m.created_at < startDate) include = false;
+      }
+      
+      if (req.endDate) {
+        const endDate = new Date(req.endDate);
+        if (m.created_at > endDate) include = false;
+      }
+      
+      if (req.employee && req.employee !== 'All' && m.employee !== req.employee) {
+        include = false;
+      }
+      
+      if (req.reason && req.reason !== 'All' && m.action !== req.reason) {
+        include = false;
+      }
+      
+      if (req.itemId && m.product_id !== req.itemId) {
+        include = false;
+      }
+      
+      if (include) {
+        results.push({
+          id: m.id,
+          productId: m.product_id,
+          productName: m.product_name,
+          quantity: m.quantity,
+          action: m.action,
+          price: m.price || undefined,
+          remarks: m.remarks || undefined,
+          employee: m.employee_name,
+          createdAt: m.created_at.toISOString(),
+          originalQuantity: m.original_quantity,
+          currentQuantity: m.current_quantity
+        });
+      }
     }
 
     return {
