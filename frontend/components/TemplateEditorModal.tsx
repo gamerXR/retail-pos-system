@@ -53,10 +53,44 @@ export default function TemplateEditorModal({
       setPaperHeight(template.height);
       setElements(template.elements || []);
     } else {
-      setTemplateName("Custom template");
-      setPaperWidth(40);
-      setPaperHeight(30);
-      setElements([]);
+      setTemplateName("Retail Barcode Label");
+      setPaperWidth(25);
+      setPaperHeight(35);
+      setElements([
+        {
+          id: 'name-1',
+          type: 'attribute',
+          x: 2,
+          y: 2,
+          width: 21,
+          height: 6,
+          content: 'Product name',
+          fontSize: 14,
+          attribute: 'product-name',
+        },
+        {
+          id: 'price-1',
+          type: 'attribute',
+          x: 2,
+          y: 10,
+          width: 21,
+          height: 6,
+          content: 'Unit Price',
+          fontSize: 16,
+          attribute: 'unit-price',
+        },
+        {
+          id: 'barcode-1',
+          type: 'attribute',
+          x: 2,
+          y: 18,
+          width: 21,
+          height: 15,
+          content: 'Barcode',
+          fontSize: 12,
+          attribute: 'barcode',
+        }
+      ]);
       setSelectedElement(null);
     }
   }, [template, isOpen]);
