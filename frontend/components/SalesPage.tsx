@@ -23,6 +23,7 @@ import ReprintModal from "./ReprintModal";
 import ReturnModal from "./ReturnModal";
 import SettingsModal from "./SettingsModal";
 import CustomItemModal from "./CustomItemModal";
+import SalespersonManagementModal from "./SalespersonManagementModal";
 
 interface SalesPageProps {
   onLogout?: () => void;
@@ -50,6 +51,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   const [showReturnModal, setShowReturnModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCustomItemModal, setShowCustomItemModal] = useState(false);
+  const [showSalespersonModal, setShowSalespersonModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [contextMenuProduct, setContextMenuProduct] = useState<Product | null>(null);
@@ -1030,6 +1032,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
         onShiftReport={() => setShowShiftReportModal(true)}
         onReprint={() => setShowReprintModal(true)}
         onReturn={() => setShowReturnModal(true)}
+        onSalesperson={() => setShowSalespersonModal(true)}
       />
 
       <PrinterModal
@@ -1056,6 +1059,11 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       <SettingsModal
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
+      />
+
+      <SalespersonManagementModal
+        isOpen={showSalespersonModal}
+        onClose={() => setShowSalespersonModal(false)}
       />
     </div>
   );

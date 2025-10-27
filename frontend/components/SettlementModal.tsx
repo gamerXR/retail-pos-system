@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, Settings } from "lucide-react";
-import { useBackend } from "../lib/auth";
+import { useBackend, useAuth } from "../lib/auth";
 import type { Product } from "~backend/pos/products";
 import PaymentOptionsModal from "./PaymentOptionsModal";
 import OtherPaymentModal from "./OtherPaymentModal";
@@ -40,6 +41,11 @@ interface ReceiptSettings {
   footer: string;
 }
 
+interface Salesperson {
+  id: number;
+  name: string;
+}
+
 export default function SettlementModal({ 
   isOpen, 
   onClose, 
@@ -58,7 +64,8 @@ export default function SettlementModal({
   const [paymentMethod, setPaymentMethod] = useState<"cash" | "member" | "others">("cash");
   const [selectedOtherPayment, setSelectedOtherPayment] = useState<string>("");
   const [printReceipt, setPrintReceipt] = useState(true);
-  const [salesPerson, setSalesPerson] = useState("None");
+  const [salespersonId, setSalespersonId] = useState<string>("none");
+  const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const [paidAmount, setPaidAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showPaymentOptions, setShowPaymentOptions] = useState(false);
@@ -76,6 +83,22 @@ export default function SettlementModal({
   const [showQRPaymentModal, setShowQRPaymentModal] = useState(false);
   const { toast } = useToast();
   const backend = useBackend();
+  const auth = useAuth();
+
+  useEffect(() => {
+    if (isOpen) {
+      loadSalespersons();
+    }
+  }, [isOpen]);
+
+  const loadSalespersons = async () => {
+    try {
+      const response = await backend.auth.listSalespersons();
+      setSalespersons(response.salespersons.filter(sp => sp.isActive));
+    } catch (error) {
+      console.error("Error loading salespersons:", error);
+    }
+  };
 
   const subtotal = cartItems.reduce((total, item) => total + (item.product.price * item.quantity), 0);
   const discountAmount = (subtotal * customDiscount) / 100;
@@ -339,10 +362,14 @@ export default function SettlementModal({
     }
 
     // Sales person
-    if (salesPerson && salesPerson !== "None") {
+    const salespersonName = salespersonId !== "none" 
+      ? salespersons.find(sp => sp.id === parseInt(salespersonId))?.name 
+      : auth.salespersonName || (auth.isSalesperson ? "Unknown Salesperson" : null);
+      
+    if (salespersonName) {
       receiptContent += `
         <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
-          Served by: ${salesPerson}
+          Served by: ${salespersonName}
         </div>
       `;
     }
@@ -448,6 +475,14 @@ export default function SettlementModal({
         totalPrice: item.product.price * item.quantity
       }));
 
+      const salespersonNameForSale = salespersonId !== "none" 
+        ? salespersons.find(sp => sp.id === parseInt(salespersonId))?.name 
+        : auth.salespersonName || undefined;
+
+      const salespersonIdForSale = salespersonId !== "none" 
+        ? parseInt(salespersonId)
+        : auth.salespersonId || undefined;
+
       const saleResponse = await backend.pos.createSale({
         items: saleItems,
         totalAmount: actualAmount,
@@ -457,7 +492,8 @@ export default function SettlementModal({
         customReduce: customReduce > 0 ? customReduce : undefined,
         customDiscount: customDiscount > 0 ? customDiscount : undefined,
         printReceipt: printReceipt,
-        salesPerson: salesPerson !== "None" ? salesPerson : undefined,
+        salesPerson: salespersonNameForSale,
+        salespersonId: salespersonIdForSale,
         remarks: remarks || undefined
       });
 
@@ -539,7 +575,17 @@ export default function SettlementModal({
                 <Button 
                   variant="outline" 
                   className="flex-1"
-                  onClick={() => setShowCustomReduceModal(true)}
+                  onClick={() => {
+                    if (auth.isSalesperson && !auth.canGiveDiscounts) {
+                      toast({
+                        title: "Permission Denied",
+                        description: "You don't have permission to give discounts",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    setShowCustomReduceModal(true);
+                  }}
                 >
                   Custom Reduce
                   {customReduce > 0 && <span className="ml-2 text-orange-500">(-${customReduce.toFixed(2)})</span>}
@@ -547,7 +593,17 @@ export default function SettlementModal({
                 <Button 
                   variant="outline" 
                   className="flex-1"
-                  onClick={() => setShowCustomDiscountModal(true)}
+                  onClick={() => {
+                    if (auth.isSalesperson && !auth.canGiveDiscounts) {
+                      toast({
+                        title: "Permission Denied",
+                        description: "You don't have permission to give discounts",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    setShowCustomDiscountModal(true);
+                  }}
                 >
                   Custom Discount
                   {customDiscount > 0 && <span className="ml-2 text-orange-500">(-{customDiscount}%)</span>}
@@ -626,7 +682,21 @@ export default function SettlementModal({
               {/* Sales Person */}
               <div className="flex justify-between items-center">
                 <span className="text-lg">Sales Person</span>
-                <span className="text-orange-500">{salesPerson}</span>
+                <Select value={salespersonId} onValueChange={setSalespersonId}>
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">
+                      {auth.isSalesperson ? auth.salespersonName || "Me" : "None"}
+                    </SelectItem>
+                    {!auth.isSalesperson && salespersons.map((sp) => (
+                      <SelectItem key={sp.id} value={sp.id.toString()}>
+                        {sp.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
               {/* Remarks */}

@@ -24,7 +24,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
   const { toast } = useToast();
-  const { login } = useAuth();
+  const { login, salespersonLogin } = useAuth();
 
   const handleLogin = async () => {
     if (!phoneNumber || !password) {
@@ -38,20 +38,50 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
     setIsLoading(true);
     try {
-      const response = await backend.auth.login({
-        phoneNumber,
-        password
-      });
-
-      if (response.success) {
-        login(phoneNumber, response.clientName, response.clientID);
-        
-        toast({
-          title: "Login Successful",
-          description: `Welcome back, ${response.clientName}!`,
+      try {
+        const response = await backend.auth.login({
+          phoneNumber,
+          password
         });
-        
-        setShowOpeningBalanceModal(true);
+
+        if (response.success) {
+          login(phoneNumber, response.clientName, response.clientID);
+          
+          toast({
+            title: "Login Successful",
+            description: `Welcome back, ${response.clientName}!`,
+          });
+          
+          setShowOpeningBalanceModal(true);
+          return;
+        }
+      } catch (clientError) {
+        try {
+          const salespersonResponse = await backend.auth.salespersonLogin({
+            phoneNumber,
+            password
+          });
+
+          salespersonLogin(
+            salespersonResponse.salespersonId,
+            salespersonResponse.clientId,
+            salespersonResponse.name,
+            salespersonResponse.phoneNumber,
+            salespersonResponse.canProcessReturns,
+            salespersonResponse.canGiveDiscounts,
+            salespersonResponse.token
+          );
+          
+          toast({
+            title: "Login Successful",
+            description: `Welcome, ${salespersonResponse.name}!`,
+          });
+          
+          setShowOpeningBalanceModal(true);
+          return;
+        } catch (salespersonError) {
+          throw clientError;
+        }
       }
     } catch (error: any) {
       console.error("Login error:", error);

@@ -10,7 +10,7 @@ import {
   RefreshCw, 
   Power, 
   MessageSquare, 
-  Lock, 
+  Users, 
   Send 
 } from "lucide-react";
 import { openCashDrawer } from "../lib/hardware";
@@ -22,6 +22,7 @@ interface MoreMenuModalProps {
   onShiftReport?: () => void;
   onReprint?: () => void;
   onReturn?: () => void;
+  onSalesperson?: () => void;
 }
 
 export default function MoreMenuModal({ 
@@ -30,7 +31,8 @@ export default function MoreMenuModal({
   onLogout, 
   onShiftReport, 
   onReprint, 
-  onReturn 
+  onReturn,
+  onSalesperson 
 }: MoreMenuModalProps) {
   const { toast } = useToast();
 
@@ -83,6 +85,18 @@ export default function MoreMenuModal({
       toast({
         title: "Return Items",
         description: "Opening return management...",
+      });
+    }
+    onClose();
+  };
+
+  const handleSalesperson = () => {
+    if (onSalesperson) {
+      onSalesperson();
+    } else {
+      toast({
+        title: "Salesperson",
+        description: "Opening salesperson management...",
       });
     }
     onClose();
@@ -172,11 +186,11 @@ export default function MoreMenuModal({
       handler: () => handleMenuAction("Feedback")
     },
     {
-      icon: Lock,
-      label: "Screen Lock",
-      action: "Screen Lock",
-      description: "Lock the screen",
-      handler: () => handleMenuAction("Screen Lock")
+      icon: Users,
+      label: "Salesperson",
+      action: "Salesperson",
+      description: "Manage salespersons",
+      handler: handleSalesperson
     },
     {
       icon: Send,

@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/components/ui/use-toast";
 import { ChevronLeft, Search, Undo2 } from "lucide-react";
+import { useAuth } from "../lib/auth";
 
 interface ReturnModalProps {
   isOpen: boolean;
@@ -40,6 +41,18 @@ export default function ReturnModal({ isOpen, onClose }: ReturnModalProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
+  const auth = useAuth();
+
+  useEffect(() => {
+    if (isOpen && auth.isSalesperson && !auth.canProcessReturns) {
+      toast({
+        title: "Permission Denied",
+        description: "You don't have permission to process returns",
+        variant: "destructive",
+      });
+      onClose();
+    }
+  }, [isOpen, auth.isSalesperson, auth.canProcessReturns]);
 
   const returnReasons = [
     "Defective Product",

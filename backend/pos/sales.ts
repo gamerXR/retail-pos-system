@@ -29,6 +29,7 @@ export interface CreateSaleRequest {
   customDiscount?: number;
   printReceipt?: boolean;
   salesPerson?: string;
+  salespersonId?: number;
   remarks?: string;
 }
 
@@ -102,8 +103,8 @@ export const createSale = api<CreateSaleRequest, CreateSaleResponse>(
     
     try {
       const sale = await tx.queryRow<{ id: number; total_amount: number; created_at: Date }>`
-        INSERT INTO sales (total_amount, payment_method, custom_reduce, custom_discount, remarks, client_id)
-        VALUES (${req.totalAmount}, ${req.paymentMethod}, ${req.customReduce || null}, ${req.customDiscount || null}, ${req.remarks || null}, ${auth.clientID})
+        INSERT INTO sales (total_amount, payment_method, custom_reduce, custom_discount, remarks, salesperson_id, salesperson_name, client_id)
+        VALUES (${req.totalAmount}, ${req.paymentMethod}, ${req.customReduce || null}, ${req.customDiscount || null}, ${req.remarks || null}, ${req.salespersonId || null}, ${req.salesPerson || null}, ${auth.clientID})
         RETURNING id, total_amount, created_at
       `;
 
