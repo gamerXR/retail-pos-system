@@ -38,7 +38,7 @@ export const createSalesperson = api<CreateSalespersonRequest, CreateSalesperson
 
     const existing = await authDB.queryRow<{ id: number }>`
       SELECT id FROM salespersons 
-      WHERE client_id = ${auth.clientId} AND phone_number = ${req.phoneNumber}
+      WHERE client_id = ${auth.clientID} AND phone_number = ${req.phoneNumber}
     `;
 
     if (existing) {
@@ -61,7 +61,7 @@ export const createSalesperson = api<CreateSalespersonRequest, CreateSalesperson
         can_process_returns, can_give_discounts
       )
       VALUES (
-        ${auth.clientId}, ${req.name}, ${req.phoneNumber}, ${req.password},
+        ${auth.clientID}, ${req.name}, ${req.phoneNumber}, ${req.password},
         ${req.canProcessReturns}, ${req.canGiveDiscounts}
       )
       RETURNING id, client_id, name, phone_number, can_process_returns, 
@@ -112,7 +112,7 @@ export const listSalespersons = api<void, ListSalespersonsResponse>(
       SELECT id, client_id, name, phone_number, can_process_returns,
              can_give_discounts, is_active, created_at, updated_at
       FROM salespersons
-      WHERE client_id = ${auth.clientId}
+      WHERE client_id = ${auth.clientID}
       ORDER BY created_at DESC
     `;
 
@@ -165,7 +165,7 @@ export const updateSalesperson = api<UpdateSalespersonRequest, { success: boolea
         can_give_discounts = COALESCE(${req.canGiveDiscounts}, can_give_discounts),
         is_active = COALESCE(${req.isActive}, is_active),
         updated_at = NOW()
-      WHERE id = ${req.id} AND client_id = ${auth.clientId}
+      WHERE id = ${req.id} AND client_id = ${auth.clientID}
       RETURNING id, client_id, name, phone_number, can_process_returns,
                 can_give_discounts, is_active, created_at, updated_at
     `;
@@ -202,7 +202,7 @@ export const deleteSalesperson = api<DeleteSalespersonRequest, { success: boolea
 
     await authDB.exec`
       DELETE FROM salespersons 
-      WHERE id = ${req.id} AND client_id = ${auth.clientId}
+      WHERE id = ${req.id} AND client_id = ${auth.clientID}
     `;
 
     return { success: true };
@@ -226,7 +226,7 @@ export const updateSalespersonPassword = api<UpdateSalespersonPasswordRequest, {
     await authDB.exec`
       UPDATE salespersons
       SET password_hash = ${req.password}, updated_at = NOW()
-      WHERE id = ${req.id} AND client_id = ${auth.clientId}
+      WHERE id = ${req.id} AND client_id = ${auth.clientID}
     `;
 
     return { success: true };
