@@ -141,9 +141,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case "Promotion":
         return [
           { label: "Create Promotion", action: "Create Promotion" },
-          { label: "Manage Promotions", action: "Manage Promotions" },
-          { label: "Discount Rules", action: "Discount Rules" },
-          { label: "Promotion Report", action: "Promotion Report" }
         ];
       case "Member":
         return [
@@ -155,9 +152,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case "Cashier Settings":
         return [
           { label: "User Management", action: "User Management" },
-          { label: "Permissions", action: "Permissions" },
-          { label: "Shift Settings", action: "Shift Settings" },
-          { label: "Payment Methods", action: "Payment Methods" }
         ];
       case "Hardware":
         return [
