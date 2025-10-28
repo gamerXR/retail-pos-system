@@ -132,13 +132,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case "Report":
         return [
           { label: "Sales Summary", action: "Sales Summary" },
-          { label: "Sales Analysis", action: "Sales Analysis" },
-          { label: "Item Sales Rank", action: "Item Sales Rank" },
-          { label: "Hourly Sales Report", action: "Hourly Sales Report" },
-          { label: "Transaction Detail", action: "Transaction Detail" },
-          { label: "Price Change", action: "Price Change" },
-          { label: "Shift Record", action: "Shift Record" },
-          { label: "Tax Report", action: "Tax Report" }
         ];
       case "Stock":
         return [
