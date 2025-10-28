@@ -45,8 +45,8 @@ export default function PrinterModal({ isOpen, onClose }: PrinterModalProps) {
       const detectedPrinters: ConnectedPrinter[] = [];
       
       if ('usb' in navigator) {
-        const devices = await navigator.usb.getDevices();
-        devices.forEach((device, index) => {
+        const devices = await (navigator as any).usb.getDevices();
+        devices.forEach((device: any, index: number) => {
           detectedPrinters.push({
             id: `usb-${device.vendorId}-${device.productId}`,
             name: device.productName || `USB Printer ${index + 1}`,
@@ -85,7 +85,7 @@ export default function PrinterModal({ isOpen, onClose }: PrinterModalProps) {
   const handleRequestUSBPermission = async () => {
     try {
       // Class 7 is for printers
-      const device = await navigator.usb.requestDevice({ filters: [{ classCode: 7 }] });
+      const device = await (navigator as any).usb.requestDevice({ filters: [{ classCode: 7 }] });
       if (device) {
         toast({ 
           title: "Permission Granted", 

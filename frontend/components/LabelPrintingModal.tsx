@@ -66,7 +66,7 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
               {element.type === 'line' && <div className="w-full h-full bg-black"></div>}
               {element.type === 'rectangle' && <div className="w-full h-full border-2 border-black"></div>}
               {element.type === 'barcode' && (
-                <svg ref={(el) => el && renderBarcode(el, product.barcode || '9988880202624')} className="w-full h-full"></svg>
+                <svg ref={(el) => { if (el) renderBarcode(el, product.barcode || '9988880202624'); }} className="w-full h-full"></svg>
               )}
               {element.type === 'background' && <div className="w-full h-full bg-gray-200"></div>}
             </div>
@@ -91,7 +91,7 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
             <div className="mb-1">Mem. Price: {product.price.toFixed(2)}</div>
             <div className="mb-3">Normal Price: {product.price.toFixed(2)}</div>
             <div className="text-center">
-              <svg ref={(el) => el && renderBarcode(el, product.barcode || '9988880202624')} className="w-full" style={{ height: '35px' }}></svg>
+              <svg ref={(el) => { if (el) renderBarcode(el, product.barcode || '9988880202624'); }} className="w-full" style={{ height: '35px' }}></svg>
               <div className="text-xs mt-1">{product.barcode || '9988880202624'}</div>
             </div>
             <div className="text-xs mt-2 text-center">Thank You</div>

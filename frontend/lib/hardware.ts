@@ -30,13 +30,13 @@ export const openCashDrawer = async () => {
   }
 
   try {
-    const devices = await navigator.usb.getDevices();
+    const devices = await (navigator as any).usb.getDevices();
     
     const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
     const vendorId = parseInt(vendorIdHex, 16);
     const productId = parseInt(productIdHex, 16);
 
-    const device = devices.find(d => d.vendorId === vendorId && d.productId === productId);
+    const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
 
     if (!device) {
       throw new Error("Printer not found or permission not granted. Please go to Hardware Settings > Printers and connect to your USB printer.");
@@ -52,7 +52,7 @@ export const openCashDrawer = async () => {
     }
 
     // Find the correct interface and endpoint
-    const printerInterface = device.configuration?.interfaces.find(iface => 
+    const printerInterface = device.configuration?.interfaces.find((iface: any) => 
       iface.alternate.interfaceClass === 7 // 7 is the printer class
     );
     
@@ -65,7 +65,7 @@ export const openCashDrawer = async () => {
       await device.claimInterface(printerInterface.interfaceNumber);
     }
 
-    const outEndpoint = printerInterface.alternate.endpoints.find(ep => ep.direction === 'out');
+    const outEndpoint = printerInterface.alternate.endpoints.find((ep: any) => ep.direction === 'out');
     if (!outEndpoint) {
       throw new Error("Printer OUT endpoint not found. Cannot send commands to this printer.");
     }

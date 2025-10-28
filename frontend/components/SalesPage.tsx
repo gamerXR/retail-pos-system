@@ -102,12 +102,12 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       if (printerInfo.connectionType === 'usb') {
         // Check if the USB device is still available
         if ('usb' in navigator) {
-          const devices = await navigator.usb.getDevices();
+          const devices = await (navigator as any).usb.getDevices();
           const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
           const vendorId = parseInt(vendorIdHex, 16);
           const productId = parseInt(productIdHex, 16);
           
-          const device = devices.find(d => d.vendorId === vendorId && d.productId === productId);
+          const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
           
           if (device) {
             setPrinterConnected(true);
@@ -144,12 +144,12 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       if (printerInfo.connectionType === 'usb') {
         // Check if USB device is still available
         if ('usb' in navigator) {
-          const devices = await navigator.usb.getDevices();
+          const devices = await (navigator as any).usb.getDevices();
           const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
           const vendorId = parseInt(vendorIdHex, 16);
           const productId = parseInt(productIdHex, 16);
           
-          const device = devices.find(d => d.vendorId === vendorId && d.productId === productId);
+          const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
           setPrinterConnected(!!device);
         } else {
           setPrinterConnected(false);
