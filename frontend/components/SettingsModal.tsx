@@ -166,9 +166,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case "About":
         return [
           { label: "System Information", action: "System Information" },
-          { label: "License", action: "License" },
-          { label: "Support", action: "Support" },
-          { label: "Updates", action: "Updates" }
         ];
       default:
         return [];
