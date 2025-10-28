@@ -168,7 +168,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         ];
       case "Hardware":
         return [
-          { label: "Printers", action: "Printer Settings" },
           { label: "Cashier Receipts", action: "Cashier Receipts" },
           { label: "Barcode Receipt", action: "Barcode Receipt" }
         ];
