@@ -162,8 +162,6 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         return [
           { label: "Backup Data", action: "Backup Data" },
           { label: "Restore Data", action: "Restore Data" },
-          { label: "Export Data", action: "Export Data" },
-          { label: "Import Data", action: "Import Data" }
         ];
       case "About":
         return [
