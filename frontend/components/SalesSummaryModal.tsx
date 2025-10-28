@@ -356,7 +356,6 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
               </div>
             </div>
           </DialogHeader>
-
             {/* Filters */}
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
               <h3 className="font-medium text-gray-800">Filters</h3>
