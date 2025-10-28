@@ -113,14 +113,6 @@ export default function EmailExportModal({ isOpen, onClose, onSend }: EmailExpor
             </p>
           </div>
 
-          {/* SMTP Configuration Info */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-sm text-yellow-700">
-              <strong>SMTP Configuration Required:</strong> Make sure your SMTP settings are configured in the Infrastructure tab. 
-              For Gmail users, use an App Password instead of your regular password.
-            </p>
-          </div>
-
           {/* Loading indicator */}
           {isLoading && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
