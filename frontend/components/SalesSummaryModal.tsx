@@ -358,30 +358,7 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
           </DialogHeader>
 
 					<div className="space-y-6">
-            {/* Email Setup Notice */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-              <div className="flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 text-yellow-600 mt-0.5" />
-                <div>
-                  <h4 className="font-medium text-yellow-800">Email Configuration Required</h4>
-                  <p className="text-sm text-yellow-700 mt-1">
-                    To receive email reports, you need to configure SMTP settings in the Infrastructure tab:
-                  </p>
-                  <ul className="text-sm text-yellow-700 mt-2 ml-4 list-disc">
-                    <li><strong>SMTPHost</strong> - Your SMTP server (e.g., smtp.gmail.com)</li>
-                    <li><strong>SMTPPort</strong> - SMTP port (587 for TLS, 465 for SSL)</li>
-                    <li><strong>SMTPUser</strong> - Your email username</li>
-                    <li><strong>SMTPPassword</strong> - Your email password or app password</li>
-                    <li><strong>FromEmail</strong> - Your sender email address</li>
-                  </ul>
-                  <p className="text-xs text-yellow-600 mt-2">
-                    <strong>Gmail users:</strong> Use an App Password instead of your regular password. 
-                    Enable 2-factor authentication and generate an App Password in your Google Account settings.
-                  </p>
-                </div>
-              </div>
-            </div>
-
+            
             {/* Filters */}
             <div className="bg-gray-50 p-4 rounded-lg space-y-4">
               <h3 className="font-medium text-gray-800">Filters</h3>
