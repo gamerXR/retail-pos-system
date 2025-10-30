@@ -74,19 +74,17 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
           loadCategories(),
           loadProducts()
         ]);
-        autoConnectPrinter();
       } finally {
         setIsLoading(false);
+        setTimeout(() => autoConnectPrinter(), 500);
       }
     };
     loadInitialData();
   }, []);
 
   useEffect(() => {
-    if (selectedCategoryId) {
+    if (selectedCategoryId && categories.length > 0) {
       loadProductsByCategory(selectedCategoryId);
-    } else {
-      loadProducts();
     }
   }, [selectedCategoryId]);
 
@@ -94,46 +92,44 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   useEffect(() => {
     const interval = setInterval(() => {
       checkPrinterStatus();
-    }, 30000);
+    }, 60000);
 
     return () => clearInterval(interval);
   }, []);
 
   const autoConnectPrinter = async () => {
-    setTimeout(async () => {
-      try {
-        const savedPrinter = localStorage.getItem('selectedPrinter');
-        if (!savedPrinter) {
-          setPrinterConnected(false);
-          return;
-        }
-
-        const printerInfo = JSON.parse(savedPrinter);
-        
-        if (printerInfo.connectionType === 'usb') {
-          if ('usb' in navigator) {
-            const devices = await (navigator as any).usb.getDevices();
-            const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
-            const vendorId = parseInt(vendorIdHex, 16);
-            const productId = parseInt(productIdHex, 16);
-            
-            const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
-            
-            if (device) {
-              setPrinterConnected(true);
-            } else {
-              setPrinterConnected(false);
-              localStorage.removeItem('selectedPrinter');
-            }
-          }
-        } else {
-          setPrinterConnected(true);
-        }
-      } catch (error) {
-        console.error("Error auto-connecting printer:", error);
+    try {
+      const savedPrinter = localStorage.getItem('selectedPrinter');
+      if (!savedPrinter) {
         setPrinterConnected(false);
+        return;
       }
-    }, 100);
+
+      const printerInfo = JSON.parse(savedPrinter);
+      
+      if (printerInfo.connectionType === 'usb') {
+        if ('usb' in navigator) {
+          const devices = await (navigator as any).usb.getDevices();
+          const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
+          const vendorId = parseInt(vendorIdHex, 16);
+          const productId = parseInt(productIdHex, 16);
+          
+          const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
+          
+          if (device) {
+            setPrinterConnected(true);
+          } else {
+            setPrinterConnected(false);
+            localStorage.removeItem('selectedPrinter');
+          }
+        }
+      } else {
+        setPrinterConnected(true);
+      }
+    } catch (error) {
+      console.error("Error auto-connecting printer:", error);
+      setPrinterConnected(false);
+    }
   };
 
   const checkPrinterStatus = async () => {
@@ -147,7 +143,6 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       const printerInfo = JSON.parse(savedPrinter);
       
       if (printerInfo.connectionType === 'usb') {
-        // Check if USB device is still available
         if ('usb' in navigator) {
           const devices = await (navigator as any).usb.getDevices();
           const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
@@ -160,7 +155,6 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
           setPrinterConnected(false);
         }
       } else {
-        // For other connection types, keep the status as is
         setPrinterConnected(true);
       }
     } catch (error) {
