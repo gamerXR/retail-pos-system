@@ -38,7 +38,6 @@ export default function ExportExcelModal({ isOpen, onClose }: ExportExcelModalPr
         Quantity: product.quantity || 0,
         "Category Name": product.categoryName || "",
         Barcode: product.barcode || "",
-        SKU: product.sku || "",
         "Second Name": product.secondName || "",
         "Wholesale Price": product.wholesalePrice || "",
         "Stock Price": product.stockPrice || "",

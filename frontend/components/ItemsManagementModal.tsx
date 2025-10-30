@@ -99,7 +99,6 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
       const query = searchQuery.toLowerCase();
       filtered = filtered.filter(p => 
         p.name.toLowerCase().includes(query) ||
-        p.sku?.toLowerCase().includes(query) ||
         p.barcode?.toLowerCase().includes(query)
       );
     }
@@ -284,7 +283,7 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
                   <Input
                     type="text"
-                    placeholder="Search by name, SKU, or barcode..."
+                    placeholder="Search by name or barcode..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10"
@@ -303,7 +302,6 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
                 <table className="w-full">
                   <thead className="bg-gray-50 sticky top-0">
                     <tr>
-                      <th className="text-left p-3 text-sm font-semibold text-gray-700 border-b">SKU</th>
                       <th className="text-left p-3 text-sm font-semibold text-gray-700 border-b">Name</th>
                       <th className="text-left p-3 text-sm font-semibold text-gray-700 border-b">Category</th>
                       <th className="text-left p-3 text-sm font-semibold text-gray-700 border-b">Barcode</th>
@@ -316,7 +314,7 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
                   <tbody>
                     {filteredProducts.length === 0 ? (
                       <tr>
-                        <td colSpan={8} className="text-center py-12 text-gray-500">
+                        <td colSpan={7} className="text-center py-12 text-gray-500">
                           <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
                           <p>No items found</p>
                           <p className="text-sm mt-1">Add your first item to get started</p>
@@ -325,7 +323,6 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
                     ) : (
                       filteredProducts.map((product) => (
                         <tr key={product.id} className="border-b hover:bg-gray-50">
-                          <td className="p-3 text-sm text-gray-600">{product.sku || "-"}</td>
                           <td className="p-3 text-sm font-medium text-gray-800">{product.name}</td>
                           <td className="p-3 text-sm text-gray-600">
                             {categories.find(c => c.id === product.categoryId)?.name || "-"}
