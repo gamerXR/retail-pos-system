@@ -665,7 +665,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       {/* Category Tabs */}
       <div className="bg-white border-b border-gray-200 px-4 py-2">
         <div className="flex gap-2 overflow-x-auto">
-          {categories.map((category) => (
+          {categories?.map((category) => (
             <Badge
               key={category.id}
               variant={selectedCategoryId === category.id ? "default" : "secondary"}
@@ -810,7 +810,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
           ) : (
             <>
               <div className="grid grid-cols-4 gap-4 mb-6">
-                {products.map((product) => (
+                {products?.map((product) => (
                   <div
                     key={product.id}
                     className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow select-none ${

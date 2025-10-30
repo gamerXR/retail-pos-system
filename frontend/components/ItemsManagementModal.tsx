@@ -235,7 +235,7 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
                   </Badge>
                 </Button>
                 
-                {categories.map((category) => (
+                {categories?.map((category) => (
                   <div
                     key={category.id}
                     className={`group flex items-center gap-1 rounded-md ${
