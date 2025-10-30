@@ -448,7 +448,9 @@ export default function SettlementModal({
   };
 
   const handleFinish = async () => {
-    if (paid < actualAmount) {
+    const isQRPayment = selectedOtherPayment === "QR Code Payment" || selectedOtherPayment === "DING!";
+    
+    if (!isQRPayment && paid < actualAmount) {
       toast({
         title: "Error",
         description: "Insufficient payment amount",
@@ -482,6 +484,8 @@ export default function SettlementModal({
       const salespersonIdForSale = salespersonId !== "none" 
         ? parseInt(salespersonId)
         : auth.salespersonId || undefined;
+
+      const finalPaidAmount = isQRPayment ? actualAmount : paid;
 
       const saleResponse = await backend.pos.createSale({
         items: saleItems,
