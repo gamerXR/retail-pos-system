@@ -21,6 +21,8 @@ import AddCategoryModal from "./AddCategoryModal";
 import EditCategoryModal from "./EditCategoryModal";
 import AddItemModal from "./AddItemModal";
 import EditItemModal from "./EditItemModal";
+import ImportExcelModal from "./ImportExcelModal";
+import ExportExcelModal from "./ExportExcelModal";
 
 interface ItemsManagementModalProps {
   isOpen: boolean;
@@ -37,6 +39,8 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
   const [showEditCategory, setShowEditCategory] = useState(false);
   const [showAddItem, setShowAddItem] = useState(false);
   const [showEditItem, setShowEditItem] = useState(false);
+  const [showImportExcel, setShowImportExcel] = useState(false);
+  const [showExportExcel, setShowExportExcel] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const { toast } = useToast();
@@ -157,17 +161,11 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
   };
 
   const handleImport = () => {
-    toast({
-      title: "Import",
-      description: "Import functionality will be implemented soon",
-    });
+    setShowImportExcel(true);
   };
 
   const handleExport = () => {
-    toast({
-      title: "Export",
-      description: "Export functionality will be implemented soon",
-    });
+    setShowExportExcel(true);
   };
 
   return (
@@ -432,6 +430,21 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
           setSelectedProduct(null);
           loadProducts();
         }}
+      />
+
+      <ImportExcelModal
+        isOpen={showImportExcel}
+        onClose={() => setShowImportExcel(false)}
+        onSuccess={() => {
+          setShowImportExcel(false);
+          loadProducts();
+          loadCategories();
+        }}
+      />
+
+      <ExportExcelModal
+        isOpen={showExportExcel}
+        onClose={() => setShowExportExcel(false)}
       />
     </>
   );
