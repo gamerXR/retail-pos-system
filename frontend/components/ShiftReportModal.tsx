@@ -12,11 +12,17 @@ interface ShiftReportModalProps {
   onLogout: () => void;
 }
 
+interface PaymentMethod {
+  method: string;
+  amount: number;
+  displayName: string;
+}
+
 interface ShiftData {
   totalQuantity: number;
   operationIncome: number;
   cashIncome: number;
-  baiduri: number;
+  otherPayments: PaymentMethod[];
   dayStart: string;
   shiftStart: string;
   currentTime: string;
@@ -57,7 +63,25 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
         
         // Calculate payment method totals
         const cashIncome = data.paymentMethods.find(pm => pm.method === 'cash')?.amount || 0;
-        const baiduri = data.paymentMethods.find(pm => pm.method === 'others')?.amount || 0;
+        
+        // Get other payment methods with amounts > 0
+        const otherPayments: PaymentMethod[] = [];
+        
+        const paymentMethodNames: Record<string, string> = {
+          'qr': 'QR Payment',
+          'others': 'Other Payment',
+          'card': 'Card Payment'
+        };
+        
+        data.paymentMethods.forEach((pm: any) => {
+          if (pm.method !== 'cash' && pm.amount > 0) {
+            otherPayments.push({
+              method: pm.method,
+              amount: pm.amount,
+              displayName: paymentMethodNames[pm.method] || pm.method.charAt(0).toUpperCase() + pm.method.slice(1)
+            });
+          }
+        });
         
         // Get shift start time (assume 8:17 AM for demo)
         const shiftStartTime = "08:17";
@@ -68,7 +92,7 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
           totalQuantity: data.totalQuantity,
           operationIncome: data.totalSales,
           cashIncome: cashIncome,
-          baiduri: baiduri,
+          otherPayments: otherPayments,
           dayStart: `${today.split('-').reverse().join('-')} ${shiftStartTime}`,
           shiftStart: `${today.split('-').reverse().join('-')} ${shiftStartTime}`,
           currentTime: new Date().toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString('en-GB', { hour12: false }),
@@ -193,10 +217,12 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
           <span>💵 Cash Income:</span>
           <span>$${shiftData.cashIncome.toFixed(2)}</span>
         </div>
+        ${shiftData.otherPayments.map(pm => `
         <div class="row">
-          <span>••• Baiduri Online:</span>
-          <span>$${shiftData.baiduri.toFixed(2)}</span>
+          <span>••• ${pm.displayName}:</span>
+          <span>$${pm.amount.toFixed(2)}</span>
         </div>
+        `).join('')}
       </div>
       
       <div class="separator"></div>
@@ -293,7 +319,7 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
 
                 {/* Payment Method Breakdown */}
                 <div className="grid grid-cols-2 gap-8">
-                  {/* Cash Income */}
+                  {/* Cash Income - Always shown */}
                   <div className="bg-orange-50 border-2 border-orange-300 rounded-lg p-8">
                     <div className="text-center">
                       <div className="text-5xl font-bold text-gray-800 mb-4">
@@ -306,18 +332,20 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
                     </div>
                   </div>
                   
-                  {/* Baiduri Online */}
-                  <div className="bg-blue-50 border-2 border-blue-300 rounded-lg p-8">
-                    <div className="text-center">
-                      <div className="text-5xl font-bold text-gray-800 mb-4">
-                        ${shiftData.baiduri.toFixed(2)}
-                      </div>
-                      <div className="flex items-center justify-center gap-2 text-gray-600">
-                        <span className="text-2xl">•••</span>
-                        <span className="text-lg font-medium">Baiduri Online</span>
+                  {/* Other Payments - Only shown if amount > 0 */}
+                  {shiftData.otherPayments.map((payment, index) => (
+                    <div key={payment.method} className="bg-blue-50 border-2 border-blue-300 rounded-lg p-8">
+                      <div className="text-center">
+                        <div className="text-5xl font-bold text-gray-800 mb-4">
+                          ${payment.amount.toFixed(2)}
+                        </div>
+                        <div className="flex items-center justify-center gap-2 text-gray-600">
+                          <span className="text-2xl">•••</span>
+                          <span className="text-lg font-medium">{payment.displayName}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  ))}
                 </div>
               </div>
             ) : (
@@ -382,22 +410,13 @@ export default function ShiftReportModal({ isOpen, onClose, onLogout }: ShiftRep
                     Print Report
                   </Button>
 
-                  <div className="flex gap-3">
-                    <Button
-                      variant="outline"
-                      className="flex-1 h-12 text-lg"
-                      disabled={isClosingShift}
-                    >
-                      Day Closing
-                    </Button>
-                    <Button
-                      onClick={handleDayClosing}
-                      disabled={isClosingShift || !shiftData}
-                      className="flex-1 h-12 text-lg bg-red-500 hover:bg-red-600 text-white"
-                    >
-                      {isClosingShift ? "Closing..." : "Shift"}
-                    </Button>
-                  </div>
+                  <Button
+                    onClick={handleDayClosing}
+                    disabled={isClosingShift || !shiftData}
+                    className="w-full h-12 text-lg bg-red-500 hover:bg-red-600 text-white"
+                  >
+                    {isClosingShift ? "Closing..." : "Day Closing"}
+                  </Button>
                 </div>
 
                 {/* Info */}
