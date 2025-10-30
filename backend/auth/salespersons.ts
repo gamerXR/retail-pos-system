@@ -249,7 +249,7 @@ export interface SalespersonLoginResponse {
 }
 
 export const salespersonLogin = api<SalespersonLoginRequest, SalespersonLoginResponse>(
-  { auth: false, expose: true, method: "POST", path: "/auth/salesperson/login" },
+  { expose: true, method: "POST", path: "/auth/salesperson/login" },
   async (req) => {
     if (!req.phoneNumber || !req.password) {
       throw APIError.invalidArgument("Phone number and password are required");

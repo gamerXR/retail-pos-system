@@ -1,4 +1,4 @@
-import { Header, Cookie, APIError, Gateway } from "encore.dev/api";
+import { Header, Cookie, APIError } from "encore.dev/api";
 import { authHandler } from "encore.dev/auth";
 import { authDB } from "./db";
 
@@ -89,5 +89,3 @@ export const auth = authHandler<AuthParams, AuthData>(
     };
   }
 );
-
-export const gw = new Gateway({ authHandler: auth });
