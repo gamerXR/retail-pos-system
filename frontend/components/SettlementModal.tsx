@@ -137,7 +137,7 @@ export default function SettlementModal({
     setShowOtherPaymentModal(false);
     
     if (paymentName === "QR Code Payment" || paymentName === "DING!") {
-      setPaid(actualAmount);
+      setPaidAmount(actualAmount.toString());
       setShowQRPaymentModal(true);
     }
   };
