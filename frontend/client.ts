@@ -370,6 +370,10 @@ import {
     updateCategory as api_pos_categories_updateCategory
 } from "~backend/pos/categories";
 import {
+    exportProducts as api_pos_excel_exportProducts,
+    importProducts as api_pos_excel_importProducts
+} from "~backend/pos/excel";
+import {
     createTemplate as api_pos_label_templates_createTemplate,
     deleteTemplate as api_pos_label_templates_deleteTemplate,
     listTemplates as api_pos_label_templates_listTemplates,
@@ -415,6 +419,7 @@ export namespace pos {
             this.deleteCategory = this.deleteCategory.bind(this)
             this.deleteProduct = this.deleteProduct.bind(this)
             this.deleteTemplate = this.deleteTemplate.bind(this)
+            this.exportProducts = this.exportProducts.bind(this)
             this.exportSalesViaEmail = this.exportSalesViaEmail.bind(this)
             this.getCategories = this.getCategories.bind(this)
             this.getFlatCategories = this.getFlatCategories.bind(this)
@@ -425,6 +430,7 @@ export namespace pos {
             this.getProductsByCategory = this.getProductsByCategory.bind(this)
             this.getSalesSummary = this.getSalesSummary.bind(this)
             this.getStockHistory = this.getStockHistory.bind(this)
+            this.importProducts = this.importProducts.bind(this)
             this.listTemplates = this.listTemplates.bind(this)
             this.searchReceipts = this.searchReceipts.bind(this)
             this.setOpeningBalance = this.setOpeningBalance.bind(this)
@@ -487,6 +493,12 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/label-templates/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_label_templates_deleteTemplate>
+        }
+
+        public async exportProducts(): Promise<ResponseType<typeof api_pos_excel_exportProducts>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/products/export`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_excel_exportProducts>
         }
 
         /**
@@ -578,6 +590,12 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/stock/history`, {method: "POST", body: JSON.stringify(params)})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_stock_getStockHistory>
+        }
+
+        public async importProducts(params: RequestType<typeof api_pos_excel_importProducts>): Promise<ResponseType<typeof api_pos_excel_importProducts>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/products/import`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_excel_importProducts>
         }
 
         public async listTemplates(): Promise<ResponseType<typeof api_pos_label_templates_listTemplates>> {
