@@ -62,14 +62,24 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   const [deviceId] = useState(() => localStorage.getItem('deviceId') || 'unknown');
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [printerConnected, setPrinterConnected] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   const backend = useBackend();
 
   useEffect(() => {
-    loadCategories();
-    loadProducts();
-    checkPrinterStatus();
-    autoConnectPrinter();
+    const loadInitialData = async () => {
+      setIsLoading(true);
+      try {
+        await Promise.all([
+          loadCategories(),
+          loadProducts()
+        ]);
+        autoConnectPrinter();
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadInitialData();
   }, []);
 
   useEffect(() => {
@@ -90,45 +100,40 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   }, []);
 
   const autoConnectPrinter = async () => {
-    try {
-      const savedPrinter = localStorage.getItem('selectedPrinter');
-      if (!savedPrinter) {
-        setPrinterConnected(false);
-        return;
-      }
-
-      const printerInfo = JSON.parse(savedPrinter);
-      
-      if (printerInfo.connectionType === 'usb') {
-        // Check if the USB device is still available
-        if ('usb' in navigator) {
-          const devices = await (navigator as any).usb.getDevices();
-          const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
-          const vendorId = parseInt(vendorIdHex, 16);
-          const productId = parseInt(productIdHex, 16);
-          
-          const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
-          
-          if (device) {
-            setPrinterConnected(true);
-            toast({
-              title: "Printer Auto-Connected",
-              description: `${printerInfo.name} is ready for use`,
-            });
-          } else {
-            setPrinterConnected(false);
-            // Remove the saved printer if device is no longer available
-            localStorage.removeItem('selectedPrinter');
-          }
+    setTimeout(async () => {
+      try {
+        const savedPrinter = localStorage.getItem('selectedPrinter');
+        if (!savedPrinter) {
+          setPrinterConnected(false);
+          return;
         }
-      } else {
-        // For non-USB printers, assume they're connected if saved
-        setPrinterConnected(true);
+
+        const printerInfo = JSON.parse(savedPrinter);
+        
+        if (printerInfo.connectionType === 'usb') {
+          if ('usb' in navigator) {
+            const devices = await (navigator as any).usb.getDevices();
+            const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
+            const vendorId = parseInt(vendorIdHex, 16);
+            const productId = parseInt(productIdHex, 16);
+            
+            const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
+            
+            if (device) {
+              setPrinterConnected(true);
+            } else {
+              setPrinterConnected(false);
+              localStorage.removeItem('selectedPrinter');
+            }
+          }
+        } else {
+          setPrinterConnected(true);
+        }
+      } catch (error) {
+        console.error("Error auto-connecting printer:", error);
+        setPrinterConnected(false);
       }
-    } catch (error) {
-      console.error("Error auto-connecting printer:", error);
-      setPrinterConnected(false);
-    }
+    }, 100);
   };
 
   const checkPrinterStatus = async () => {
@@ -587,6 +592,17 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
         onBack={() => setShowStockPage(false)} 
         onStockUpdate={handleStockUpdate}
       />
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
     );
   }
 
