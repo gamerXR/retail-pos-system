@@ -412,10 +412,12 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
       <AddItemModal
         isOpen={showAddItem}
         onClose={() => setShowAddItem(false)}
-        onSuccess={() => {
+        onItemCreated={() => {
           setShowAddItem(false);
           loadProducts();
         }}
+        categories={categories}
+        selectedCategoryId={selectedCategoryId}
       />
 
       <EditItemModal
