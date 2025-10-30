@@ -20,6 +20,7 @@ import HardwareSettingsModal from "./HardwareSettingsModal";
 import CashierReceiptModal from "./CashierReceiptModal";
 import StockReportModal from "./StockReportModal";
 import LowStockAlertModal from "./LowStockAlertModal";
+import ItemsManagementModal from "./ItemsManagementModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [showCashierReceipt, setShowCashierReceipt] = useState(false);
   const [showStockReport, setShowStockReport] = useState(false);
   const [showLowStockAlert, setShowLowStockAlert] = useState(false);
+  const [showItemsManagement, setShowItemsManagement] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -63,6 +65,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     if (action === "Low Stock Alert") {
       setShowLowStockAlert(true);
+      return;
+    }
+
+    if (action === "Items") {
+      setShowItemsManagement(true);
       return;
     }
     
@@ -135,6 +142,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
         ];
       case "Stock":
         return [
+          { label: "Items", action: "Items" },
           { label: "Stock Report", action: "Stock Report" },
           { label: "Low Stock Alert", action: "Low Stock Alert" }
         ];
@@ -268,6 +276,12 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       <LowStockAlertModal
         isOpen={showLowStockAlert}
         onClose={() => setShowLowStockAlert(false)}
+      />
+
+      {/* Items Management Modal */}
+      <ItemsManagementModal
+        isOpen={showItemsManagement}
+        onClose={() => setShowItemsManagement(false)}
       />
     </>
   );
