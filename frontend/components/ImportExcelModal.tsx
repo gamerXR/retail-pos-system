@@ -216,29 +216,29 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
               Download Excel Template
             </Button>
 
-            <div className="relative">
+            <div>
               <input
                 type="file"
+                id="excel-file-input"
                 accept=".xlsx,.xls"
                 onChange={handleFileSelect}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                className="hidden"
                 disabled={isUploading}
               />
-              <Button
-                variant="outline"
-                className="w-full gap-2 border-2 border-gray-300 h-16 relative"
-                disabled={isUploading}
+              <label 
+                htmlFor="excel-file-input"
+                className={`flex items-center gap-2 w-full border-2 border-gray-300 rounded-md h-16 px-4 cursor-pointer hover:bg-gray-50 transition-colors ${isUploading ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
-                <Upload className="w-5 h-5" />
-                <div className="text-left">
-                  <div className="font-semibold">
+                <Upload className="w-5 h-5 text-gray-600" />
+                <div className="text-left flex-1">
+                  <div className="font-semibold text-gray-900">
                     {selectedFile ? selectedFile.name : "Click to select Excel file"}
                   </div>
                   <div className="text-xs text-gray-500">
                     Supports .xlsx and .xls files
                   </div>
                 </div>
-              </Button>
+              </label>
             </div>
 
             {selectedFile && (

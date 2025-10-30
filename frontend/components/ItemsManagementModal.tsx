@@ -344,8 +344,8 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
                             </span>
                           </td>
                           <td className="p-3">
-                            <Badge variant={product.status === "active" ? "default" : "secondary"}>
-                              {product.status}
+                            <Badge variant={product.isOffShelf ? "secondary" : "default"}>
+                              {product.isOffShelf ? "Off Shelf" : "Active"}
                             </Badge>
                           </td>
                           <td className="p-3">
@@ -389,7 +389,7 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
       <AddCategoryModal
         isOpen={showAddCategory}
         onClose={() => setShowAddCategory(false)}
-        onSuccess={() => {
+        onCategoryCreated={() => {
           setShowAddCategory(false);
           loadCategories();
         }}
@@ -402,7 +402,12 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
           setSelectedCategory(null);
         }}
         category={selectedCategory}
-        onSuccess={() => {
+        onCategoryUpdated={() => {
+          setShowEditCategory(false);
+          setSelectedCategory(null);
+          loadCategories();
+        }}
+        onCategoryDeleted={() => {
           setShowEditCategory(false);
           setSelectedCategory(null);
           loadCategories();
@@ -420,19 +425,27 @@ export default function ItemsManagementModal({ isOpen, onClose }: ItemsManagemen
         selectedCategoryId={selectedCategoryId}
       />
 
-      <EditItemModal
-        isOpen={showEditItem}
-        onClose={() => {
-          setShowEditItem(false);
-          setSelectedProduct(null);
-        }}
-        product={selectedProduct}
-        onSuccess={() => {
-          setShowEditItem(false);
-          setSelectedProduct(null);
-          loadProducts();
-        }}
-      />
+      {selectedProduct && (
+        <EditItemModal
+          isOpen={showEditItem}
+          onClose={() => {
+            setShowEditItem(false);
+            setSelectedProduct(null);
+          }}
+          product={selectedProduct}
+          categories={categories}
+          onItemUpdated={() => {
+            setShowEditItem(false);
+            setSelectedProduct(null);
+            loadProducts();
+          }}
+          onItemDeleted={() => {
+            setShowEditItem(false);
+            setSelectedProduct(null);
+            loadProducts();
+          }}
+        />
+      )}
 
       <ImportExcelModal
         isOpen={showImportExcel}
