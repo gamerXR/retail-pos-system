@@ -1,8 +1,7 @@
-import { useState, lazy, Suspense } from "react";
+import { useState } from "react";
 import { AuthProvider } from "./lib/auth";
 import LoginPage from "./components/LoginPage";
-
-const SalesPage = lazy(() => import("./components/SalesPage"));
+import SalesPage from "./components/SalesPage";
 
 export type AppPage = "login" | "sales";
 
@@ -30,18 +29,7 @@ function AppInner() {
       case "login":
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
       case "sales":
-        return (
-          <Suspense fallback={
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-gray-600">Loading POS...</p>
-              </div>
-            </div>
-          }>
-            <SalesPage onLogout={handleLogout} userType={null} />
-          </Suspense>
-        );
+        return <SalesPage onLogout={handleLogout} userType={null} />;
       default:
         return <LoginPage onLoginSuccess={handleLoginSuccess} />;
     }
