@@ -42,7 +42,7 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
 
     for (const row of req.products) {
       try {
-        if (!row.name || !row.price) {
+        if (!row.name || !row.price || isNaN(row.price)) {
           errors.push(`Row skipped: Missing required fields (name or price)`);
           continue;
         }
@@ -68,11 +68,11 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
 
         const existingProduct = await posDB.queryRow<{ id: number }>`
           SELECT id FROM products 
-          WHERE (
-            LOWER(name) = LOWER(${row.name}) 
-            OR (${row.barcode} IS NOT NULL AND barcode = ${row.barcode})
-          )
-          AND client_id = ${auth.clientID}
+          WHERE client_id = ${auth.clientID}
+            AND (
+              LOWER(name) = LOWER(${row.name})
+              ${row.barcode ? `OR barcode = ${row.barcode}` : ''}
+            )
         `;
 
         if (existingProduct) {
@@ -97,6 +97,7 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
             errors.push(`Product "${row.name}" already exists and was skipped`);
           }
         } else {
+          const quantity = row.quantity || 0;
           await posDB.exec`
             INSERT INTO products (
               name, price, quantity, category_id, barcode, second_name, 
@@ -104,11 +105,21 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
               start_qty, is_off_shelf, sort_order, client_id
             )
             VALUES (
-              ${row.name}, ${row.price}, ${row.quantity || 0}, ${categoryId ?? null},
-              ${row.barcode ?? null}, ${row.secondName ?? null},
-              ${row.wholesalePrice ?? null}, ${row.stockPrice ?? null}, ${row.origin ?? null}, 
-              ${row.ingredients ?? null}, ${row.remarks ?? null},
-              ${row.quantity || 0}, FALSE, 0, ${auth.clientID}
+              ${row.name}, 
+              ${row.price}::numeric, 
+              ${quantity}::integer, 
+              ${categoryId}::integer,
+              ${row.barcode ?? null}, 
+              ${row.secondName ?? null},
+              ${row.wholesalePrice ?? null}::numeric, 
+              ${row.stockPrice ?? null}::numeric, 
+              ${row.origin ?? null}, 
+              ${row.ingredients ?? null}, 
+              ${row.remarks ?? null},
+              ${quantity}::integer, 
+              FALSE, 
+              0, 
+              ${auth.clientID}
             )
           `;
           imported++;
