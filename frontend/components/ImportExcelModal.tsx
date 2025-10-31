@@ -128,7 +128,7 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
         price: parseFloat(row.price || row.Price),
         quantity: row.quantity || row.Quantity ? parseInt(row.quantity || row.Quantity) : undefined,
         categoryName: row.categoryName || row.CategoryName || row.category || row.Category || undefined,
-        barcode: row.barcode || row.Barcode || undefined,
+        barcode: (row.barcode || row.Barcode) ? String(row.barcode || row.Barcode) : undefined,
         secondName: row.secondName || row.SecondName || undefined,
         wholesalePrice: row.wholesalePrice || row.WholesalePrice ? parseFloat(row.wholesalePrice || row.WholesalePrice) : undefined,
         stockPrice: row.stockPrice || row.StockPrice ? parseFloat(row.stockPrice || row.StockPrice) : undefined,
@@ -147,9 +147,13 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
       if (response.updated > 0) successMessage.push(`${response.updated} updated`);
       if (response.errors.length > 0) successMessage.push(`${response.errors.length} errors`);
 
+      const hasErrors = response.errors.length > 0;
+      const hasSuccess = response.imported > 0 || response.updated > 0;
+
       toast({
-        title: "Import Completed",
+        title: hasErrors && !hasSuccess ? "Unsuccessful upload" : "Successful upload",
         description: successMessage.join(", "),
+        variant: hasErrors && !hasSuccess ? "destructive" : "default",
       });
 
       if (response.errors.length > 0 && response.errors.length <= 5) {
@@ -163,7 +167,7 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
     } catch (error: any) {
       console.error("Import error:", error);
       toast({
-        title: "Import Failed",
+        title: "Unsuccessful upload",
         description: error.message || "Failed to import products",
         variant: "destructive",
       });
