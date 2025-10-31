@@ -9,7 +9,6 @@ export interface ProductExcelRow {
   quantity?: number;
   categoryName?: string;
   barcode?: string;
-  sku?: string;
   secondName?: string;
   wholesalePrice?: number;
   stockPrice?: number;
@@ -72,7 +71,6 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
           WHERE (
             LOWER(name) = LOWER(${row.name}) 
             OR (${row.barcode} IS NOT NULL AND barcode = ${row.barcode})
-            OR (${row.sku} IS NOT NULL AND sku = ${row.sku})
           )
           AND client_id = ${auth.clientID}
         `;
@@ -86,7 +84,6 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
                 quantity = COALESCE(${row.quantity}, quantity),
                 category_id = ${categoryId},
                 barcode = COALESCE(${row.barcode}, barcode),
-                sku = COALESCE(${row.sku}, sku),
                 second_name = COALESCE(${row.secondName}, second_name),
                 wholesale_price = COALESCE(${row.wholesalePrice}, wholesale_price),
                 stock_price = COALESCE(${row.stockPrice}, stock_price),
@@ -102,13 +99,13 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
         } else {
           await posDB.exec`
             INSERT INTO products (
-              name, price, quantity, category_id, barcode, sku, second_name, 
+              name, price, quantity, category_id, barcode, second_name, 
               wholesale_price, stock_price, origin, ingredients, remarks,
               start_qty, is_off_shelf, sort_order, client_id
             )
             VALUES (
               ${row.name}, ${row.price}, ${row.quantity || 0}, ${categoryId},
-              ${row.barcode}, ${row.sku}, ${row.secondName},
+              ${row.barcode}, ${row.secondName},
               ${row.wholesalePrice}, ${row.stockPrice}, ${row.origin}, 
               ${row.ingredients}, ${row.remarks},
               ${row.quantity || 0}, FALSE, 0, ${auth.clientID}
@@ -136,7 +133,6 @@ export const exportProducts = api<void, ExportProductsResponse>(
       quantity: number;
       categoryName: string | null;
       barcode: string | null;
-      sku: string | null;
       secondName: string | null;
       wholesalePrice: number | null;
       stockPrice: number | null;
@@ -150,7 +146,6 @@ export const exportProducts = api<void, ExportProductsResponse>(
         p.quantity,
         c.name as "categoryName",
         p.barcode,
-        p.sku,
         p.second_name as "secondName",
         p.wholesale_price as "wholesalePrice",
         p.stock_price as "stockPrice",
@@ -169,7 +164,6 @@ export const exportProducts = api<void, ExportProductsResponse>(
       quantity: p.quantity,
       categoryName: p.categoryName || undefined,
       barcode: p.barcode || undefined,
-      sku: p.sku || undefined,
       secondName: p.secondName || undefined,
       wholesalePrice: p.wholesalePrice || undefined,
       stockPrice: p.stockPrice || undefined,

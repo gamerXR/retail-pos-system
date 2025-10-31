@@ -199,7 +199,7 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
                 <ul className="text-sm text-blue-800 space-y-1">
                   <li>• Download the template to see the correct format</li>
                   <li>• Required columns: <strong>name</strong>, <strong>price</strong></li>
-                  <li>• Optional columns: quantity, categoryName, barcode, sku, etc.</li>
+                  <li>• Optional columns: quantity, categoryName, barcode, etc.</li>
                   <li>• Categories will be created automatically if they don't exist</li>
                   <li>• Duplicate products (by name/barcode/sku) will be skipped unless "Update Existing" is checked</li>
                 </ul>
@@ -270,7 +270,7 @@ export default function ImportExcelModal({ isOpen, onClose, onSuccess }: ImportE
                 className="w-4 h-4"
               />
               <span className="text-sm text-gray-700">
-                Update existing products (match by name, barcode, or SKU)
+                Update existing products (match by name or barcode)
               </span>
             </label>
           </div>
