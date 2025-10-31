@@ -671,9 +671,10 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
               variant={selectedCategoryId === category.id ? "default" : "secondary"}
               className={`px-4 py-2 whitespace-nowrap cursor-pointer ${
                 selectedCategoryId === category.id 
-                  ? "bg-red-500 text-white" 
+                  ? "text-white" 
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
+              style={selectedCategoryId === category.id ? { backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' } : undefined}
               onClick={() => setSelectedCategoryId(category.id)}
               onContextMenu={(e) => handleCategoryRightClick(category, e)}
             >
@@ -944,7 +945,8 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
               <Keyboard className="w-4 h-4" />
             </Button>
             <Button 
-              className="bg-gray-200 hover:bg-gray-300 text-gray-800 px-8"
+              className="text-white px-8 hover:opacity-90"
+              style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
               onClick={handleEnterClick}
             >
               Enter
