@@ -20,6 +20,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [activeField, setActiveField] = useState<"phoneNumber" | "password" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotMessage, setShowForgotMessage] = useState(false);
+  const [showLoginError, setShowLoginError] = useState(false);
   const [showOpeningBalanceModal, setShowOpeningBalanceModal] = useState(false);
   const [showAdminLoginModal, setShowAdminLoginModal] = useState(false);
   const [showAdminDashboard, setShowAdminDashboard] = useState(false);
@@ -85,6 +86,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       }
     } catch (error: any) {
       console.error("Login error:", error);
+      setShowLoginError(true);
       toast({
         title: "Login Failed",
         description: error.message || "Invalid phone number or password",
@@ -143,15 +145,12 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
             variant="outline"
             size="sm"
             onClick={() => setShowAdminLoginModal(true)}
-            className="bg-blue-500 text-white hover:bg-blue-600"
+            className="text-white hover:opacity-90"
+            style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
           >
             <Shield className="w-4 h-4 mr-2" />
             Admin
           </Button>
-          <div className="flex items-center gap-2">
-            <img src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3Qgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0IiBmaWxsPSIjRkY0NDQ0Ii8+CjxyZWN0IHg9IjAiIHk9IjgiIHdpZHRoPSIyNCIgaGVpZ2h0PSI4IiBmaWxsPSIjRkZGRkZGIi8+CjxyZWN0IHg9IjAiIHk9IjE2IiB3aWR0aD0iMjQiIGhlaWdodD0iOCIgZmlsbD0iIzAwNDRGRiIvPgo8L3N2Zz4K" alt="English" className="w-6 h-6" />
-            <span className="text-gray-700">English</span>
-          </div>
         </div>
       </div>
 
@@ -194,12 +193,18 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 please contact posx solution supplier
               </p>
             )}
+            {showLoginError && (
+              <p className="text-xs text-red-500">
+                Either wrong password or invalid phone number
+              </p>
+            )}
           </div>
 
           <Button
             onClick={handleLogin}
             disabled={isLoading}
-            className="w-full h-12 bg-blue-500 hover:bg-blue-600 text-white text-lg font-medium"
+            className="w-full h-12 text-white text-lg font-medium hover:opacity-90"
+            style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
           >
             {isLoading ? "..." : "Login"}
           </Button>
