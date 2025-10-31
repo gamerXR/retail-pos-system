@@ -62,6 +62,11 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
   useEffect(() => {
     if (isOpen) {
       loadSalespersons();
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
+    if (isOpen) {
       loadSummaryData();
     }
   }, [isOpen, dateFilter, employeeFilter, fromDate, toDate]);
