@@ -141,7 +141,8 @@ export default function OpeningBalanceModal({ isOpen, onClose, onContinue }: Ope
             <Button
               onClick={handleSetBalance}
               disabled={isLoading}
-              className="flex-1 h-12 text-lg bg-red-500 hover:bg-red-600 text-white"
+              className="flex-1 h-12 text-lg text-white hover:opacity-90"
+              style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
             >
               {isLoading ? "..." : "Enter"}
             </Button>
