@@ -22,6 +22,7 @@ import StockReportModal from "./StockReportModal";
 import LowStockAlertModal from "./LowStockAlertModal";
 import ItemsManagementModal from "./ItemsManagementModal";
 import DualScreenModal from "./DualScreenModal";
+import DayClosingReportModal from "./DayClosingReportModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -38,6 +39,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
   const [showLowStockAlert, setShowLowStockAlert] = useState(false);
   const [showItemsManagement, setShowItemsManagement] = useState(false);
   const [showDualScreen, setShowDualScreen] = useState(false);
+  const [showDayClosingReport, setShowDayClosingReport] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -78,6 +80,11 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
 
     if (action === "Dual Screen") {
       setShowDualScreen(true);
+      return;
+    }
+
+    if (action === "Day Closing Report") {
+      setShowDayClosingReport(true);
       return;
     }
     
@@ -147,6 +154,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
       case "Report":
         return [
           { label: "Sales Summary", action: "Sales Summary" },
+          { label: "Day Closing Report", action: "Day Closing Report" },
         ];
       case "Stock":
         return [
@@ -298,6 +306,12 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
         isOpen={showDualScreen}
         onClose={() => setShowDualScreen(false)}
         cartItems={cartItems}
+      />
+
+      {/* Day Closing Report Modal */}
+      <DayClosingReportModal
+        isOpen={showDayClosingReport}
+        onClose={() => setShowDayClosingReport(false)}
       />
     </>
   );

@@ -7,6 +7,7 @@ import { ChevronLeft, Calendar, User, Printer, Download, Check, AlertCircle } fr
 import { useBackend } from "../lib/auth";
 import ExportModal from "./ExportModal";
 import EmailExportModal from "./EmailExportModal";
+import type { Salesperson } from "~backend/auth/salespersons";
 
 interface SalesSummaryModalProps {
   isOpen: boolean;
@@ -47,6 +48,7 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
   const [isLoading, setIsLoading] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showEmailModal, setShowEmailModal] = useState(false);
+  const [salespersons, setSalespersons] = useState<Salesperson[]>([]);
   const { toast } = useToast();
   const backend = useBackend();
 
@@ -59,9 +61,19 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
 
   useEffect(() => {
     if (isOpen) {
+      loadSalespersons();
       loadSummaryData();
     }
   }, [isOpen, dateFilter, employeeFilter, fromDate, toDate]);
+
+  const loadSalespersons = async () => {
+    try {
+      const response = await backend.auth.listSalespersons();
+      setSalespersons(response.salespersons);
+    } catch (error) {
+      console.error("Error loading salespersons:", error);
+    }
+  };
 
   const loadSummaryData = async () => {
     setIsLoading(true);
@@ -424,9 +436,11 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">All</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                      <SelectItem value="cashier1">Cashier 1</SelectItem>
-                      <SelectItem value="cashier2">Cashier 2</SelectItem>
+                      {salespersons.map((sp) => (
+                        <SelectItem key={sp.id} value={sp.id.toString()}>
+                          {sp.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
