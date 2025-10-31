@@ -627,21 +627,24 @@ export default function SettlementModal({
                 <div className="flex gap-4">
                   <Button
                     variant={paymentMethod === "cash" ? "default" : "outline"}
-                    className={`flex-1 ${paymentMethod === "cash" ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
+                    className={`flex-1 ${paymentMethod === "cash" ? "text-white hover:opacity-90" : ""}`}
+                    style={paymentMethod === "cash" ? { backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' } : undefined}
                     onClick={() => handlePaymentMethodSelect("cash")}
                   >
                     💵 Cash
                   </Button>
                   <Button
                     variant={paymentMethod === "member" ? "default" : "outline"}
-                    className={`flex-1 ${paymentMethod === "member" ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
+                    className={`flex-1 ${paymentMethod === "member" ? "text-white hover:opacity-90" : ""}`}
+                    style={paymentMethod === "member" ? { backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' } : undefined}
                     onClick={() => handlePaymentMethodSelect("member")}
                   >
                     👑 Member
                   </Button>
                   <Button
                     variant={paymentMethod === "others" ? "default" : "outline"}
-                    className={`flex-1 ${paymentMethod === "others" ? "bg-red-500 hover:bg-red-600 text-white" : ""}`}
+                    className={`flex-1 ${paymentMethod === "others" ? "text-white hover:opacity-90" : ""}`}
+                    style={paymentMethod === "others" ? { backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' } : undefined}
                     onClick={() => handlePaymentMethodSelect("others")}
                   >
                     ••• {paymentMethod === "others" && selectedOtherPayment ? selectedOtherPayment : "Others"}
@@ -664,7 +667,12 @@ export default function SettlementModal({
                 <span className="text-lg">Number</span>
                 <div className="flex items-center gap-4">
                   <span className="text-orange-500">1</span>
-                  <Button variant="outline" className="text-red-500 border-red-500">
+                  <Button 
+                    variant="outline" 
+                    className="text-white hover:opacity-90 border-0"
+                    style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
+                    onClick={() => {/* TODO: Implement split bill */}}
+                  >
                     Split bill
                   </Button>
                 </div>
@@ -771,7 +779,8 @@ export default function SettlementModal({
               <Button
                 onClick={handleFinish}
                 disabled={isLoading}
-                className="w-full h-16 text-2xl font-bold bg-red-500 hover:bg-red-600 text-white"
+                className="w-full h-16 text-2xl font-bold text-white hover:opacity-90"
+                style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
               >
                 {isLoading ? "Processing..." : "Finish"}
               </Button>
