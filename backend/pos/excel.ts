@@ -81,15 +81,15 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
               UPDATE products SET
                 name = ${row.name},
                 price = ${row.price},
-                quantity = COALESCE(${row.quantity}, quantity),
-                category_id = ${categoryId},
-                barcode = COALESCE(${row.barcode}, barcode),
-                second_name = COALESCE(${row.secondName}, second_name),
-                wholesale_price = COALESCE(${row.wholesalePrice}, wholesale_price),
-                stock_price = COALESCE(${row.stockPrice}, stock_price),
-                origin = COALESCE(${row.origin}, origin),
-                ingredients = COALESCE(${row.ingredients}, ingredients),
-                remarks = COALESCE(${row.remarks}, remarks)
+                quantity = COALESCE(${row.quantity ?? null}, quantity),
+                category_id = ${categoryId ?? null},
+                barcode = COALESCE(${row.barcode ?? null}, barcode),
+                second_name = COALESCE(${row.secondName ?? null}, second_name),
+                wholesale_price = COALESCE(${row.wholesalePrice ?? null}, wholesale_price),
+                stock_price = COALESCE(${row.stockPrice ?? null}, stock_price),
+                origin = COALESCE(${row.origin ?? null}, origin),
+                ingredients = COALESCE(${row.ingredients ?? null}, ingredients),
+                remarks = COALESCE(${row.remarks ?? null}, remarks)
               WHERE id = ${existingProduct.id}
             `;
             updated++;
@@ -104,10 +104,10 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
               start_qty, is_off_shelf, sort_order, client_id
             )
             VALUES (
-              ${row.name}, ${row.price}, ${row.quantity || 0}, ${categoryId},
-              ${row.barcode}, ${row.secondName},
-              ${row.wholesalePrice}, ${row.stockPrice}, ${row.origin}, 
-              ${row.ingredients}, ${row.remarks},
+              ${row.name}, ${row.price}, ${row.quantity || 0}, ${categoryId ?? null},
+              ${row.barcode ?? null}, ${row.secondName ?? null},
+              ${row.wholesalePrice ?? null}, ${row.stockPrice ?? null}, ${row.origin ?? null}, 
+              ${row.ingredients ?? null}, ${row.remarks ?? null},
               ${row.quantity || 0}, FALSE, 0, ${auth.clientID}
             )
           `;
