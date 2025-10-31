@@ -1069,6 +1069,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       <SettingsModal
         isOpen={showSettingsModal}
         onClose={() => setShowSettingsModal(false)}
+        cartItems={cartItems}
       />
 
       <SalespersonManagementModal

@@ -21,13 +21,15 @@ import CashierReceiptModal from "./CashierReceiptModal";
 import StockReportModal from "./StockReportModal";
 import LowStockAlertModal from "./LowStockAlertModal";
 import ItemsManagementModal from "./ItemsManagementModal";
+import DualScreenModal from "./DualScreenModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
   onClose: () => void;
+  cartItems?: Array<{ product: any; quantity: number }>;
 }
 
-export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
+export default function SettingsModal({ isOpen, onClose, cartItems = [] }: SettingsModalProps) {
   const [selectedMenu, setSelectedMenu] = useState<string>("Report");
   const [showSalesSummary, setShowSalesSummary] = useState(false);
   const [showHardwareSettings, setShowHardwareSettings] = useState(false);
@@ -35,6 +37,7 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   const [showStockReport, setShowStockReport] = useState(false);
   const [showLowStockAlert, setShowLowStockAlert] = useState(false);
   const [showItemsManagement, setShowItemsManagement] = useState(false);
+  const [showDualScreen, setShowDualScreen] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -70,6 +73,11 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
 
     if (action === "Items") {
       setShowItemsManagement(true);
+      return;
+    }
+
+    if (action === "Dual Screen") {
+      setShowDualScreen(true);
       return;
     }
     
@@ -164,7 +172,8 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       case "Hardware":
         return [
           { label: "Cashier Receipts", action: "Cashier Receipts" },
-          { label: "Barcode Receipt", action: "Barcode Receipt" }
+          { label: "Barcode Receipt", action: "Barcode Receipt" },
+          { label: "Dual Screen", action: "Dual Screen" }
         ];
       case "Data Processing":
         return [
@@ -282,6 +291,13 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
       <ItemsManagementModal
         isOpen={showItemsManagement}
         onClose={() => setShowItemsManagement(false)}
+      />
+
+      {/* Dual Screen Modal */}
+      <DualScreenModal
+        isOpen={showDualScreen}
+        onClose={() => setShowDualScreen(false)}
+        cartItems={cartItems}
       />
     </>
   );
