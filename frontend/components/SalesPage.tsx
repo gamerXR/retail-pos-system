@@ -813,11 +813,12 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
                 {products?.map((product) => (
                   <div
                     key={product.id}
-                    className={`bg-white rounded-lg shadow-sm border border-gray-200 p-4 cursor-pointer hover:shadow-md transition-shadow select-none ${
+                    className={`rounded-lg shadow-sm border p-4 cursor-pointer hover:shadow-md transition-shadow select-none ${
                       product.isOffShelf 
                         ? "opacity-50 bg-gray-100 border-red-300 cursor-not-allowed" 
-                        : "hover:border-blue-300"
+                        : "border-[hsl(163.1,88.1%,19.8%)] hover:border-[hsl(163.1,88.1%,25%)]"
                     }`}
+                    style={!product.isOffShelf ? { backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' } : undefined}
                     onClick={(e) => handleProductClick(product, e)}
                     onContextMenu={(e) => handleProductRightClick(product, e)}
                     onTouchStart={(e) => handleProductTouchStart(product, e)}
@@ -825,7 +826,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <h3 className={`font-medium text-sm flex-1 ${
-                        product.isOffShelf ? "text-gray-500 line-through" : "text-gray-800"
+                        product.isOffShelf ? "text-gray-500 line-through" : "text-white"
                       }`}>
                         {product.name}
                       </h3>
@@ -841,19 +842,19 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
                       )}
                     </div>
                     <p className={`text-lg font-semibold ${
-                      product.isOffShelf ? "text-gray-400" : "text-green-600"
+                      product.isOffShelf ? "text-gray-400" : "text-white"
                     }`}>
                       ${product.price.toFixed(2)}
                     </p>
                     <div className="flex justify-between items-center mt-1">
                       <p className={`text-xs ${
-                        product.isOffShelf ? "text-gray-400" : "text-gray-500"
+                        product.isOffShelf ? "text-gray-400" : "text-white"
                       }`}>
                         Stock: {product.quantity}
                       </p>
                       {product.barcode && (
                         <p className={`text-xs ${
-                          product.isOffShelf ? "text-gray-400" : "text-blue-500"
+                          product.isOffShelf ? "text-gray-400" : "text-white"
                         }`}>
                           #{product.barcode}
                         </p>
