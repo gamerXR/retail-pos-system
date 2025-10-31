@@ -43,7 +43,7 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
     for (const row of req.products) {
       try {
         if (!row.name || !row.price || isNaN(row.price)) {
-          errors.push(`Row skipped: Missing required fields (name or price)`);
+          errors.push(`Row skipped: Missing name or invalid price`);
           continue;
         }
 
@@ -66,14 +66,20 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
           }
         }
 
-        const existingProduct = await posDB.queryRow<{ id: number }>`
-          SELECT id FROM products 
-          WHERE client_id = ${auth.clientID}
-            AND (
-              LOWER(name) = LOWER(${row.name})
-              ${row.barcode ? `OR barcode = ${row.barcode}` : ''}
-            )
-        `;
+        let existingProduct = null;
+        if (row.barcode) {
+          existingProduct = await posDB.queryRow<{ id: number }>`
+            SELECT id FROM products 
+            WHERE client_id = ${auth.clientID} AND barcode = ${row.barcode}
+          `;
+        }
+        
+        if (!existingProduct) {
+          existingProduct = await posDB.queryRow<{ id: number }>`
+            SELECT id FROM products 
+            WHERE client_id = ${auth.clientID} AND LOWER(name) = LOWER(${row.name})
+          `;
+        }
 
         if (existingProduct) {
           if (req.updateExisting) {
@@ -82,7 +88,7 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
                 name = ${row.name},
                 price = ${row.price},
                 quantity = COALESCE(${row.quantity ?? null}, quantity),
-                category_id = ${categoryId ?? null},
+                category_id = ${categoryId},
                 barcode = COALESCE(${row.barcode ?? null}, barcode),
                 second_name = COALESCE(${row.secondName ?? null}, second_name),
                 wholesale_price = COALESCE(${row.wholesalePrice ?? null}, wholesale_price),
@@ -97,7 +103,7 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
             errors.push(`Product "${row.name}" already exists and was skipped`);
           }
         } else {
-          const quantity = row.quantity || 0;
+          const quantity = row.quantity ?? 0;
           await posDB.exec`
             INSERT INTO products (
               name, price, quantity, category_id, barcode, second_name, 
@@ -106,17 +112,17 @@ export const importProducts = api<ImportProductsRequest, ImportProductsResponse>
             )
             VALUES (
               ${row.name}, 
-              ${row.price}::numeric, 
-              ${quantity}::integer, 
-              ${categoryId}::integer,
+              ${row.price}, 
+              ${quantity}, 
+              ${categoryId},
               ${row.barcode ?? null}, 
               ${row.secondName ?? null},
-              ${row.wholesalePrice ?? null}::numeric, 
-              ${row.stockPrice ?? null}::numeric, 
+              ${row.wholesalePrice ?? null}, 
+              ${row.stockPrice ?? null}, 
               ${row.origin ?? null}, 
               ${row.ingredients ?? null}, 
               ${row.remarks ?? null},
-              ${quantity}::integer, 
+              ${quantity}, 
               FALSE, 
               0, 
               ${auth.clientID}
