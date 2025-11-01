@@ -53,13 +53,6 @@ export default function TemplateSelectionModal({
       width: 35,
       height: 25,
       type: 'predefined'
-    },
-    {
-      id: 'barcode-centered',
-      name: '商品名 + Barcode + Price',
-      width: 40,
-      height: 30,
-      type: 'predefined'
     }
   ];
 
@@ -109,57 +102,55 @@ export default function TemplateSelectionModal({
     switch (template.id) {
       case 'barcode-sticker-25x35':
         return (
-          <div className="w-full h-24 bg-white border-2 border-gray-300 rounded p-2 text-xs flex flex-row items-center justify-center gap-2">
-            <div className="flex-1 flex flex-col items-center justify-center text-center">
-              <div className="font-bold text-[9px] mb-1 px-1 leading-tight break-words w-full">Product Name Here</div>
-              <div className="text-sm font-bold mt-auto">$2.00</div>
-            </div>
-            <div className="flex flex-col items-center justify-center">
-              <div className="h-16 w-20 bg-white flex items-center justify-center text-black border border-gray-200">
-                <svg className="w-full h-full" viewBox="0 0 100 60">
-                  <rect x="2" y="10" width="1" height="40" fill="black"/>
-                  <rect x="4" y="10" width="2" height="40" fill="black"/>
-                  <rect x="7" y="10" width="1" height="40" fill="black"/>
-                  <rect x="9" y="10" width="1" height="40" fill="black"/>
-                  <rect x="11" y="10" width="2" height="40" fill="black"/>
-                  <rect x="14" y="10" width="1" height="40" fill="black"/>
-                  <rect x="16" y="10" width="1" height="40" fill="black"/>
-                  <rect x="18" y="10" width="2" height="40" fill="black"/>
-                  <rect x="21" y="10" width="1" height="40" fill="black"/>
-                  <rect x="23" y="10" width="2" height="40" fill="black"/>
-                  <rect x="26" y="10" width="1" height="40" fill="black"/>
-                  <rect x="28" y="10" width="1" height="40" fill="black"/>
-                  <rect x="30" y="10" width="2" height="40" fill="black"/>
-                  <rect x="33" y="10" width="1" height="40" fill="black"/>
-                  <rect x="35" y="10" width="2" height="40" fill="black"/>
-                  <rect x="38" y="10" width="1" height="40" fill="black"/>
-                  <rect x="40" y="10" width="1" height="40" fill="black"/>
-                  <rect x="42" y="10" width="2" height="40" fill="black"/>
-                  <rect x="45" y="10" width="1" height="40" fill="black"/>
-                  <rect x="47" y="10" width="1" height="40" fill="black"/>
-                  <rect x="49" y="10" width="2" height="40" fill="black"/>
-                  <rect x="52" y="10" width="1" height="40" fill="black"/>
-                  <rect x="54" y="10" width="2" height="40" fill="black"/>
-                  <rect x="57" y="10" width="1" height="40" fill="black"/>
-                  <rect x="59" y="10" width="1" height="40" fill="black"/>
-                  <rect x="61" y="10" width="2" height="40" fill="black"/>
-                  <rect x="64" y="10" width="1" height="40" fill="black"/>
-                  <rect x="66" y="10" width="2" height="40" fill="black"/>
-                  <rect x="69" y="10" width="1" height="40" fill="black"/>
-                  <rect x="71" y="10" width="1" height="40" fill="black"/>
-                  <rect x="73" y="10" width="2" height="40" fill="black"/>
-                  <rect x="76" y="10" width="1" height="40" fill="black"/>
-                  <rect x="78" y="10" width="1" height="40" fill="black"/>
-                  <rect x="80" y="10" width="2" height="40" fill="black"/>
-                  <rect x="83" y="10" width="1" height="40" fill="black"/>
-                  <rect x="85" y="10" width="2" height="40" fill="black"/>
-                  <rect x="88" y="10" width="1" height="40" fill="black"/>
-                  <rect x="90" y="10" width="1" height="40" fill="black"/>
-                  <rect x="92" y="10" width="2" height="40" fill="black"/>
+          <div className="w-full h-28 bg-white border-2 border-gray-300 rounded p-2 text-xs flex flex-col items-center justify-center">
+            <div className="font-bold text-[9px] mb-1 text-center px-1 leading-tight">Product Name</div>
+            <div className="flex-1 flex flex-col items-center justify-center w-full">
+              <div className="w-4/5 h-12 bg-white flex items-center justify-center text-black border border-gray-200">
+                <svg className="w-full h-full" viewBox="0 0 100 40">
+                  <rect x="2" y="5" width="1" height="30" fill="black"/>
+                  <rect x="4" y="5" width="2" height="30" fill="black"/>
+                  <rect x="7" y="5" width="1" height="30" fill="black"/>
+                  <rect x="9" y="5" width="1" height="30" fill="black"/>
+                  <rect x="11" y="5" width="2" height="30" fill="black"/>
+                  <rect x="14" y="5" width="1" height="30" fill="black"/>
+                  <rect x="16" y="5" width="1" height="30" fill="black"/>
+                  <rect x="18" y="5" width="2" height="30" fill="black"/>
+                  <rect x="21" y="5" width="1" height="30" fill="black"/>
+                  <rect x="23" y="5" width="2" height="30" fill="black"/>
+                  <rect x="26" y="5" width="1" height="30" fill="black"/>
+                  <rect x="28" y="5" width="1" height="30" fill="black"/>
+                  <rect x="30" y="5" width="2" height="30" fill="black"/>
+                  <rect x="33" y="5" width="1" height="30" fill="black"/>
+                  <rect x="35" y="5" width="2" height="30" fill="black"/>
+                  <rect x="38" y="5" width="1" height="30" fill="black"/>
+                  <rect x="40" y="5" width="1" height="30" fill="black"/>
+                  <rect x="42" y="5" width="2" height="30" fill="black"/>
+                  <rect x="45" y="5" width="1" height="30" fill="black"/>
+                  <rect x="47" y="5" width="1" height="30" fill="black"/>
+                  <rect x="49" y="5" width="2" height="30" fill="black"/>
+                  <rect x="52" y="5" width="1" height="30" fill="black"/>
+                  <rect x="54" y="5" width="2" height="30" fill="black"/>
+                  <rect x="57" y="5" width="1" height="30" fill="black"/>
+                  <rect x="59" y="5" width="1" height="30" fill="black"/>
+                  <rect x="61" y="5" width="2" height="30" fill="black"/>
+                  <rect x="64" y="5" width="1" height="30" fill="black"/>
+                  <rect x="66" y="5" width="2" height="30" fill="black"/>
+                  <rect x="69" y="5" width="1" height="30" fill="black"/>
+                  <rect x="71" y="5" width="1" height="30" fill="black"/>
+                  <rect x="73" y="5" width="2" height="30" fill="black"/>
+                  <rect x="76" y="5" width="1" height="30" fill="black"/>
+                  <rect x="78" y="5" width="1" height="30" fill="black"/>
+                  <rect x="80" y="5" width="2" height="30" fill="black"/>
+                  <rect x="83" y="5" width="1" height="30" fill="black"/>
+                  <rect x="85" y="5" width="2" height="30" fill="black"/>
+                  <rect x="88" y="5" width="1" height="30" fill="black"/>
+                  <rect x="90" y="5" width="1" height="30" fill="black"/>
+                  <rect x="92" y="5" width="2" height="30" fill="black"/>
                 </svg>
               </div>
               <div className="text-[7px] mt-1">9988880202624</div>
             </div>
+            <div className="text-sm font-bold">$2.00</div>
           </div>
         );
       case 'barcode-centered':
@@ -320,17 +311,6 @@ export default function TemplateSelectionModal({
                   <div className="text-sm font-medium text-gray-600 mb-2">{template.name}</div>
                   {renderTemplatePreview(template)}
                 </div>
-                <div className="p-2 bg-white border-t flex justify-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-600"
-                    onClick={(e) => handleEditTemplate(template, e)}
-                  >
-                    <Pencil className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
               </div>
             ))}
 
@@ -344,31 +324,8 @@ export default function TemplateSelectionModal({
                   <div className="text-sm font-medium text-gray-600 mb-2">{template.name}</div>
                   {renderTemplatePreview(template)}
                 </div>
-                <div className="p-2 bg-white border-t flex justify-center">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-gray-600"
-                    onClick={(e) => handleEditTemplate(template, e)}
-                  >
-                    <Pencil className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                </div>
               </div>
             ))}
-
-            <div
-              className="border-2 border-dashed rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer bg-gray-50"
-              onClick={handleCreateCustomTemplate}
-            >
-              <div className="h-full flex flex-col items-center justify-center p-8">
-                <div className="w-16 h-16 rounded-full bg-blue-100 flex items-center justify-center mb-3">
-                  <Plus className="w-8 h-8 text-blue-600" />
-                </div>
-                <div className="text-sm font-medium text-gray-700">Custom template</div>
-              </div>
-            </div>
           </div>
         </DialogContent>
       </Dialog>

@@ -78,25 +78,21 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
     if (selectedTemplate.id === 'barcode-sticker-25x35') {
       return (
         <div
-          className="bg-white border-2 border-gray-300 flex items-center justify-center p-1 gap-2"
+          className="bg-white border-2 border-gray-300 flex flex-col items-center justify-center p-1"
           style={{
             width: `${35 * scale}mm`,
             height: `${25 * scale}mm`,
           }}
         >
-          <div className="flex-1 flex flex-col items-center justify-center text-center px-1">
-            <div className="text-[9px] font-bold mb-1 leading-tight break-words w-full">
-              {product.name}
-            </div>
-            <div className="text-[11px] font-bold mt-auto">
-              ${product.price.toFixed(2)}
-            </div>
+          <div className="text-[9px] font-bold text-center mb-1 px-1 leading-tight break-words w-full">
+            {product.name}
           </div>
-          <div className="flex flex-col items-center justify-center">
-            <div className="flex items-center justify-center">
-              <svg ref={(el) => { if (el) renderBarcode(el, product.barcode || '9988880202624'); }} style={{ width: '50mm', height: '15mm' }}></svg>
-            </div>
+          <div className="flex-1 flex flex-col items-center justify-center w-full">
+            <svg ref={(el) => { if (el) renderBarcode(el, product.barcode || '9988880202624'); }} style={{ width: '80%', height: '12mm' }}></svg>
             <div className="text-[7px] text-center mt-1">{product.barcode || '9988880202624'}</div>
+          </div>
+          <div className="text-[11px] font-bold text-center">
+            ${product.price.toFixed(2)}
           </div>
         </div>
       );
@@ -337,20 +333,18 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
     if (template.id === 'barcode-sticker-25x35') {
       const barcode = product.barcode || '9988880202624';
       return `
-        <div style="width: 35mm; height: 25mm; padding: 1mm; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 2mm;">
-          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 1mm;">
-            <div style="font-size: 9px; font-weight: bold; margin-bottom: 1mm; line-height: 1.2; word-wrap: break-word; width: 100%;">
-              ${product.name}
-            </div>
-            <div style="font-size: 11px; font-weight: bold; margin-top: auto;">
-              $${product.price.toFixed(2)}
-            </div>
+        <div style="width: 35mm; height: 25mm; padding: 1mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
+          <div style="font-size: 9px; font-weight: bold; margin-bottom: 1mm; line-height: 1.2; word-wrap: break-word; width: 100%;">
+            ${product.name}
           </div>
-          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-            <svg width="20mm" height="15mm" style="background: #000;">
-              ${generateBarcodeSVG(barcode, 20, 15)}
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%;">
+            <svg width="80%" height="12mm" style="background: #000;">
+              ${generateBarcodeSVG(barcode, 28, 12)}
             </svg>
             <div style="font-size: 7px; margin-top: 0.5mm; text-align: center;">${barcode}</div>
+          </div>
+          <div style="font-size: 11px; font-weight: bold;">
+            $${product.price.toFixed(2)}
           </div>
         </div>
       `;
