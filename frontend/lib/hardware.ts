@@ -4,7 +4,7 @@ export interface ConnectedPrinter {
   id: string;
   name: string;
   connectionType: "usb" | "ip" | "bluetooth";
-  address: string; // For USB, "USB:vendorId(hex):productId(hex)"
+  address: string;
   status: "ready" | "busy" | "error";
 }
 
@@ -16,13 +16,17 @@ export interface ConnectedPrinter {
 export const openCashDrawer = async () => {
   const savedPrinter = localStorage.getItem('selectedPrinter');
   if (!savedPrinter) {
-    throw new Error("No printer selected. Please select a USB printer in Hardware Settings > Printers and grant permission.");
+    throw new Error("No printer selected. Please select a printer in Hardware Settings > Printers.");
   }
 
   const printerInfo: ConnectedPrinter = JSON.parse(savedPrinter);
 
-  if (printerInfo.connectionType !== 'usb') {
-    throw new Error("Silent cash drawer opening is only supported for USB printers.");
+  if (printerInfo.connectionType === 'bluetooth') {
+    return openCashDrawerBluetooth(printerInfo);
+  } else if (printerInfo.connectionType === 'ip') {
+    return openCashDrawerIP(printerInfo);
+  } else if (printerInfo.connectionType !== 'usb') {
+    throw new Error("Unsupported printer type.");
   }
 
   if (!('usb' in navigator)) {
@@ -90,4 +94,161 @@ export const openCashDrawer = async () => {
     console.error("Error opening cash drawer via WebUSB:", error);
     throw new Error(`Failed to open cash drawer: ${error.message}`);
   }
+};
+
+const openCashDrawerBluetooth = async (printerInfo: ConnectedPrinter) => {
+  try {
+    if (!('bluetooth' in navigator)) {
+      throw new Error("Web Bluetooth is not supported in this browser.");
+    }
+
+    const device = await (navigator as any).bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+    });
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+    const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+
+    const command = new Uint8Array([0x1b, 0x70, 0x00, 0x19, 0xfa]);
+    await characteristic.writeValue(command);
+
+    await device.gatt.disconnect();
+
+    toast({
+      title: "Cash Drawer Opened",
+      description: "Command sent via Bluetooth"
+    });
+  } catch (error: any) {
+    console.error("Error opening cash drawer via Bluetooth:", error);
+    throw new Error(`Failed to open cash drawer via Bluetooth: ${error.message}`);
+  }
+};
+
+const openCashDrawerIP = async (printerInfo: ConnectedPrinter) => {
+  try {
+    const [ip, port] = printerInfo.address.split(':');
+    
+    const command = new Uint8Array([0x1b, 0x70, 0x00, 0x19, 0xfa]);
+    const base64Command = btoa(String.fromCharCode(...command));
+    
+    const response = await fetch(`http://${ip}:${port}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream',
+      },
+      body: command,
+      mode: 'no-cors'
+    });
+
+    toast({
+      title: "Cash Drawer Command Sent",
+      description: "Command sent to network printer"
+    });
+  } catch (error: any) {
+    console.error("Error opening cash drawer via IP:", error);
+    throw new Error(`Failed to open cash drawer via IP: ${error.message}`);
+  }
+};
+
+export const printReceiptViaPrinter = async (content: string, printerInfo: ConnectedPrinter) => {
+  if (printerInfo.connectionType === 'usb') {
+    return printViaUSB(content, printerInfo);
+  } else if (printerInfo.connectionType === 'bluetooth') {
+    return printViaBluetooth(content, printerInfo);
+  } else if (printerInfo.connectionType === 'ip') {
+    return printViaIP(content, printerInfo);
+  }
+};
+
+const printViaUSB = async (content: string, printerInfo: ConnectedPrinter) => {
+  const printWindow = window.open('', '_blank');
+  if (printWindow) {
+    printWindow.document.write(content);
+    printWindow.document.close();
+    setTimeout(() => {
+      printWindow.print();
+      printWindow.close();
+    }, 500);
+  }
+};
+
+const printViaBluetooth = async (content: string, printerInfo: ConnectedPrinter) => {
+  try {
+    if (!('bluetooth' in navigator)) {
+      throw new Error("Web Bluetooth is not supported in this browser.");
+    }
+
+    const escposData = htmlToESCPOS(content);
+    
+    const device = await (navigator as any).bluetooth.requestDevice({
+      acceptAllDevices: true,
+      optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+    });
+
+    const server = await device.gatt.connect();
+    const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
+    const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
+
+    await characteristic.writeValue(escposData);
+    await device.gatt.disconnect();
+
+    toast({
+      title: "Print Sent",
+      description: "Receipt sent to Bluetooth printer"
+    });
+  } catch (error: any) {
+    console.error("Error printing via Bluetooth:", error);
+    throw new Error(`Failed to print via Bluetooth: ${error.message}`);
+  }
+};
+
+const printViaIP = async (content: string, printerInfo: ConnectedPrinter) => {
+  try {
+    const [ip, port] = printerInfo.address.split(':');
+    const escposData = htmlToESCPOS(content);
+
+    const response = await fetch(`http://${ip}:${port}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/octet-stream',
+      },
+      body: escposData,
+      mode: 'no-cors'
+    });
+
+    toast({
+      title: "Print Sent",
+      description: "Receipt sent to network printer"
+    });
+  } catch (error: any) {
+    console.error("Error printing via IP:", error);
+    throw new Error(`Failed to print via IP: ${error.message}`);
+  }
+};
+
+const htmlToESCPOS = (html: string): Uint8Array => {
+  const commands: number[] = [];
+  
+  commands.push(0x1B, 0x40);
+  
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = html;
+  const text = tempDiv.textContent || tempDiv.innerText || '';
+  
+  const lines = text.split('\n');
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed) {
+      for (let i = 0; i < trimmed.length; i++) {
+        commands.push(trimmed.charCodeAt(i));
+      }
+      commands.push(0x0A);
+    }
+  });
+  
+  commands.push(0x1D, 0x56, 0x42, 0x00);
+  
+  return new Uint8Array(commands);
 };
