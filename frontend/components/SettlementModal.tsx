@@ -33,8 +33,10 @@ interface ReceiptSettings {
   size: "58mm" | "80mm";
   printCopies: number;
   topLogo: string;
-  title: string;
-  header: string;
+  topLogoFile?: string;
+  companyName: string;
+  address: string;
+  telephone: string;
   headerSize: "Small" | "Medium" | "Large";
   fontSize: "Small" | "Medium" | "Large";
   displayUnitPrice: boolean;
@@ -161,19 +163,18 @@ export default function SettlementModal({
   };
 
   const getReceiptSettings = (): ReceiptSettings => {
-    // Get receipt settings from localStorage or use defaults
     const savedSettings = localStorage.getItem('receiptSettings');
     if (savedSettings) {
       return JSON.parse(savedSettings);
     }
     
-    // Default settings
     return {
       size: "80mm",
       printCopies: 1,
       topLogo: "None",
-      title: "shop",
-      header: "POSX SOLUTION",
+      companyName: "POSX SOLUTION",
+      address: "Unit 4, First Floor, Jin Pg Babu Raja, Kg Kiarong, Brunei Darussalam",
+      telephone: "+673 818 4877",
       headerSize: "Large",
       fontSize: "Small",
       displayUnitPrice: true,
@@ -193,23 +194,34 @@ export default function SettlementModal({
       <div style="font-family: monospace; font-size: ${settings.fontSize === 'Small' ? '12px' : settings.fontSize === 'Medium' ? '14px' : '16px'}; line-height: 1.2; width: ${settings.size === '58mm' ? '56mm' : '76mm'}; margin: 0 auto; word-break: break-word;">
     `;
 
-    // Header
-    if (settings.header) {
+    // Top Logo
+    if (settings.topLogoFile) {
+      receiptContent += `
+        <div style="text-align: center; margin-bottom: 10px;">
+          <img src="${settings.topLogoFile}" alt="Logo" style="max-width: 80%; max-height: 60px; margin: 0 auto; display: block;" />
+        </div>
+      `;
+    }
+
+    // Company Name
+    if (settings.companyName) {
       receiptContent += `
         <div style="text-align: center; margin-bottom: 10px; font-size: ${settings.headerSize === 'Small' ? '14px' : settings.headerSize === 'Medium' ? '18px' : '22px'}; font-weight: bold;">
-          ${settings.header}
+          ${settings.companyName}
         </div>
       `;
     }
 
     // Store info
-    receiptContent += `
-      <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
-        Unit 4, First Floor, Jin Pg Babu Raja, Kg<br>
-        Kiarong, Brunei Darussalam<br>
-        Tel +673 818 4877
-      </div>
-    `;
+    if (settings.address || settings.telephone) {
+      receiptContent += `
+        <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
+          ${settings.address ? settings.address.replace(/\n/g, '<br>') : ''}
+          ${settings.address && settings.telephone ? '<br>' : ''}
+          ${settings.telephone ? 'Tel ' + settings.telephone : ''}
+        </div>
+      `;
+    }
 
     // Separator
     receiptContent += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;

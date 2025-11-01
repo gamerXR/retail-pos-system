@@ -34,6 +34,7 @@ const BROWSER = typeof globalThis === "object" && ("window" in globalThis);
  */
 export class Client {
     public readonly auth: auth.ServiceClient
+    public readonly email: email.ServiceClient
     public readonly pos: pos.ServiceClient
     private readonly options: ClientOptions
     private readonly target: string
@@ -50,6 +51,7 @@ export class Client {
         this.options = options ?? {}
         const base = new BaseClient(this.target, this.options)
         this.auth = new auth.ServiceClient(base)
+        this.email = new email.ServiceClient(base)
         this.pos = new pos.ServiceClient(base)
     }
 
@@ -355,6 +357,29 @@ export namespace auth {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/auth/admin/clients/${encodeURIComponent(params.id)}/qr-code`, {method: "POST", body: JSON.stringify(body)})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_auth_clients_uploadQRCode>
+        }
+    }
+}
+
+/**
+ * Import the endpoint handlers to derive the types for the client.
+ */
+import { send as api_email_send_send } from "~backend/email/send";
+
+export namespace email {
+
+    export class ServiceClient {
+        private baseClient: BaseClient
+
+        constructor(baseClient: BaseClient) {
+            this.baseClient = baseClient
+            this.send = this.send.bind(this)
+        }
+
+        public async send(params: RequestType<typeof api_email_send_send>): Promise<ResponseType<typeof api_email_send_send>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/email/send`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_email_send_send>
         }
     }
 }
