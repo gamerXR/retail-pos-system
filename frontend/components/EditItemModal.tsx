@@ -202,14 +202,14 @@ export default function EditItemModal({
                 onClick={handleDelete}
                 disabled={isLoading}
                 variant="outline"
-                className="text-gray-600"
               >
                 Delete
               </Button>
               <Button
                 onClick={handleUpdate}
                 disabled={isLoading}
-                className="bg-gray-600 hover:bg-gray-700 text-white"
+                className="text-white hover:opacity-90"
+                style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
               >
                 Save
               </Button>
@@ -221,7 +221,8 @@ export default function EditItemModal({
         <div className="flex gap-1 mb-6">
           <Button
             variant={activeTab === "basic" ? "default" : "outline"}
-            className={activeTab === "basic" ? "bg-red-500 hover:bg-red-600 text-white" : ""}
+            className={activeTab === "basic" ? "text-white hover:opacity-90" : ""}
+            style={activeTab === "basic" ? { backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' } : undefined}
             onClick={() => setActiveTab("basic")}
           >
             Basic
@@ -251,7 +252,12 @@ export default function EditItemModal({
                   className="w-full"
                 />
               </div>
-              <Button variant="outline" size="sm" className="col-span-2 bg-red-500 hover:bg-red-600 text-white">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="col-span-2 text-white hover:opacity-90"
+                style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
+              >
                 <Plus className="w-4 h-4" />
               </Button>
             </div>
@@ -301,7 +307,12 @@ export default function EditItemModal({
                     )) || []}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" size="sm" className="bg-red-500 hover:bg-red-600 text-white">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="text-white hover:opacity-90"
+                  style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
+                >
                   <Plus className="w-4 h-4" />
                 </Button>
               </div>
