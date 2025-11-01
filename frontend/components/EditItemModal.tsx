@@ -28,23 +28,14 @@ export default function EditItemModal({
   product,
   categories
 }: EditItemModalProps) {
-  const [activeTab, setActiveTab] = useState<"basic" | "advance">("basic");
   const [formData, setFormData] = useState({
     barcode: "",
     name: "",
     secondName: "",
     categoryId: "",
     price: "",
-    wholesalePrice: "",
-    startQty: "",
     stockQty: "",
-    stockPrice: "",
-    totalAmount: "",
-    shelfLife: "",
-    origin: "",
-    ingredients: "",
-    remarks: "",
-    weighing: false
+    shelfLife: ""
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -58,27 +49,11 @@ export default function EditItemModal({
         secondName: product.secondName || "",
         categoryId: product.categoryId?.toString() || "",
         price: product.price?.toString() || "",
-        wholesalePrice: product.wholesalePrice?.toString() || "",
-        startQty: product.startQty?.toString() || "",
         stockQty: product.quantity?.toString() || "",
-        stockPrice: product.stockPrice?.toString() || "",
-        totalAmount: product.totalAmount?.toString() || "",
-        shelfLife: product.shelfLife?.toString() || "",
-        origin: product.origin || "",
-        ingredients: product.ingredients || "",
-        remarks: product.remarks || "",
-        weighing: product.weighing || false
+        shelfLife: product.shelfLife?.toString() || ""
       });
     }
   }, [product]);
-
-  useEffect(() => {
-    // Calculate total amount when stock qty and stock price change
-    const stockQty = parseFloat(formData.stockQty) || 0;
-    const stockPrice = parseFloat(formData.stockPrice) || 0;
-    const total = stockQty * stockPrice;
-    setFormData(prev => ({ ...prev, totalAmount: total > 0 ? total.toFixed(2) : "" }));
-  }, [formData.stockQty, formData.stockPrice]);
 
   const handleInputChange = (field: string, value: string | boolean) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -122,15 +97,8 @@ export default function EditItemModal({
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined,
         barcode: formData.barcode || undefined,
         secondName: formData.secondName || undefined,
-        wholesalePrice: formData.wholesalePrice ? parseFloat(formData.wholesalePrice) : undefined,
-        startQty: formData.startQty ? parseInt(formData.startQty) : undefined,
-        stockPrice: formData.stockPrice ? parseFloat(formData.stockPrice) : undefined,
-        totalAmount: formData.totalAmount ? parseFloat(formData.totalAmount) : undefined,
         shelfLife: formData.shelfLife ? parseInt(formData.shelfLife) : undefined,
-        origin: formData.origin || undefined,
-        ingredients: formData.ingredients || undefined,
-        remarks: formData.remarks || undefined,
-        weighing: formData.weighing
+        weighing: false
       });
 
       toast({
@@ -217,26 +185,18 @@ export default function EditItemModal({
           </div>
         </DialogHeader>
 
-        {/* Tabs */}
+        {/* Basic Tab */}
         <div className="flex gap-1 mb-6">
           <Button
-            variant={activeTab === "basic" ? "default" : "outline"}
-            className={activeTab === "basic" ? "text-white hover:opacity-90" : ""}
-            style={activeTab === "basic" ? { backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' } : undefined}
-            onClick={() => setActiveTab("basic")}
+            variant="default"
+            className="text-white hover:opacity-90"
+            style={{ backgroundColor: 'hsl(163.1, 88.1%, 19.8%)' }}
           >
             Basic
           </Button>
-          <Button
-            variant={activeTab === "advance" ? "default" : "outline"}
-            className={activeTab === "advance" ? "bg-gray-200 hover:bg-gray-300 text-gray-700" : ""}
-            onClick={() => setActiveTab("advance")}
-          >
-            Advance
-          </Button>
         </div>
 
-        {activeTab === "basic" && (
+        (
           <div className="space-y-6">
             {/* Barcode */}
             <div className="grid grid-cols-12 gap-4 items-center">
@@ -331,75 +291,23 @@ export default function EditItemModal({
               </div>
             </div>
 
-            {/* Wholesale and Start Qty */}
+            {/* Stock Qty */}
             <div className="grid grid-cols-12 gap-4 items-center">
               <label className="col-span-2 text-sm font-medium text-gray-700">
-                Wholesale...
-              </label>
-              <div className="col-span-4">
-                <Input
-                  type="number"
-                  step="0.01"
-                  value={formData.wholesalePrice}
-                  onChange={(e) => handleInputChange("wholesalePrice", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-              <div className="col-span-2 text-center text-sm text-gray-500">
-                Start Qty
-              </div>
-              <div className="col-span-4">
-                <Input
-                  type="number"
-                  value={formData.startQty}
-                  onChange={(e) => handleInputChange("startQty", e.target.value)}
-                  className="w-full"
-                />
-              </div>
-            </div>
-
-            {/* Cost */}
-            <div className="grid grid-cols-12 gap-4 items-center">
-              <label className="col-span-2 text-sm font-medium text-gray-700">
-                Cost
+                Stock Qty
               </label>
               <div className="col-span-10">
                 <Input
                   type="number"
-                  step="0.01"
-                  value={formData.stockPrice}
-                  onChange={(e) => handleInputChange("stockPrice", e.target.value)}
+                  value={formData.stockQty}
+                  onChange={(e) => handleInputChange("stockQty", e.target.value)}
                   className="w-full text-orange-500"
-                  placeholder="0.00"
+                  placeholder="0.0"
                 />
               </div>
             </div>
 
-            {/* Weighing */}
-            <div className="grid grid-cols-12 gap-4 items-center">
-              <label className="col-span-2 text-sm font-medium text-gray-700">
-                Weighing
-              </label>
-              <div className="col-span-10">
-                <Switch
-                  checked={formData.weighing}
-                  onCheckedChange={(checked) => handleInputChange("weighing", checked)}
-                />
-              </div>
-            </div>
-
-            {/* Validation Note */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-              <p className="text-sm text-blue-700">
-                <strong>Note:</strong> Item names must be unique within the same category. You can use the same name in different categories.
-              </p>
-            </div>
-          </div>
-        )}
-
-        {activeTab === "advance" && (
-          <div className="space-y-6">
-            {/* Shelf Life and Day */}
+            {/* Shelf Life */}
             <div className="grid grid-cols-12 gap-4 items-center">
               <label className="col-span-2 text-sm font-medium text-gray-700">
                 Shelf Life
@@ -418,52 +326,14 @@ export default function EditItemModal({
               </div>
             </div>
 
-            {/* Remarks */}
-            <div className="grid grid-cols-12 gap-4 items-start">
-              <label className="col-span-2 text-sm font-medium text-gray-700 pt-2">
-                Remarks
-              </label>
-              <div className="col-span-10">
-                <Textarea
-                  value={formData.remarks}
-                  onChange={(e) => handleInputChange("remarks", e.target.value)}
-                  className="w-full min-h-[100px]"
-                  placeholder="Enter remarks..."
-                />
-              </div>
-            </div>
-
-            {/* Origin */}
-            <div className="grid grid-cols-12 gap-4 items-start">
-              <label className="col-span-2 text-sm font-medium text-gray-700 pt-2">
-                Origin
-              </label>
-              <div className="col-span-10">
-                <Textarea
-                  value={formData.origin}
-                  onChange={(e) => handleInputChange("origin", e.target.value)}
-                  className="w-full min-h-[100px]"
-                  placeholder="Enter origin..."
-                />
-              </div>
-            </div>
-
-            {/* Ingredients */}
-            <div className="grid grid-cols-12 gap-4 items-start">
-              <label className="col-span-2 text-sm font-medium text-gray-700 pt-2">
-                Ingredients
-              </label>
-              <div className="col-span-10">
-                <Textarea
-                  value={formData.ingredients}
-                  onChange={(e) => handleInputChange("ingredients", e.target.value)}
-                  className="w-full min-h-[100px]"
-                  placeholder="Enter ingredients..."
-                />
-              </div>
+            {/* Validation Note */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <p className="text-sm text-blue-700">
+                <strong>Note:</strong> Item names must be unique within the same category. You can use the same name in different categories.
+              </p>
             </div>
           </div>
-        )}
+        )
       </DialogContent>
     </Dialog>
   );
