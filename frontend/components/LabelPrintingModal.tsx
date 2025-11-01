@@ -78,21 +78,25 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
     if (selectedTemplate.id === 'barcode-sticker-25x35') {
       return (
         <div
-          className="bg-white border-2 border-gray-300 flex flex-col items-center justify-center p-1"
+          className="bg-white border-2 border-gray-300 flex items-center justify-center p-1 gap-2"
           style={{
-            width: `${25 * scale}mm`,
-            height: `${35 * scale}mm`,
+            width: `${35 * scale}mm`,
+            height: `${25 * scale}mm`,
           }}
         >
-          <div className="text-[9px] font-bold text-center mb-1 px-1 leading-tight line-clamp-2 w-full overflow-hidden">
-            {product.name}
+          <div className="flex-1 flex flex-col items-center justify-center text-center px-1">
+            <div className="text-[9px] font-bold mb-1 leading-tight break-words w-full">
+              {product.name}
+            </div>
+            <div className="text-[11px] font-bold mt-auto">
+              ${product.price.toFixed(2)}
+            </div>
           </div>
-          <div className="flex-1 flex items-center justify-center w-full">
-            <svg ref={(el) => { if (el) renderBarcode(el, product.barcode || '9988880202624'); }} className="w-full" style={{ height: '40px' }}></svg>
-          </div>
-          <div className="text-[8px] text-center mt-1">{product.barcode || '9988880202624'}</div>
-          <div className="text-[11px] font-bold text-center mt-1">
-            ${product.price.toFixed(2)}
+          <div className="flex flex-col items-center justify-center">
+            <div className="flex items-center justify-center">
+              <svg ref={(el) => { if (el) renderBarcode(el, product.barcode || '9988880202624'); }} style={{ width: '50mm', height: '15mm' }}></svg>
+            </div>
+            <div className="text-[7px] text-center mt-1">{product.barcode || '9988880202624'}</div>
           </div>
         </div>
       );
@@ -333,18 +337,20 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
     if (template.id === 'barcode-sticker-25x35') {
       const barcode = product.barcode || '9988880202624';
       return `
-        <div style="width: 25mm; height: 35mm; padding: 1mm; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;">
-          <div style="font-size: 9px; font-weight: bold; margin-bottom: 1mm; max-height: 8mm; overflow: hidden; line-height: 1.2; padding: 0 1mm;">
-            ${product.name}
+        <div style="width: 35mm; height: 25mm; padding: 1mm; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: 2mm;">
+          <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 0 1mm;">
+            <div style="font-size: 9px; font-weight: bold; margin-bottom: 1mm; line-height: 1.2; word-wrap: break-word; width: 100%;">
+              ${product.name}
+            </div>
+            <div style="font-size: 11px; font-weight: bold; margin-top: auto;">
+              $${product.price.toFixed(2)}
+            </div>
           </div>
-          <div style="flex: 1; display: flex; align-items: center; justify-content: center; width: 100%;">
-            <svg width="100%" height="40px" style="background: #000;">
-              ${generateBarcodeSVG(barcode, 23, 40)}
+          <div style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <svg width="20mm" height="15mm" style="background: #000;">
+              ${generateBarcodeSVG(barcode, 20, 15)}
             </svg>
-          </div>
-          <div style="font-size: 8px; margin-top: 1mm;">${barcode}</div>
-          <div style="font-size: 11px; font-weight: bold; margin-top: 1mm;">
-            $${product.price.toFixed(2)}
+            <div style="font-size: 7px; margin-top: 0.5mm; text-align: center;">${barcode}</div>
           </div>
         </div>
       `;
