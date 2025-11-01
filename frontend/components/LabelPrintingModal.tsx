@@ -92,7 +92,7 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
           </div>
           <div className="text-[8px] text-center mt-1">{product.barcode || '9988880202624'}</div>
           <div className="text-[11px] font-bold text-center mt-1">
-            ₱{product.price.toFixed(2)}
+            ${product.price.toFixed(2)}
           </div>
         </div>
       );
@@ -159,34 +159,77 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
     const width = svg.clientWidth || 200;
     const height = svg.clientHeight || 50;
     const barWidth = 2;
-    const bars = value.split('').map(char => parseInt(char) % 2 === 0 ? 1 : 0);
+    
+    const code128Patterns: { [key: string]: string } = {
+      '0': '11011001100', '1': '11001101100', '2': '11001100110', '3': '10010011000',
+      '4': '10010001100', '5': '10001001100', '6': '10011001000', '7': '10011000100',
+      '8': '10001100100', '9': '11001001000', 'A': '11001000100', 'B': '11000100100',
+      'C': '10110011100', 'D': '10011011100', 'E': '10011001110', 'F': '10111001100',
+      'G': '10011101100', 'H': '10011100110', 'I': '11001110010', 'J': '11001011100',
+      'K': '11001001110', 'L': '11011100100', 'M': '11001110100', 'N': '11101101110',
+      'O': '11101001100', 'P': '11100101100', 'Q': '11100100110', 'R': '11101100100',
+      'S': '11100110100', 'T': '11100110010', 'U': '11011011000', 'V': '11011000110',
+      'W': '11000110110', 'X': '10100011000', 'Y': '10001011000', 'Z': '10001000110',
+      ' ': '10110001000', '-': '10001101000', '.': '10001100010', 'start': '11010010000'
+    };
+    
+    let pattern = code128Patterns['start'] || '11010010000';
+    for (let char of value.toUpperCase()) {
+      pattern += code128Patterns[char] || code128Patterns['0'];
+    }
+    pattern += '1100011101011';
     
     svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
     svg.innerHTML = '';
     
-    bars.forEach((bar, i) => {
-      if (bar) {
+    let x = 0;
+    const barWidthUnit = width / pattern.length;
+    for (let i = 0; i < pattern.length; i++) {
+      if (pattern[i] === '1') {
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        rect.setAttribute('x', `${i * barWidth * 2}`);
+        rect.setAttribute('x', `${x}`);
         rect.setAttribute('y', '0');
-        rect.setAttribute('width', `${barWidth}`);
+        rect.setAttribute('width', `${barWidthUnit}`);
         rect.setAttribute('height', `${height}`);
         rect.setAttribute('fill', 'black');
         svg.appendChild(rect);
       }
-    });
+      x += barWidthUnit;
+    }
   };
 
   const generateBarcodeSVG = (value: string, width: number, height: number) => {
-    const barWidth = 2;
-    const bars = value.split('').map(char => parseInt(char) % 2 === 0 ? 1 : 0);
+    const code128Patterns: { [key: string]: string } = {
+      '0': '11011001100', '1': '11001101100', '2': '11001100110', '3': '10010011000',
+      '4': '10010001100', '5': '10001001100', '6': '10011001000', '7': '10011000100',
+      '8': '10001100100', '9': '11001001000', 'A': '11001000100', 'B': '11000100100',
+      'C': '10110011100', 'D': '10011011100', 'E': '10011001110', 'F': '10111001100',
+      'G': '10011101100', 'H': '10011100110', 'I': '11001110010', 'J': '11001011100',
+      'K': '11001001110', 'L': '11011100100', 'M': '11001110100', 'N': '11101101110',
+      'O': '11101001100', 'P': '11100101100', 'Q': '11100100110', 'R': '11101100100',
+      'S': '11100110100', 'T': '11100110010', 'U': '11011011000', 'V': '11011000110',
+      'W': '11000110110', 'X': '10100011000', 'Y': '10001011000', 'Z': '10001000110',
+      ' ': '10110001000', '-': '10001101000', '.': '10001100010', 'start': '11010010000'
+    };
     
-    return bars.map((bar, i) => {
-      if (bar) {
-        return `<rect x=\"${i * barWidth * 2}\" y=\"0\" width=\"${barWidth}\" height=\"${height}\" fill=\"white\"/>`;
+    let pattern = code128Patterns['start'] || '11010010000';
+    for (let char of value.toUpperCase()) {
+      pattern += code128Patterns[char] || code128Patterns['0'];
+    }
+    pattern += '1100011101011';
+    
+    let x = 0;
+    const barWidthUnit = width / pattern.length;
+    let rects = '';
+    
+    for (let i = 0; i < pattern.length; i++) {
+      if (pattern[i] === '1') {
+        rects += `<rect x="${x}" y="0" width="${barWidthUnit}" height="${height}" fill="white"/>`;
       }
-      return '';
-    }).join('');
+      x += barWidthUnit;
+    }
+    
+    return rects;
   };
 
   const handlePrint = () => {
@@ -301,7 +344,7 @@ export default function LabelPrintingModal({ isOpen, onClose }: LabelPrintingMod
           </div>
           <div style="font-size: 8px; margin-top: 1mm;">${barcode}</div>
           <div style="font-size: 11px; font-weight: bold; margin-top: 1mm;">
-            ₱${product.price.toFixed(2)}
+            $${product.price.toFixed(2)}
           </div>
         </div>
       `;

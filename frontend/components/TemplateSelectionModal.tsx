@@ -155,7 +155,7 @@ export default function TemplateSelectionModal({
               </svg>
             </div>
             <div className="text-[8px] mb-1">9988880202624</div>
-            <div className="text-sm font-bold">₱2.00</div>
+            <div className="text-sm font-bold">$2.00</div>
           </div>
         );
       case 'barcode-centered':
