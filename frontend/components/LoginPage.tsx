@@ -5,7 +5,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { Phone, Lock, Shield } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import backend from "~backend/client";
-import VirtualKeyboard from "./VirtualKeyboard";
 import OpeningBalanceModal from "./OpeningBalanceModal";
 import AdminLoginModal from "./AdminLoginModal";
 import AdminDashboard from "./AdminDashboard";
@@ -17,7 +16,6 @@ interface LoginPageProps {
 export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
-  const [activeField, setActiveField] = useState<"phoneNumber" | "password" | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [showForgotMessage, setShowForgotMessage] = useState(false);
   const [showLoginError, setShowLoginError] = useState(false);
@@ -110,30 +108,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
     });
   };
 
-  const handleKeyboardInput = (value: string) => {
-    if (activeField === "phoneNumber") {
-      setPhoneNumber(prev => prev + value);
-    } else if (activeField === "password") {
-      setPassword(prev => prev + value);
-    }
-  };
-
-  const handleKeyboardBackspace = () => {
-    if (activeField === "phoneNumber") {
-      setPhoneNumber(prev => prev.slice(0, -1));
-    } else if (activeField === "password") {
-      setPassword(prev => prev.slice(0, -1));
-    }
-  };
-
-  const handleKeyboardSpace = () => {
-    if (activeField === "phoneNumber") {
-      setPhoneNumber(prev => prev + " ");
-    } else if (activeField === "password") {
-      setPassword(prev => prev + " ");
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="bg-white shadow-sm p-4 flex items-center justify-between">
@@ -164,7 +138,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 placeholder="Phone Number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                onFocus={() => setActiveField("phoneNumber")}
                 className="pl-12 h-14 text-lg border-gray-300"
               />
             </div>
@@ -175,7 +148,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
                 placeholder="Password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => setActiveField("password")}
                 className="pl-12 h-14 text-lg border-gray-300"
               />
             </div>
@@ -210,12 +182,6 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
           </Button>
         </div>
       </div>
-
-      <VirtualKeyboard
-        onInput={handleKeyboardInput}
-        onBackspace={handleKeyboardBackspace}
-        onSpace={handleKeyboardSpace}
-      />
 
       <OpeningBalanceModal
         isOpen={showOpeningBalanceModal}
