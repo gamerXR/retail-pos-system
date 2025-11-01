@@ -3,9 +3,23 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, Search, Printer, Calendar } from "lucide-react";
+import { ChevronLeft, Search, Printer, Calendar, Mail } from "lucide-react";
 import { useBackend } from "../lib/auth";
 import type { Receipt } from "~backend/pos/receipts";
+
+interface ReceiptSettings {
+  size: "58mm" | "80mm";
+  printCopies: number;
+  topLogo: string;
+  topLogoFile?: string;
+  companyName: string;
+  address: string;
+  telephone: string;
+  headerSize: "Small" | "Medium" | "Large";
+  fontSize: "Small" | "Medium" | "Large";
+  displayUnitPrice: boolean;
+  footer: string;
+}
 
 interface ReprintModalProps {
   isOpen: boolean;
@@ -18,8 +32,32 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
   const [orderNumber, setOrderNumber] = useState("");
   const [receipts, setReceipts] = useState<Receipt[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [showEmailDialog, setShowEmailDialog] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
+  const [emailAddress, setEmailAddress] = useState("");
+  const [isSendingEmail, setIsSendingEmail] = useState(false);
   const { toast } = useToast();
   const backend = useBackend();
+
+  const getReceiptSettings = (): ReceiptSettings => {
+    const savedSettings = localStorage.getItem('receiptSettings');
+    if (savedSettings) {
+      return JSON.parse(savedSettings);
+    }
+    
+    return {
+      size: "80mm",
+      printCopies: 1,
+      topLogo: "None",
+      companyName: "POSX SOLUTION",
+      address: "Unit 4, First Floor, Jin Pg Babu Raja, Kg Kiarong, Brunei Darussalam",
+      telephone: "+673 818 4877",
+      headerSize: "Large",
+      fontSize: "Small",
+      displayUnitPrice: true,
+      footer: "Thank You & Come Again!"
+    };
+  };
 
   useEffect(() => {
     if (isOpen && searchType === "date") {
@@ -93,7 +131,8 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
   };
 
   const handleReprint = (receipt: Receipt) => {
-    const printContent = generateReceiptContent(receipt);
+    const settings = getReceiptSettings();
+    const printContent = generateReceiptContent(receipt, settings);
     
     const printWindow = window.open('', '_blank');
     if (printWindow) {
@@ -104,23 +143,15 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
             <style>
               body { 
                 margin: 0; 
-                padding: 20px; 
+                padding: 0; 
                 font-family: monospace;
-                font-size: 12px;
-                line-height: 1.4;
               }
               @media print {
                 @page {
-                  size: 80mm auto;
+                  size: ${settings.size} auto;
                   margin: 3mm;
                 }
-                body { padding: 0; }
               }
-              .header { text-align: center; margin-bottom: 20px; }
-              .section { margin-bottom: 15px; }
-              .row { display: flex; justify-content: space-between; margin-bottom: 5px; }
-              .separator { border-top: 1px dashed #000; margin: 10px 0; }
-              .total { font-weight: bold; font-size: 14px; }
             </style>
           </head>
           <body>
@@ -141,64 +172,136 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
     }
   };
 
-  const generateReceiptContent = (receipt: Receipt) => {
-    return `
-      <div class="header">
-        <h2>SALES RECEIPT</h2>
-        <div>Order: ${receipt.orderNumber}</div>
+  const generateReceiptContent = (receipt: Receipt, settings: ReceiptSettings) => {
+    let receiptContent = `
+      <div style="font-family: monospace; font-size: ${settings.fontSize === 'Small' ? '12px' : settings.fontSize === 'Medium' ? '14px' : '16px'}; line-height: 1.2; width: ${settings.size === '58mm' ? '56mm' : '76mm'}; margin: 0 auto; word-break: break-word;">
+    `;
+
+    if (settings.topLogoFile) {
+      receiptContent += `
+        <div style="text-align: center; margin-bottom: 10px;">
+          <img src="${settings.topLogoFile}" alt="Logo" style="max-width: 80%; max-height: 60px; margin: 0 auto; display: block;" />
+        </div>
+      `;
+    }
+
+    if (settings.companyName) {
+      receiptContent += `
+        <div style="text-align: center; margin-bottom: 10px; font-size: ${settings.headerSize === 'Small' ? '14px' : settings.headerSize === 'Medium' ? '18px' : '22px'}; font-weight: bold;">
+          ${settings.companyName}
+        </div>
+      `;
+    }
+
+    if (settings.address || settings.telephone) {
+      receiptContent += `
+        <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
+          ${settings.address ? settings.address.replace(/\n/g, '<br>') : ''}
+          ${settings.address && settings.telephone ? '<br>' : ''}
+          ${settings.telephone ? 'Tel ' + settings.telephone : ''}
+        </div>
+      `;
+    }
+
+    receiptContent += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
+
+    receiptContent += `
+      <div style="text-align: center; margin-bottom: 10px;">
+        Receipt #${receipt.orderNumber}<br>
+        ${new Date(receipt.date).toLocaleDateString()} ${receipt.time}
       </div>
-      
-      <div class="section">
-        <div class="row">
-          <span>Date:</span>
-          <span>${new Date(receipt.date).toLocaleDateString()}</span>
+    `;
+
+    receiptContent += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
+
+    if (settings.displayUnitPrice) {
+      receiptContent += `
+        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
+          <span>Item</span>
+          <span>Qty</span>
+          <span>Price</span>
+          <span>Total</span>
         </div>
-        <div class="row">
-          <span>Time:</span>
-          <span>${receipt.time}</span>
+      `;
+    } else {
+      receiptContent += `
+        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
+          <span>Item</span>
+          <span>Qty</span>
+          <span>Total</span>
         </div>
-        <div class="row">
-          <span>Payment:</span>
+      `;
+    }
+
+    receiptContent += `<div style="border-top: 1px dashed #000; margin: 5px 0;"></div>`;
+
+    receipt.items.forEach(item => {
+      if (settings.displayUnitPrice) {
+        receiptContent += `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; font-size: 11px;">
+            <span style="flex: 1; word-break: break-word;">${item.productName}</span>
+            <span style="width: 30px; text-align: center; flex-shrink: 0; margin-left: 5px;">${item.quantity}</span>
+            <span style="width: 45px; text-align: right; flex-shrink: 0; margin-left: 5px;">$${item.unitPrice.toFixed(2)}</span>
+            <span style="width: 45px; text-align: right; flex-shrink: 0; margin-left: 5px;">$${item.totalPrice.toFixed(2)}</span>
+          </div>
+        `;
+      } else {
+        receiptContent += `
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; font-size: 11px;">
+            <span style="flex: 1; word-break: break-word;">${item.productName}</span>
+            <span style="width: 30px; text-align: center; flex-shrink: 0; margin-left: 5px;">${item.quantity}</span>
+            <span style="width: 60px; text-align: right; flex-shrink: 0; margin-left: 5px;">$${item.totalPrice.toFixed(2)}</span>
+          </div>
+        `;
+      }
+    });
+
+    receiptContent += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
+
+    const totalQty = receipt.items.reduce((sum, item) => sum + item.quantity, 0);
+
+    receiptContent += `
+      <div style="margin-bottom: 5px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Total QTY</span>
+          <span>${totalQty}</span>
+        </div>
+      </div>
+      <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
+      <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-bottom: 10px;">
+        <span>Total Amount</span>
+        <span>$${receipt.total.toFixed(2)}</span>
+      </div>
+    `;
+
+    receiptContent += `
+      <div style="margin-bottom: 10px;">
+        <div style="display: flex; justify-content: space-between;">
+          <span>Payment Method</span>
           <span>${receipt.paymentMethod}</span>
         </div>
       </div>
-      
-      <div class="separator"></div>
-      
-      <div class="section">
-        ${receipt.items.map(item => `
-          <div class="row">
-            <span>${item.productName}</span>
-          </div>
-          <div class="row" style="padding-left: 10px; font-size: 11px;">
-            <span>${item.quantity} x $${item.unitPrice.toFixed(2)}</span>
-            <span>$${item.totalPrice.toFixed(2)}</span>
-          </div>
-        `).join('')}
-      </div>
-      
-      <div class="separator"></div>
-      
-      <div class="section">
-        <div class="row total">
-          <span>Total:</span>
-          <span>$${receipt.total.toFixed(2)}</span>
+    `;
+
+    receiptContent += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
+
+    if (settings.footer) {
+      receiptContent += `
+        <div style="text-align: center; margin-top: 10px; font-size: 10px;">
+          ${settings.footer}
         </div>
-        <div class="row">
-          <span>Items:</span>
-          <span>${receipt.itemCount}</span>
-        </div>
-      </div>
-      
-      <div class="separator"></div>
-      
-      <div style="text-align: center; margin-top: 20px;">
-        <div>*** Thank You ***</div>
-        <div style="font-size: 10px; margin-top: 10px;">
-          Reprinted: ${new Date().toLocaleString()}
-        </div>
+      `;
+    }
+
+    receiptContent += `
+      <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #666;">
+        Reprinted: ${new Date().toLocaleString()}
       </div>
     `;
+
+    receiptContent += `</div>`;
+    
+    return receiptContent;
   };
 
   const handleSearch = () => {
@@ -206,6 +309,75 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
       searchReceiptsByDate();
     } else {
       searchReceiptByOrder();
+    }
+  };
+
+  const handleEmailExport = async () => {
+    if (!emailAddress.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter an email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!selectedReceipt) {
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(emailAddress)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSendingEmail(true);
+    try {
+      const settings = getReceiptSettings();
+      const receiptHTML = generateReceiptContent(selectedReceipt, settings);
+
+      const emailSubject = `Receipt ${selectedReceipt.orderNumber}`;
+      const emailBody = `
+        <html>
+          <head>
+            <style>
+              body { font-family: Arial, sans-serif; }
+            </style>
+          </head>
+          <body>
+            <p>Dear Customer,</p>
+            <p>Please find your receipt attached below:</p>
+            ${receiptHTML}
+            <p style="margin-top: 20px;">Thank you for your business!</p>
+          </body>
+        </html>
+      `;
+
+      const mailtoLink = `mailto:${emailAddress}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+      window.location.href = mailtoLink;
+
+      toast({
+        title: "Email Client Opened",
+        description: "Your default email client has been opened with the receipt",
+      });
+
+      setShowEmailDialog(false);
+      setEmailAddress("");
+      setSelectedReceipt(null);
+    } catch (error) {
+      console.error("Error exporting receipt:", error);
+      toast({
+        title: "Export Failed",
+        description: "Failed to export receipt via email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSendingEmail(false);
     }
   };
 
@@ -311,7 +483,7 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
                   <div className="text-sm">{receipt.time}</div>
                   <div className="text-sm">{receipt.itemCount} items</div>
                   <div className="text-sm font-semibold text-green-600">${receipt.total.toFixed(2)}</div>
-                  <div>
+                  <div className="flex gap-2">
                     <Button
                       size="sm"
                       onClick={() => handleReprint(receipt)}
@@ -319,6 +491,17 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
                     >
                       <Printer className="w-4 h-4 mr-1" />
                       Reprint
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedReceipt(receipt);
+                        setShowEmailDialog(true);
+                      }}
+                    >
+                      <Mail className="w-4 h-4 mr-1" />
+                      Export
                     </Button>
                   </div>
                 </div>
@@ -334,6 +517,69 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
           </div>
         )}
       </DialogContent>
+
+      <Dialog open={showEmailDialog} onOpenChange={setShowEmailDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Export Receipt via Email</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-sm font-medium mb-2 block">Email Address</label>
+              <Input
+                type="email"
+                placeholder="customer@example.com"
+                value={emailAddress}
+                onChange={(e) => setEmailAddress(e.target.value)}
+                onKeyPress={(e) => e.key === "Enter" && handleEmailExport()}
+              />
+            </div>
+            {selectedReceipt && (
+              <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                <p className="text-sm text-gray-700">
+                  <strong>Order:</strong> {selectedReceipt.orderNumber}<br />
+                  <strong>Total:</strong> ${selectedReceipt.total.toFixed(2)}<br />
+                  <strong>Date:</strong> {new Date(selectedReceipt.date).toLocaleDateString()}
+                </p>
+              </div>
+            )}
+            <div className="bg-blue-50 border border-blue-200 rounded p-3">
+              <p className="text-sm text-blue-700">
+                This will open your default email client with the receipt content ready to send.
+              </p>
+            </div>
+          </div>
+          <div className="flex justify-end gap-2 pt-4">
+            <Button 
+              variant="outline" 
+              onClick={() => {
+                setShowEmailDialog(false);
+                setEmailAddress("");
+                setSelectedReceipt(null);
+              }}
+            >
+              Cancel
+            </Button>
+            <Button 
+              onClick={handleEmailExport}
+              disabled={isSendingEmail}
+              className="bg-red-500 hover:bg-red-600 text-white"
+            >
+              {isSendingEmail ? (
+                <>
+                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="w-4 h-4 mr-2" />
+                  Send Email
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }
