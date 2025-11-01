@@ -5,16 +5,8 @@ import { useToast } from "@/components/ui/use-toast";
 import { 
   ChevronLeft, 
   ChevronRight,
-  Printer, 
-  Receipt, 
-  Tag, 
-  QrCode, 
-  Scale, 
-  CreditCard, 
-  Monitor, 
-  Settings
+  Tag
 } from "lucide-react";
-import CashierReceiptModal from "./CashierReceiptModal";
 import LabelPrintingModal from "./LabelPrintingModal";
 
 interface HardwareSettingsModalProps {
@@ -23,17 +15,10 @@ interface HardwareSettingsModalProps {
 }
 
 export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSettingsModalProps) {
-  const [showCashierReceipt, setShowCashierReceipt] = useState(false);
   const [showLabelPrinting, setShowLabelPrinting] = useState(false);
   const { toast } = useToast();
 
   const hardwareItems = [
-    {
-      icon: Receipt,
-      label: "Cashier Receipt",
-      action: "Cashier Receipt",
-      color: "bg-green-500"
-    },
     {
       icon: Tag,
       label: "Barcode Receipt",
@@ -67,9 +52,7 @@ export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSetti
                     variant="ghost"
                     className="h-20 flex items-center justify-between p-4 border border-gray-200 hover:bg-gray-50"
                     onClick={() => {
-                      if (item.action === "Cashier Receipt") {
-                        setShowCashierReceipt(true);
-                      } else if (item.action === "Barcode Receipt") {
+                      if (item.action === "Barcode Receipt") {
                         setShowLabelPrinting(true);
                       }
                     }}
@@ -88,11 +71,6 @@ export default function HardwareSettingsModal({ isOpen, onClose }: HardwareSetti
           </div>
         </DialogContent>
       </Dialog>
-
-      <CashierReceiptModal
-        isOpen={showCashierReceipt}
-        onClose={() => setShowCashierReceipt(false)}
-      />
 
       <LabelPrintingModal
         isOpen={showLabelPrinting}
