@@ -346,29 +346,41 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
         <html>
           <head>
             <style>
-              body { font-family: Arial, sans-serif; }
+              body { font-family: Arial, sans-serif; padding: 20px; }
             </style>
           </head>
           <body>
             <p>Dear Customer,</p>
-            <p>Please find your receipt attached below:</p>
-            ${receiptHTML}
+            <p>Please find your receipt below:</p>
+            <div style="margin: 20px 0;">
+              ${receiptHTML}
+            </div>
             <p style="margin-top: 20px;">Thank you for your business!</p>
           </body>
         </html>
       `;
 
-      const mailtoLink = `mailto:${emailAddress}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-      window.location.href = mailtoLink;
-
-      toast({
-        title: "Email Client Opened",
-        description: "Your default email client has been opened with the receipt",
+      const result = await backend.email.send({
+        to: emailAddress,
+        subject: emailSubject,
+        htmlContent: emailBody,
       });
 
-      setShowEmailDialog(false);
-      setEmailAddress("");
-      setSelectedReceipt(null);
+      if (result.success) {
+        toast({
+          title: "Email Sent",
+          description: `Receipt sent to ${emailAddress}`,
+        });
+        setShowEmailDialog(false);
+        setEmailAddress("");
+        setSelectedReceipt(null);
+      } else {
+        toast({
+          title: "Send Failed",
+          description: result.message,
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error exporting receipt:", error);
       toast({
@@ -545,7 +557,7 @@ export default function ReprintModal({ isOpen, onClose }: ReprintModalProps) {
             )}
             <div className="bg-blue-50 border border-blue-200 rounded p-3">
               <p className="text-sm text-blue-700">
-                This will open your default email client with the receipt content ready to send.
+                The receipt will be sent via email to the provided address.
               </p>
             </div>
           </div>
