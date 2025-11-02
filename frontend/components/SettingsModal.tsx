@@ -23,6 +23,7 @@ import LowStockAlertModal from "./LowStockAlertModal";
 import ItemsManagementModal from "./ItemsManagementModal";
 import DualScreenModal from "./DualScreenModal";
 import DayClosingReportModal from "./DayClosingReportModal";
+import SalesCategoryReportModal from "./SalesCategoryReportModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -40,6 +41,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
   const [showItemsManagement, setShowItemsManagement] = useState(false);
   const [showDualScreen, setShowDualScreen] = useState(false);
   const [showDayClosingReport, setShowDayClosingReport] = useState(false);
+  const [showSalesCategoryReport, setShowSalesCategoryReport] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -85,6 +87,11 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
 
     if (action === "Day Closing Report") {
       setShowDayClosingReport(true);
+      return;
+    }
+
+    if (action === "Sales Category") {
+      setShowSalesCategoryReport(true);
       return;
     }
     
@@ -155,6 +162,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
         return [
           { label: "Sales Summary", action: "Sales Summary" },
           { label: "Day Closing Report", action: "Day Closing Report" },
+          { label: "Sales Category", action: "Sales Category" },
         ];
       case "Stock":
         return [
@@ -222,7 +230,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
 
           <div className="flex h-[600px]">
             {/* Left Sidebar */}
-            <div className="w-80 bg-gray-50 border-r border-gray-200">
+            <div className="w-80 bg-gray-50 border-r border-gray-200 overflow-y-auto">
               <div className="p-4 space-y-2">
                 {leftMenuItems.map((item) => {
                   const IconComponent = item.icon;
@@ -312,6 +320,12 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
       <DayClosingReportModal
         isOpen={showDayClosingReport}
         onClose={() => setShowDayClosingReport(false)}
+      />
+
+      {/* Sales Category Report Modal */}
+      <SalesCategoryReportModal
+        isOpen={showSalesCategoryReport}
+        onClose={() => setShowSalesCategoryReport(false)}
       />
     </>
   );

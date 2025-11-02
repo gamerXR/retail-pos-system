@@ -394,6 +394,8 @@ import {
     getFlatCategories as api_pos_categories_getFlatCategories,
     updateCategory as api_pos_categories_updateCategory
 } from "~backend/pos/categories";
+import { getCategoryItems as api_pos_category_items_getCategoryItems } from "~backend/pos/category_items";
+import { getCategorySalesReport as api_pos_category_sales_report_getCategorySalesReport } from "~backend/pos/category_sales_report";
 import {
     exportProducts as api_pos_excel_exportProducts,
     importProducts as api_pos_excel_importProducts
@@ -447,6 +449,8 @@ export namespace pos {
             this.exportProducts = this.exportProducts.bind(this)
             this.exportSalesViaEmail = this.exportSalesViaEmail.bind(this)
             this.getCategories = this.getCategories.bind(this)
+            this.getCategoryItems = this.getCategoryItems.bind(this)
+            this.getCategorySalesReport = this.getCategorySalesReport.bind(this)
             this.getFlatCategories = this.getFlatCategories.bind(this)
             this.getLowStock = this.getLowStock.bind(this)
             this.getOpeningBalance = this.getOpeningBalance.bind(this)
@@ -542,6 +546,18 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/categories`, {method: "GET", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_categories_getCategories>
+        }
+
+        public async getCategoryItems(params: RequestType<typeof api_pos_category_items_getCategoryItems>): Promise<ResponseType<typeof api_pos_category_items_getCategoryItems>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/category-items`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_category_items_getCategoryItems>
+        }
+
+        public async getCategorySalesReport(params: RequestType<typeof api_pos_category_sales_report_getCategorySalesReport>): Promise<ResponseType<typeof api_pos_category_sales_report_getCategorySalesReport>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/category-sales-report`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_category_sales_report_getCategorySalesReport>
         }
 
         /**
