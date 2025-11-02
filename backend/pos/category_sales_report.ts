@@ -1,5 +1,5 @@
 import { api } from "encore.dev/api";
-import { db } from "./db";
+import { posDB } from "./db";
 
 export interface CategorySalesReportRequest {
   startDate: Date;
@@ -20,7 +20,12 @@ export interface CategorySalesReportResponse {
 export const getCategorySalesReport = api(
   { expose: true, method: "POST", path: "/pos/category-sales-report" },
   async ({ startDate, endDate }: CategorySalesReportRequest): Promise<CategorySalesReportResponse> => {
-    const result = await db.query`
+    const result = await posDB.queryAll<{
+      category_id: number;
+      category_name: string;
+      total_quantity: number;
+      total_sales: number;
+    }>`
       SELECT 
         c.id as category_id,
         c.name as category_name,
