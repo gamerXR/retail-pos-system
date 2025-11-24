@@ -24,11 +24,17 @@ export interface TopSalesResponse {
 export const getTopSales = api(
   { expose: true, method: "POST", path: "/pos/top-sales" },
   async ({ startDate, endDate, filterType = "all", categoryId }: TopSalesRequest): Promise<TopSalesResponse> => {
-    let query: string;
-    let params: any[];
+    let result: any[];
 
     if (filterType === "category" && categoryId) {
-      query = `
+      result = await posDB.queryAll<{
+        product_id: number;
+        product_name: string;
+        category_name: string;
+        total_quantity: number;
+        total_sales: number;
+        transaction_count: number;
+      }>`
         SELECT 
           p.id as product_id,
           p.name as product_name,
@@ -40,16 +46,22 @@ export const getTopSales = api(
         JOIN categories c ON c.id = p.category_id
         JOIN sale_items si ON si.product_id = p.id
         JOIN sales s ON s.id = si.sale_id
-        WHERE s.created_at >= $1
-          AND s.created_at <= $2
-          AND p.category_id = $3
+        WHERE s.created_at >= ${startDate}
+          AND s.created_at <= ${endDate}
+          AND p.category_id = ${categoryId}
         GROUP BY p.id, p.name, c.name
         ORDER BY total_sales DESC
         LIMIT 50
       `;
-      params = [startDate, endDate, categoryId];
     } else {
-      query = `
+      result = await posDB.queryAll<{
+        product_id: number;
+        product_name: string;
+        category_name: string;
+        total_quantity: number;
+        total_sales: number;
+        transaction_count: number;
+      }>`
         SELECT 
           p.id as product_id,
           p.name as product_name,
@@ -61,23 +73,13 @@ export const getTopSales = api(
         JOIN categories c ON c.id = p.category_id
         JOIN sale_items si ON si.product_id = p.id
         JOIN sales s ON s.id = si.sale_id
-        WHERE s.created_at >= $1
-          AND s.created_at <= $2
+        WHERE s.created_at >= ${startDate}
+          AND s.created_at <= ${endDate}
         GROUP BY p.id, p.name, c.name
         ORDER BY total_sales DESC
         LIMIT 50
       `;
-      params = [startDate, endDate];
     }
-
-    const result = await posDB.queryAll<{
-      product_id: number;
-      product_name: string;
-      category_name: string;
-      total_quantity: number;
-      total_sales: number;
-      transaction_count: number;
-    }>(query as any, ...params);
 
     const items: TopSalesItem[] = result.map(row => ({
       product_id: row.product_id,

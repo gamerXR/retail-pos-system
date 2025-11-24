@@ -31,14 +31,12 @@ export const getSalesTransactions = api(
   async ({ startDate, endDate }: SalesTransactionsRequest): Promise<SalesTransactionsResponse> => {
     const sales = await posDB.queryAll<{
       id: number;
-      receipt_number: string;
       created_at: Date;
       payment_method: string;
       total_amount: number;
     }>`
       SELECT 
         id,
-        receipt_number,
         created_at,
         payment_method,
         total_amount
@@ -72,7 +70,7 @@ export const getSalesTransactions = api(
       const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
 
       transactions.push({
-        receipt_number: sale.receipt_number,
+        receipt_number: `#${sale.id}`,
         sale_date: date,
         sale_time: timeStr,
         payment_method: sale.payment_method || 'Cash',
