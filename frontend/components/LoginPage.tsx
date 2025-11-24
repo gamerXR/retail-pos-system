@@ -110,10 +110,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <div className="bg-white shadow-sm p-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <img src="/nexpos-logo.png" alt="NexPos Logo" className="h-16" />
-        </div>
+      <div className="bg-white shadow-sm p-4 flex items-center justify-end">
         <div className="flex items-center gap-3">
           <Button
             variant="outline"
@@ -129,7 +126,10 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-6">
+        <div className="w-full max-w-md space-y-8">
+          <div className="flex justify-center mb-8">
+            <img src="/nexpos-logo.png" alt="NX Your NexPos Logo" className="h-40 w-auto" />
+          </div>
           <div className="space-y-4">
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
