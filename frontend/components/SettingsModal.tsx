@@ -25,6 +25,8 @@ import DualScreenModal from "./DualScreenModal";
 import DayClosingReportModal from "./DayClosingReportModal";
 import SalesCategoryReportModal from "./SalesCategoryReportModal";
 import SalesTransactionReportModal from "./SalesTransactionReportModal";
+import TopSalesReportModal from "./TopSalesReportModal";
+import HourlySalesReportModal from "./HourlySalesReportModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -44,6 +46,8 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
   const [showDayClosingReport, setShowDayClosingReport] = useState(false);
   const [showSalesCategoryReport, setShowSalesCategoryReport] = useState(false);
   const [showSalesTransactionReport, setShowSalesTransactionReport] = useState(false);
+  const [showTopSalesReport, setShowTopSalesReport] = useState(false);
+  const [showHourlySalesReport, setShowHourlySalesReport] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -99,6 +103,16 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
 
     if (action === "Sales Transaction") {
       setShowSalesTransactionReport(true);
+      return;
+    }
+
+    if (action === "Top Sales") {
+      setShowTopSalesReport(true);
+      return;
+    }
+
+    if (action === "Hourly Sales") {
+      setShowHourlySalesReport(true);
       return;
     }
     
@@ -171,6 +185,8 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
           { label: "Day Closing Report", action: "Day Closing Report" },
           { label: "Sales Category", action: "Sales Category" },
           { label: "Sales Transaction", action: "Sales Transaction" },
+          { label: "Top Sales", action: "Top Sales" },
+          { label: "Hourly Sales", action: "Hourly Sales" },
         ];
       case "Stock":
         return [
@@ -340,6 +356,18 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
       <SalesTransactionReportModal
         isOpen={showSalesTransactionReport}
         onClose={() => setShowSalesTransactionReport(false)}
+      />
+
+      {/* Top Sales Report Modal */}
+      <TopSalesReportModal
+        isOpen={showTopSalesReport}
+        onClose={() => setShowTopSalesReport(false)}
+      />
+
+      {/* Hourly Sales Report Modal */}
+      <HourlySalesReportModal
+        isOpen={showHourlySalesReport}
+        onClose={() => setShowHourlySalesReport(false)}
       />
     </>
   );
