@@ -33,9 +33,7 @@ export default function EditItemModal({
     name: "",
     secondName: "",
     categoryId: "",
-    price: "",
-    stockQty: "",
-    shelfLife: ""
+    price: ""
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -48,9 +46,7 @@ export default function EditItemModal({
         name: product.name || "",
         secondName: product.secondName || "",
         categoryId: product.categoryId?.toString() || "",
-        price: product.price?.toString() || "",
-        stockQty: product.quantity?.toString() || "",
-        shelfLife: product.shelfLife?.toString() || ""
+        price: product.price?.toString() || ""
       });
     }
   }, [product]);
@@ -93,11 +89,9 @@ export default function EditItemModal({
         id: product.id,
         name: formData.name.trim(),
         price: parseFloat(formData.price),
-        quantity: formData.stockQty ? parseInt(formData.stockQty) : undefined,
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined,
         barcode: formData.barcode || undefined,
         secondName: formData.secondName || undefined,
-        shelfLife: formData.shelfLife ? parseInt(formData.shelfLife) : undefined,
         weighing: false
       });
 
@@ -288,41 +282,6 @@ export default function EditItemModal({
                   className="w-full bg-cyan-100"
                   required
                 />
-              </div>
-            </div>
-
-            {/* Stock Qty */}
-            <div className="grid grid-cols-12 gap-4 items-center">
-              <label className="col-span-2 text-sm font-medium text-gray-700">
-                Stock Qty
-              </label>
-              <div className="col-span-10">
-                <Input
-                  type="number"
-                  value={formData.stockQty}
-                  onChange={(e) => handleInputChange("stockQty", e.target.value)}
-                  className="w-full text-orange-500"
-                  placeholder="0.0"
-                />
-              </div>
-            </div>
-
-            {/* Shelf Life */}
-            <div className="grid grid-cols-12 gap-4 items-center">
-              <label className="col-span-2 text-sm font-medium text-gray-700">
-                Shelf Life
-              </label>
-              <div className="col-span-8">
-                <Input
-                  type="number"
-                  value={formData.shelfLife}
-                  onChange={(e) => handleInputChange("shelfLife", e.target.value)}
-                  className="w-full text-orange-500"
-                  placeholder="0"
-                />
-              </div>
-              <div className="col-span-2 text-center text-sm text-gray-500">
-                Day
               </div>
             </div>
 

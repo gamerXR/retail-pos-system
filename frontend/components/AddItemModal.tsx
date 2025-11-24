@@ -29,9 +29,7 @@ export default function AddItemModal({
     name: "",
     secondName: "",
     categoryId: selectedCategoryId?.toString() || "",
-    price: "",
-    stockQty: "",
-    shelfLife: ""
+    price: ""
   });
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -80,11 +78,10 @@ export default function AddItemModal({
       const product = await backend.pos.createProduct({
         name: formData.name.trim(),
         price: parseFloat(formData.price),
-        quantity: formData.stockQty ? parseInt(formData.stockQty) : 0,
+        quantity: 0,
         categoryId: formData.categoryId ? parseInt(formData.categoryId) : undefined,
         barcode: formData.barcode || undefined,
         secondName: formData.secondName || undefined,
-        shelfLife: formData.shelfLife ? parseInt(formData.shelfLife) : undefined,
         weighing: false
       });
 
@@ -127,9 +124,7 @@ export default function AddItemModal({
       name: "",
       secondName: "",
       categoryId: selectedCategoryId?.toString() || "",
-      price: "",
-      stockQty: "",
-      shelfLife: ""
+      price: ""
     });
   };
 
@@ -271,41 +266,6 @@ export default function AddItemModal({
                 className="w-full"
                 required
               />
-            </div>
-          </div>
-
-          {/* Stock Qty */}
-          <div className="grid grid-cols-12 gap-4 items-center">
-            <label className="col-span-2 text-sm font-medium text-gray-700">
-              Stock Qty
-            </label>
-            <div className="col-span-10">
-              <Input
-                type="number"
-                value={formData.stockQty}
-                onChange={(e) => handleInputChange("stockQty", e.target.value)}
-                className="w-full text-orange-500"
-                placeholder="0.0"
-              />
-            </div>
-          </div>
-
-          {/* Shelf Life */}
-          <div className="grid grid-cols-12 gap-4 items-center">
-            <label className="col-span-2 text-sm font-medium text-gray-700">
-              Shelf Life
-            </label>
-            <div className="col-span-8">
-              <Input
-                type="number"
-                value={formData.shelfLife}
-                onChange={(e) => handleInputChange("shelfLife", e.target.value)}
-                className="w-full text-orange-500"
-                placeholder="0"
-              />
-            </div>
-            <div className="col-span-2 text-center text-sm text-gray-500">
-              Day
             </div>
           </div>
 
