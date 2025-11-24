@@ -388,6 +388,12 @@ export namespace email {
  * Import the endpoint handlers to derive the types for the client.
  */
 import {
+    createExpense as api_pos_cashflow_createExpense,
+    deleteExpense as api_pos_cashflow_deleteExpense,
+    getCashflowReport as api_pos_cashflow_getCashflowReport,
+    listExpenses as api_pos_cashflow_listExpenses
+} from "~backend/pos/cashflow";
+import {
     createCategory as api_pos_categories_createCategory,
     deleteCategory as api_pos_categories_deleteCategory,
     getCategories as api_pos_categories_getCategories,
@@ -408,6 +414,7 @@ import {
     listTemplates as api_pos_label_templates_listTemplates,
     updateTemplate as api_pos_label_templates_updateTemplate
 } from "~backend/pos/label_templates";
+import { sendLogs as api_pos_logs_sendLogs } from "~backend/pos/logs";
 import {
     getOpeningBalance as api_pos_opening_balance_getOpeningBalance,
     setOpeningBalance as api_pos_opening_balance_setOpeningBalance
@@ -434,6 +441,7 @@ import {
     getStockHistory as api_pos_stock_getStockHistory,
     updateStock as api_pos_stock_updateStock
 } from "~backend/pos/stock";
+import { syncData as api_pos_sync_syncData } from "~backend/pos/sync";
 import { getTopSales as api_pos_top_sales_getTopSales } from "~backend/pos/top_sales";
 
 export namespace pos {
@@ -444,15 +452,18 @@ export namespace pos {
         constructor(baseClient: BaseClient) {
             this.baseClient = baseClient
             this.createCategory = this.createCategory.bind(this)
+            this.createExpense = this.createExpense.bind(this)
             this.createProduct = this.createProduct.bind(this)
             this.createSale = this.createSale.bind(this)
             this.createTemplate = this.createTemplate.bind(this)
             this.deleteCategory = this.deleteCategory.bind(this)
+            this.deleteExpense = this.deleteExpense.bind(this)
             this.deleteProduct = this.deleteProduct.bind(this)
             this.deleteTemplate = this.deleteTemplate.bind(this)
             this.exportCategorySalesViaEmail = this.exportCategorySalesViaEmail.bind(this)
             this.exportProducts = this.exportProducts.bind(this)
             this.exportSalesViaEmail = this.exportSalesViaEmail.bind(this)
+            this.getCashflowReport = this.getCashflowReport.bind(this)
             this.getCategories = this.getCategories.bind(this)
             this.getCategoryItems = this.getCategoryItems.bind(this)
             this.getCategorySalesReport = this.getCategorySalesReport.bind(this)
@@ -468,10 +479,13 @@ export namespace pos {
             this.getStockHistory = this.getStockHistory.bind(this)
             this.getTopSales = this.getTopSales.bind(this)
             this.importProducts = this.importProducts.bind(this)
+            this.listExpenses = this.listExpenses.bind(this)
             this.listTemplates = this.listTemplates.bind(this)
             this.searchReceipts = this.searchReceipts.bind(this)
+            this.sendLogs = this.sendLogs.bind(this)
             this.setOpeningBalance = this.setOpeningBalance.bind(this)
             this.stickProduct = this.stickProduct.bind(this)
+            this.syncData = this.syncData.bind(this)
             this.toggleOffShelf = this.toggleOffShelf.bind(this)
             this.updateCategory = this.updateCategory.bind(this)
             this.updateProduct = this.updateProduct.bind(this)
@@ -486,6 +500,12 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/categories`, {method: "POST", body: JSON.stringify(params)})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_categories_createCategory>
+        }
+
+        public async createExpense(params: RequestType<typeof api_pos_cashflow_createExpense>): Promise<ResponseType<typeof api_pos_cashflow_createExpense>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/expenses`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_cashflow_createExpense>
         }
 
         /**
@@ -517,6 +537,12 @@ export namespace pos {
          */
         public async deleteCategory(params: { id: number }): Promise<void> {
             await this.baseClient.callTypedAPI(`/pos/categories/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+        }
+
+        public async deleteExpense(params: { id: string }): Promise<ResponseType<typeof api_pos_cashflow_deleteExpense>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/expenses/${encodeURIComponent(params.id)}`, {method: "DELETE", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_cashflow_deleteExpense>
         }
 
         /**
@@ -551,6 +577,12 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/sales/export-email`, {method: "POST", body: JSON.stringify(params)})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_sales_exportSalesViaEmail>
+        }
+
+        public async getCashflowReport(params: RequestType<typeof api_pos_cashflow_getCashflowReport>): Promise<ResponseType<typeof api_pos_cashflow_getCashflowReport>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/cashflow-report`, {method: "POST", body: JSON.stringify(params)})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_cashflow_getCashflowReport>
         }
 
         /**
@@ -671,6 +703,12 @@ export namespace pos {
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_excel_importProducts>
         }
 
+        public async listExpenses(): Promise<ResponseType<typeof api_pos_cashflow_listExpenses>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/expenses`, {method: "GET", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_cashflow_listExpenses>
+        }
+
         public async listTemplates(): Promise<ResponseType<typeof api_pos_label_templates_listTemplates>> {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/label-templates`, {method: "GET", body: undefined})
@@ -689,6 +727,12 @@ export namespace pos {
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_receipts_searchReceipts>
         }
 
+        public async sendLogs(): Promise<ResponseType<typeof api_pos_logs_sendLogs>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/send-logs`, {method: "POST", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_logs_sendLogs>
+        }
+
         /**
          * Sets the opening balance for the day.
          */
@@ -705,6 +749,12 @@ export namespace pos {
             // Now make the actual call to the API
             const resp = await this.baseClient.callTypedAPI(`/pos/products/${encodeURIComponent(params.id)}/stick`, {method: "POST", body: undefined})
             return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_products_stickProduct>
+        }
+
+        public async syncData(): Promise<ResponseType<typeof api_pos_sync_syncData>> {
+            // Now make the actual call to the API
+            const resp = await this.baseClient.callTypedAPI(`/pos/sync`, {method: "POST", body: undefined})
+            return JSON.parse(await resp.text(), dateReviver) as ResponseType<typeof api_pos_sync_syncData>
         }
 
         /**

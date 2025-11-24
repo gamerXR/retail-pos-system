@@ -102,10 +102,15 @@ const openCashDrawerBluetooth = async (printerInfo: ConnectedPrinter) => {
       throw new Error("Web Bluetooth is not supported in this browser.");
     }
 
-    const device = await (navigator as any).bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
-    });
+    const devices = await (navigator as any).bluetooth.getDevices();
+    let device = devices.find((d: any) => d.id === printerInfo.address);
+
+    if (!device) {
+      device = await (navigator as any).bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+      });
+    }
 
     const server = await device.gatt.connect();
     const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
@@ -131,9 +136,8 @@ const openCashDrawerIP = async (printerInfo: ConnectedPrinter) => {
     const [ip, port] = printerInfo.address.split(':');
     
     const command = new Uint8Array([0x1b, 0x70, 0x00, 0x19, 0xfa]);
-    const base64Command = btoa(String.fromCharCode(...command));
     
-    const response = await fetch(`http://${ip}:${port}`, {
+    await fetch(`http://${ip}:${port}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/octet-stream',
@@ -182,16 +186,27 @@ const printViaBluetooth = async (content: string, printerInfo: ConnectedPrinter)
 
     const escposData = htmlToESCPOS(content);
     
-    const device = await (navigator as any).bluetooth.requestDevice({
-      acceptAllDevices: true,
-      optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
-    });
+    const devices = await (navigator as any).bluetooth.getDevices();
+    let device = devices.find((d: any) => d.id === printerInfo.address);
+
+    if (!device) {
+      device = await (navigator as any).bluetooth.requestDevice({
+        acceptAllDevices: true,
+        optionalServices: ['000018f0-0000-1000-8000-00805f9b34fb']
+      });
+    }
 
     const server = await device.gatt.connect();
     const service = await server.getPrimaryService('000018f0-0000-1000-8000-00805f9b34fb');
     const characteristic = await service.getCharacteristic('00002af1-0000-1000-8000-00805f9b34fb');
 
-    await characteristic.writeValue(escposData);
+    const maxChunkSize = 512;
+    for (let i = 0; i < escposData.length; i += maxChunkSize) {
+      const chunk = escposData.slice(i, Math.min(i + maxChunkSize, escposData.length));
+      await characteristic.writeValue(chunk);
+      await new Promise(resolve => setTimeout(resolve, 50));
+    }
+    
     await device.gatt.disconnect();
 
     toast({

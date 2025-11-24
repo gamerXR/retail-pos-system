@@ -20,11 +20,6 @@ interface PaymentOptionsModalProps {
 export default function PaymentOptionsModal({ isOpen, onClose, onSave }: PaymentOptionsModalProps) {
   const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([
     { id: "shop-coupon", name: "Shop Coupon", enabled: false },
-    { id: "bibd-online", name: "BIBD Online", enabled: true },
-    { id: "visa", name: "VISA", enabled: true },
-    { id: "mastercard", name: "MasterCard", enabled: true },
-    { id: "quickpay", name: "QuickPay", enabled: true },
-    { id: "card", name: "Card", enabled: true },
     { id: "qr-code", name: "QR Code Payment", enabled: true },
     { id: "ding", name: "DING!", enabled: true },
   ]);

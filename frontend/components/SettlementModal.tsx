@@ -74,11 +74,6 @@ export default function SettlementModal({
   const [showOtherPaymentModal, setShowOtherPaymentModal] = useState(false);
   const [paymentOptions, setPaymentOptions] = useState<PaymentOption[]>([
     { id: "shop-coupon", name: "Shop Coupon", enabled: false },
-    { id: "bibd-online", name: "BIBD Online", enabled: true },
-    { id: "visa", name: "VISA", enabled: true },
-    { id: "mastercard", name: "MasterCard", enabled: true },
-    { id: "quickpay", name: "QuickPay", enabled: true },
-    { id: "card", name: "Card", enabled: true },
     { id: "qr-code", name: "QR Code Payment", enabled: true },
     { id: "ding", name: "DING!", enabled: true },
   ]);
@@ -408,47 +403,44 @@ export default function SettlementModal({
       const settings = getReceiptSettings();
       const receiptContent = generateReceiptContent(saleId);
 
-      // Print the specified number of copies
-      for (let copy = 1; copy <= settings.printCopies; copy++) {
-        const printWindow = window.open('', '_blank');
-        if (printWindow) {
-          printWindow.document.write(`
-            <html>
-              <head>
-                <title>Receipt - Copy ${copy}</title>
-                <style>
-                  body { 
-                    margin: 0; 
-                    padding: 0; 
-                    font-family: monospace;
+      const printWindow = window.open('', '_blank');
+      if (printWindow) {
+        printWindow.document.write(`
+          <html>
+            <head>
+              <title>Receipt</title>
+              <style>
+                body { 
+                  margin: 0; 
+                  padding: 0; 
+                  font-family: monospace;
+                }
+                @media print {
+                  @page {
+                    size: ${settings.size === '58mm' ? '58mm auto' : '80mm auto'};
+                    margin: 3mm;
                   }
-                  @media print {
-                    @page {
-                      size: ${settings.size === '58mm' ? '58mm auto' : '80mm auto'};
-                      margin: 3mm;
-                    }
-                  }
-                </style>
-              </head>
-              <body>
-                ${receiptContent}
-                ${settings.printCopies > 1 ? `<div style="text-align: center; margin-top: 10px; font-size: 8px;">Copy ${copy} of ${settings.printCopies}</div>` : ''}
-              </body>
-            </html>
-          `);
-          printWindow.document.close();
-          
-          // Add a small delay between copies
+                }
+              </style>
+            </head>
+            <body>
+              ${receiptContent}
+            </body>
+          </html>
+        `);
+        printWindow.document.close();
+        
+        setTimeout(() => {
+          printWindow.print();
           setTimeout(() => {
-            printWindow.print();
             printWindow.close();
-          }, copy * 500);
-        }
+          }, 100);
+        }, 250);
       }
 
       toast({
         title: "Receipt Printed",
-        description: `Receipt printed successfully (${settings.printCopies} ${settings.printCopies === 1 ? 'copy' : 'copies'})`,
+        description: `Receipt sent to printer`,
       });
     } catch (error) {
       console.error("Error printing receipt:", error);
