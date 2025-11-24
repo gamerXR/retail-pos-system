@@ -32,7 +32,6 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
           </div>
 
           <div className="text-center">
-            <h2 className="text-2xl font-bold text-gray-800 mb-2">NexPos</h2>
             <p className="text-sm text-gray-600 mb-4">Your Professional POS Solution</p>
             <div className="inline-block bg-gray-100 px-4 py-2 rounded-lg">
               <span className="text-sm font-medium text-gray-700">Version 1.0.0.0</span>
@@ -42,6 +41,14 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
           <div className="border-t pt-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">System Information</h3>
             
+            <div className="flex justify-center mb-4">
+              <img 
+                src="/nexpos-logo.png" 
+                alt="Logo" 
+                className="h-24 object-contain"
+              />
+            </div>
+
             <div className="space-y-4">
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                 <p className="text-sm text-blue-800 font-medium mb-2">Developed by</p>
