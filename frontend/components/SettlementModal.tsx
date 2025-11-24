@@ -397,8 +397,6 @@ export default function SettlementModal({
   };
 
   const handlePrintReceipt = async (saleId: number) => {
-    if (!printReceipt) return;
-
     try {
       const settings = getReceiptSettings();
       const receiptContent = generateReceiptContent(saleId);
@@ -437,18 +435,8 @@ export default function SettlementModal({
           }, 100);
         }, 250);
       }
-
-      toast({
-        title: "Receipt Printed",
-        description: `Receipt sent to printer`,
-      });
     } catch (error) {
       console.error("Error printing receipt:", error);
-      toast({
-        title: "Print Error",
-        description: "Failed to print receipt. Please check printer settings.",
-        variant: "destructive",
-      });
     }
   };
 
@@ -502,15 +490,14 @@ export default function SettlementModal({
         remarks: remarks || undefined
       });
 
+      if (printReceipt && saleResponse && saleResponse.sale && saleResponse.sale.id) {
+        await handlePrintReceipt(saleResponse.sale.id);
+      }
+
       toast({
         title: "Sale Completed",
         description: `Sale of $${actualAmount.toFixed(2)} completed successfully via ${getPaymentMethodDisplay()}`,
       });
-
-      // Print receipt if enabled and we have a valid sale response
-      if (printReceipt && saleResponse && saleResponse.sale && saleResponse.sale.id) {
-        await handlePrintReceipt(saleResponse.sale.id);
-      }
 
       onSaleComplete();
     } catch (error) {
@@ -533,10 +520,10 @@ export default function SettlementModal({
   };
 
   const keypadNumbers = [
-    ["7", "8", "9", "50"],
+    ["7", "8", "9", "EXACT"],
     ["4", "5", "6", "20"],
     ["1", "2", "3", "10"],
-    [".", "0", "⌫", "6"]
+    [".", "0", "⌫", "5"]
   ];
 
   return (
@@ -763,11 +750,14 @@ export default function SettlementModal({
                   <Button
                     key={index}
                     variant="outline"
-                    className={`h-16 text-xl font-semibold ${
-                      ["50", "20", "10", "6"].includes(key) ? "bg-gray-100" : ""
+                    className={`h-16 font-semibold ${
+                      key === "EXACT" ? "bg-green-100 text-sm" : 
+                      ["20", "10", "5"].includes(key) ? "bg-gray-100 text-xl" : "text-xl"
                     }`}
                     onClick={() => {
-                      if (["50", "20", "10", "6"].includes(key)) {
+                      if (key === "EXACT") {
+                        handleQuickAmount(actualAmount);
+                      } else if (["20", "10", "5"].includes(key)) {
                         handleQuickAmount(parseInt(key));
                       } else {
                         handleKeypadInput(key);
