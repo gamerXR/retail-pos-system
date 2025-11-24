@@ -2,8 +2,10 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, Printer, ChevronRight } from "lucide-react";
+import { ChevronLeft, Printer, ChevronRight, Download } from "lucide-react";
 import backend from "~backend/client";
+import ExportModal from "./ExportModal";
+import EmailExportModal from "./EmailExportModal";
 
 interface SalesCategoryReportModalProps {
   isOpen: boolean;
@@ -22,6 +24,8 @@ interface CategoryItem {
   product_name: string;
   total_quantity: number;
   total_sales: number;
+  sale_date: Date;
+  sale_time: string;
 }
 
 export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCategoryReportModalProps) {
@@ -32,6 +36,9 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
   const [itemsLoading, setItemsLoading] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [showExportModal, setShowExportModal] = useState(false);
+  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [exportType, setExportType] = useState<"all" | "category">("all");
   const { toast } = useToast();
 
   useEffect(() => {
@@ -105,6 +112,57 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
     window.print();
   };
 
+  const handleExport = (type: "all" | "category") => {
+    setExportType(type);
+    setShowExportModal(true);
+  };
+
+  const handleExportConfirm = (method: "usb" | "email") => {
+    setShowExportModal(false);
+    if (method === "email") {
+      setShowEmailModal(true);
+    } else {
+      toast({
+        title: "USB Export",
+        description: "USB export functionality coming soon"
+      });
+    }
+  };
+
+  const handleEmailExport = async (email: string) => {
+    try {
+      const startDateTime = new Date(startDate + 'T00:00:00');
+      const endDateTime = new Date(endDate + 'T23:59:59');
+
+      const response = await backend.pos.exportCategorySalesViaEmail({
+        startDate: startDateTime,
+        endDate: endDateTime,
+        categoryId: exportType === "category" && selectedCategory ? selectedCategory.category_id : undefined,
+        email: email
+      });
+
+      if (response.success) {
+        toast({
+          title: "Email Sent",
+          description: response.message
+        });
+      } else {
+        toast({
+          title: "Email Error",
+          description: response.message,
+          variant: "destructive"
+        });
+      }
+    } catch (error) {
+      console.error("Error sending email export:", error);
+      toast({
+        title: "Email Error",
+        description: "Failed to send email. Please try again later.",
+        variant: "destructive"
+      });
+    }
+  };
+
   const handleBackToCategories = () => {
     setSelectedCategory(null);
     setCategoryItems([]);
@@ -117,7 +175,8 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
   const itemsTotalSales = categoryItems.reduce((sum, item) => sum + item.total_sales, 0);
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <>
+      <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-4xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
           <div className="flex items-center justify-between">
@@ -127,10 +186,20 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
               </Button>
               {selectedCategory ? `${selectedCategory.category_name} - Items` : 'Sales Category Report'}
             </DialogTitle>
-            <Button onClick={handlePrint} variant="outline" size="sm">
-              <Printer className="w-4 h-4 mr-2" />
-              Print
-            </Button>
+            <div className="flex gap-2">
+              <Button onClick={handlePrint} variant="outline" size="sm">
+                <Printer className="w-4 h-4 mr-2" />
+                Print
+              </Button>
+              <Button 
+                onClick={() => handleExport(selectedCategory ? "category" : "all")} 
+                variant="outline" 
+                size="sm"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Export
+              </Button>
+            </div>
           </div>
         </DialogHeader>
 
@@ -236,6 +305,12 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
                       <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">
                         Item Name
                       </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">
+                        Date
+                      </th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-700 border-b">
+                        Time
+                      </th>
                       <th className="px-4 py-3 text-right text-sm font-semibold text-gray-700 border-b">
                         Quantity Sold
                       </th>
@@ -247,15 +322,21 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
                   <tbody>
                     {categoryItems.length === 0 ? (
                       <tr>
-                        <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
+                        <td colSpan={5} className="px-4 py-8 text-center text-gray-500">
                           {itemsLoading ? "Loading..." : "No items found"}
                         </td>
                       </tr>
                     ) : (
-                      categoryItems.map((item) => (
-                        <tr key={item.product_id} className="border-b hover:bg-gray-50">
+                      categoryItems.map((item, index) => (
+                        <tr key={`${item.product_id}-${index}`} className="border-b hover:bg-gray-50">
                           <td className="px-4 py-3 text-sm text-gray-900">
                             {item.product_name}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {new Date(item.sale_date).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-3 text-sm text-gray-600">
+                            {item.sale_time}
                           </td>
                           <td className="px-4 py-3 text-sm text-gray-900 text-right">
                             {item.total_quantity}
@@ -270,7 +351,7 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
                   {categoryItems.length > 0 && (
                     <tfoot className="bg-gray-100 font-semibold sticky bottom-0">
                       <tr>
-                        <td className="px-4 py-3 text-sm text-gray-900 border-t-2">
+                        <td className="px-4 py-3 text-sm text-gray-900 border-t-2" colSpan={3}>
                           Total
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-900 text-right border-t-2">
@@ -289,5 +370,18 @@ export default function SalesCategoryReportModal({ isOpen, onClose }: SalesCateg
         </div>
       </DialogContent>
     </Dialog>
+
+    <ExportModal
+      isOpen={showExportModal}
+      onClose={() => setShowExportModal(false)}
+      onConfirm={handleExportConfirm}
+    />
+
+    <EmailExportModal
+      isOpen={showEmailModal}
+      onClose={() => setShowEmailModal(false)}
+      onSend={handleEmailExport}
+    />
+    </>
   );
 }

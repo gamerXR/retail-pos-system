@@ -24,6 +24,7 @@ import ItemsManagementModal from "./ItemsManagementModal";
 import DualScreenModal from "./DualScreenModal";
 import DayClosingReportModal from "./DayClosingReportModal";
 import SalesCategoryReportModal from "./SalesCategoryReportModal";
+import SalesTransactionReportModal from "./SalesTransactionReportModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -42,6 +43,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
   const [showDualScreen, setShowDualScreen] = useState(false);
   const [showDayClosingReport, setShowDayClosingReport] = useState(false);
   const [showSalesCategoryReport, setShowSalesCategoryReport] = useState(false);
+  const [showSalesTransactionReport, setShowSalesTransactionReport] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -92,6 +94,11 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
 
     if (action === "Sales Category") {
       setShowSalesCategoryReport(true);
+      return;
+    }
+
+    if (action === "Sales Transaction") {
+      setShowSalesTransactionReport(true);
       return;
     }
     
@@ -163,6 +170,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
           { label: "Sales Summary", action: "Sales Summary" },
           { label: "Day Closing Report", action: "Day Closing Report" },
           { label: "Sales Category", action: "Sales Category" },
+          { label: "Sales Transaction", action: "Sales Transaction" },
         ];
       case "Stock":
         return [
@@ -326,6 +334,12 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
       <SalesCategoryReportModal
         isOpen={showSalesCategoryReport}
         onClose={() => setShowSalesCategoryReport(false)}
+      />
+
+      {/* Sales Transaction Report Modal */}
+      <SalesTransactionReportModal
+        isOpen={showSalesTransactionReport}
+        onClose={() => setShowSalesTransactionReport(false)}
       />
     </>
   );

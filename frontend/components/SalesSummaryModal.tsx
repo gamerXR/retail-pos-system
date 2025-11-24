@@ -26,16 +26,6 @@ interface SalesSummaryData {
   totalQuantity: number;
   averageTransaction: number;
   paymentMethods: PaymentMethodSummary[];
-  topSellingItems: Array<{
-    name: string;
-    quantity: number;
-    revenue: number;
-  }>;
-  hourlySales: Array<{
-    hour: string;
-    sales: number;
-    transactions: number;
-  }>;
 }
 
 export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModalProps) {
@@ -523,49 +513,7 @@ export default function SalesSummaryModal({ isOpen, onClose }: SalesSummaryModal
                   </div>
                 </div>
 
-                {/* Top Selling Items */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-medium text-gray-800 mb-4">Top Selling Items</h3>
-                  <div className="space-y-2">
-                    {summaryData.topSellingItems.length > 0 ? (
-                      summaryData.topSellingItems.map((item, index) => (
-                        <div key={index} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-800">{item.name}</div>
-                            <div className="text-sm text-gray-500">Qty: {item.quantity}</div>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-semibold text-green-600">${item.revenue.toFixed(2)}</div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-center text-gray-500 py-4">
-                        No sales data available for this period
-                      </div>
-                    )}
-                  </div>
-                </div>
 
-                {/* Hourly Sales */}
-                <div className="bg-white border border-gray-200 rounded-lg p-4">
-                  <h3 className="font-medium text-gray-800 mb-4">Hourly Sales</h3>
-                  <div className="grid grid-cols-3 gap-4">
-                    {summaryData.hourlySales.length > 0 ? (
-                      summaryData.hourlySales.map((hour, index) => (
-                        <div key={index} className="text-center p-3 bg-gray-50 rounded">
-                          <div className="font-medium text-gray-800">{hour.hour}</div>
-                          <div className="text-sm text-green-600">${hour.sales.toFixed(2)}</div>
-                          <div className="text-xs text-gray-500">{hour.transactions} transactions</div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="col-span-3 text-center text-gray-500 py-4">
-                        No hourly sales data available
-                      </div>
-                    )}
-                  </div>
-                </div>
               </>
             ) : (
               <div className="text-center py-8 text-gray-500">
