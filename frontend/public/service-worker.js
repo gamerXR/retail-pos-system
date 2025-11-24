@@ -1,7 +1,7 @@
 const CACHE_NAME = 'nexpos-v1.0.0.0';
 const urlsToCache = [
   '/',
-  '/nexpos-logo.png',
+  '/nexpos-logo.png.jpg',
   '/manifest.json'
 ];
 
