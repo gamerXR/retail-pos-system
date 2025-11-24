@@ -102,8 +102,16 @@ const openCashDrawerBluetooth = async (printerInfo: ConnectedPrinter) => {
       throw new Error("Web Bluetooth is not supported in this browser.");
     }
 
-    const devices = await (navigator as any).bluetooth.getDevices();
-    let device = devices.find((d: any) => d.id === printerInfo.address);
+    let device;
+    
+    try {
+      if ('getDevices' in (navigator as any).bluetooth) {
+        const devices = await (navigator as any).bluetooth.getDevices();
+        device = devices.find((d: any) => d.id === printerInfo.address);
+      }
+    } catch (err) {
+      console.log("getDevices not available or permission denied, will request device");
+    }
 
     if (!device) {
       device = await (navigator as any).bluetooth.requestDevice({
@@ -186,8 +194,16 @@ const printViaBluetooth = async (content: string, printerInfo: ConnectedPrinter)
 
     const escposData = htmlToESCPOS(content);
     
-    const devices = await (navigator as any).bluetooth.getDevices();
-    let device = devices.find((d: any) => d.id === printerInfo.address);
+    let device;
+    
+    try {
+      if ('getDevices' in (navigator as any).bluetooth) {
+        const devices = await (navigator as any).bluetooth.getDevices();
+        device = devices.find((d: any) => d.id === printerInfo.address);
+      }
+    } catch (err) {
+      console.log("getDevices not available or permission denied, will request device");
+    }
 
     if (!device) {
       device = await (navigator as any).bluetooth.requestDevice({
