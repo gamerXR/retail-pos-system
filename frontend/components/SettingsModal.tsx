@@ -27,6 +27,7 @@ import SalesCategoryReportModal from "./SalesCategoryReportModal";
 import SalesTransactionReportModal from "./SalesTransactionReportModal";
 import TopSalesReportModal from "./TopSalesReportModal";
 import HourlySalesReportModal from "./HourlySalesReportModal";
+import AboutModal from "./AboutModal";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -48,6 +49,7 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
   const [showSalesTransactionReport, setShowSalesTransactionReport] = useState(false);
   const [showTopSalesReport, setShowTopSalesReport] = useState(false);
   const [showHourlySalesReport, setShowHourlySalesReport] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
   const { toast } = useToast();
 
   const handleMenuAction = (action: string) => {
@@ -113,6 +115,11 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
 
     if (action === "Hourly Sales") {
       setShowHourlySalesReport(true);
+      return;
+    }
+
+    if (action === "System Information") {
+      setShowAbout(true);
       return;
     }
     
@@ -368,6 +375,12 @@ export default function SettingsModal({ isOpen, onClose, cartItems = [] }: Setti
       <HourlySalesReportModal
         isOpen={showHourlySalesReport}
         onClose={() => setShowHourlySalesReport(false)}
+      />
+
+      {/* About Modal */}
+      <AboutModal
+        isOpen={showAbout}
+        onClose={() => setShowAbout(false)}
       />
     </>
   );
