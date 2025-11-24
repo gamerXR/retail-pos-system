@@ -6,41 +6,18 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { ChevronLeft, Printer } from "lucide-react";
+import { X, Printer, Eye, Save, FileText } from "lucide-react";
+import { ReceiptSettings, DEFAULT_RECEIPT_SETTINGS, generateReceiptHTML } from "@/lib/receipt";
 
 interface CashierReceiptModalProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
-interface ReceiptSettings {
-  size: "58mm" | "80mm";
-  printCopies: number;
-  topLogo: string;
-  topLogoFile?: string;
-  companyName: string;
-  address: string;
-  telephone: string;
-  headerSize: "Small" | "Medium" | "Large";
-  fontSize: "Small" | "Medium" | "Large";
-  displayUnitPrice: boolean;
-  footer: string;
-}
-
 export default function CashierReceiptModal({ isOpen, onClose }: CashierReceiptModalProps) {
-  const [settings, setSettings] = useState<ReceiptSettings>({
-    size: "80mm",
-    printCopies: 1,
-    topLogo: "None",
-    companyName: "POSX SOLUTION",
-    address: "Unit 4, First Floor, Jin Pg Babu Raja, Kg Kiarong, Brunei Darussalam",
-    telephone: "+673 818 4877",
-    headerSize: "Large",
-    fontSize: "Small",
-    displayUnitPrice: true,
-    footer: "Thank You & Come Again!"
-  });
+  const [settings, setSettings] = useState<ReceiptSettings>(DEFAULT_RECEIPT_SETTINGS);
   const [showSizeDialog, setShowSizeDialog] = useState(false);
+  const [activeTab, setActiveTab] = useState<'settings' | 'preview'>('settings');
   const { toast } = useToast();
 
   // Load settings from localStorage on component mount
@@ -77,9 +54,25 @@ export default function CashierReceiptModal({ isOpen, onClose }: CashierReceiptM
   };
 
   const handlePrintTest = () => {
-    const testReceiptContent = generateTestReceipt();
+    const testData = {
+      receiptNumber: "TEST-001",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      items: [
+        { name: "Sample Product 1", quantity: 2, price: 15.50, total: 31.00 },
+        { name: "Sample Product 2", quantity: 1, price: 25.75, total: 25.75 },
+        { name: "Sample Product 3", quantity: 3, price: 8.25, total: 24.75 }
+      ],
+      totalQuantity: 6,
+      totalAmount: 81.50,
+      paymentMethod: "Cash",
+      amountPaid: 100.00,
+      change: 18.50,
+      salesperson: "Test User"
+    };
+
+    const receiptHTML = generateReceiptHTML(testData, settings);
     
-    // Print the test receipt
     const printWindow = window.open('', '_blank');
     if (printWindow) {
       printWindow.document.write(`
@@ -101,7 +94,10 @@ export default function CashierReceiptModal({ isOpen, onClose }: CashierReceiptM
             </style>
           </head>
           <body>
-            ${testReceiptContent}
+            ${receiptHTML}
+            <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #666;">
+              *** TEST PRINT ***
+            </div>
           </body>
         </html>
       `);
@@ -123,169 +119,24 @@ export default function CashierReceiptModal({ isOpen, onClose }: CashierReceiptM
   };
 
   const generateTestReceipt = () => {
-    const receiptNumber = "TEST-001";
-    const currentDate = new Date().toLocaleDateString();
-    const currentTime = new Date().toLocaleTimeString();
-    
-    let content = `
-      <div style="font-family: monospace; font-size: ${settings.fontSize === 'Small' ? '12px' : settings.fontSize === 'Medium' ? '14px' : '16px'}; line-height: 1.2; width: ${settings.size === '58mm' ? '56mm' : '76mm'}; margin: 0 auto; word-break: break-word;">
-    `;
+    const testData = {
+      receiptNumber: "TEST-001",
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      items: [
+        { name: "Sample Product 1", quantity: 2, price: 15.50, total: 31.00 },
+        { name: "Sample Product 2", quantity: 1, price: 25.75, total: 25.75 },
+        { name: "Sample Product 3", quantity: 3, price: 8.25, total: 24.75 }
+      ],
+      totalQuantity: 6,
+      totalAmount: 81.50,
+      paymentMethod: "Cash",
+      amountPaid: 100.00,
+      change: 18.50,
+      salesperson: "Test User"
+    };
 
-    // Top Logo
-    if (settings.topLogoFile) {
-      content += `
-        <div style="text-align: center; margin-bottom: 10px;">
-          <img src="${settings.topLogoFile}" alt="Logo" style="max-width: 80%; max-height: 60px; margin: 0 auto; display: block;" />
-        </div>
-      `;
-    }
-
-    // Company Name
-    if (settings.companyName) {
-      content += `
-        <div style="text-align: center; margin-bottom: 10px; font-size: ${settings.headerSize === 'Small' ? '14px' : settings.headerSize === 'Medium' ? '18px' : '22px'}; font-weight: bold;">
-          ${settings.companyName}
-        </div>
-      `;
-    }
-
-    // Store info
-    if (settings.address || settings.telephone) {
-      content += `
-        <div style="text-align: center; margin-bottom: 10px; font-size: 10px;">
-          ${settings.address ? settings.address.replace(/\n/g, '<br>') : ''}
-          ${settings.address && settings.telephone ? '<br>' : ''}
-          ${settings.telephone ? 'Tel ' + settings.telephone : ''}
-        </div>
-      `;
-    }
-
-    // Separator
-    content += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
-
-    // Date and time
-    content += `
-      <div style="text-align: center; margin-bottom: 10px;">
-        Receipt #${receiptNumber}<br>
-        ${currentDate} ${currentTime}
-      </div>
-    `;
-
-    // Separator
-    content += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
-
-    // Items header
-    if (settings.displayUnitPrice) {
-      content += `
-        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
-          <span>Item</span>
-          <span>Qty</span>
-          <span>Price</span>
-          <span>Total</span>
-        </div>
-      `;
-    } else {
-      content += `
-        <div style="display: flex; justify-content: space-between; font-weight: bold; margin-bottom: 5px;">
-          <span>Item</span>
-          <span>Qty</span>
-          <span>Total</span>
-        </div>
-      `;
-    }
-
-    // Separator
-    content += `<div style="border-top: 1px dashed #000; margin: 5px 0;"></div>`;
-
-    // Sample items
-    const sampleItems = [
-      { name: "Sample Product 1 with a very long name to test wrapping", qty: 2, price: 15.50, total: 31.00 },
-      { name: "Sample Product 2", qty: 1, price: 25.75, total: 25.75 },
-      { name: "Sample Product 3", qty: 3, price: 8.25, total: 24.75 }
-    ];
-
-    sampleItems.forEach(item => {
-      if (settings.displayUnitPrice) {
-        content += `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; font-size: 11px;">
-            <span style="flex: 1; word-break: break-word;">${item.name}</span>
-            <span style="width: 30px; text-align: center; flex-shrink: 0; margin-left: 5px;">${item.qty}</span>
-            <span style="width: 45px; text-align: right; flex-shrink: 0; margin-left: 5px;">$${item.price.toFixed(2)}</span>
-            <span style="width: 45px; text-align: right; flex-shrink: 0; margin-left: 5px;">$${item.total.toFixed(2)}</span>
-          </div>
-        `;
-      } else {
-        content += `
-          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 3px; font-size: 11px;">
-            <span style="flex: 1; word-break: break-word;">${item.name}</span>
-            <span style="width: 30px; text-align: center; flex-shrink: 0; margin-left: 5px;">${item.qty}</span>
-            <span style="width: 60px; text-align: right; flex-shrink: 0; margin-left: 5px;">$${item.total.toFixed(2)}</span>
-          </div>
-        `;
-      }
-    });
-
-    // Separator
-    content += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
-
-    // Totals
-    const totalQty = sampleItems.reduce((sum, item) => sum + item.qty, 0);
-    const totalAmount = sampleItems.reduce((sum, item) => sum + item.total, 0);
-
-    content += `
-      <div style="margin-bottom: 5px;">
-        <div style="display: flex; justify-content: space-between;">
-          <span>Total QTY</span>
-          <span>${totalQty}</span>
-        </div>
-      </div>
-      <div style="border-top: 1px dashed #000; margin: 10px 0;"></div>
-      <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 14px; margin-bottom: 10px;">
-        <span>Total Amount</span>
-        <span>$${totalAmount.toFixed(2)}</span>
-      </div>
-    `;
-
-    // Payment info
-    content += `
-      <div style="margin-bottom: 10px;">
-        <div style="display: flex; justify-content: space-between;">
-          <span>Payment Method</span>
-          <span>Cash</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Paid</span>
-          <span>$${(totalAmount + 5).toFixed(2)}</span>
-        </div>
-        <div style="display: flex; justify-content: space-between;">
-          <span>Change</span>
-          <span>$5.00</span>
-        </div>
-      </div>
-    `;
-
-    // Separator
-    content += `<div style="border-top: 1px dashed #000; margin: 10px 0;"></div>`;
-
-    // Footer
-    if (settings.footer) {
-      content += `
-        <div style="text-align: center; margin-top: 10px; font-size: 10px;">
-          ${settings.footer}
-        </div>
-      `;
-    }
-
-    // Test print indicator
-    content += `
-      <div style="text-align: center; margin-top: 15px; font-size: 8px; color: #666;">
-        *** TEST PRINT ***
-      </div>
-    `;
-
-    content += `</div>`;
-    
-    return content;
+    return generateReceiptHTML(testData, settings);
   };
 
   const generateReceiptPreview = () => {
@@ -321,35 +172,46 @@ ${settings.footer}`;
   return (
     <>
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-6xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="flex items-center justify-between">
-              <DialogTitle className="flex items-center gap-2">
-                <Button variant="ghost" size="sm" onClick={onClose}>
-                  <ChevronLeft className="w-4 h-4" />
-                </Button>
-                Cashier Receipts
-              </DialogTitle>
-              <Button onClick={handleSave} className="bg-red-500 hover:bg-red-600 text-white">
-                Save
-              </Button>
-            </div>
-          </DialogHeader>
+        <DialogContent className="sm:max-w-5xl max-h-[95vh] overflow-hidden flex flex-col p-0">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b">
+            <DialogTitle className="text-xl font-semibold flex items-center gap-2">
+              <FileText className="w-5 h-5 text-red-500" />
+              Cashier Receipt Settings
+            </DialogTitle>
+            <Button variant="ghost" size="sm" onClick={onClose}>
+              <X className="w-5 h-5" />
+            </Button>
+          </div>
 
-          <div className="flex gap-6">
-            {/* Left Side - Receipt Preview */}
-            <div className="w-1/2">
-              <div className="bg-white border border-gray-300 rounded-lg p-4">
-                <div className="bg-gray-50 p-4 rounded border">
-                  <pre className="text-xs font-mono whitespace-pre-wrap leading-tight">
-                    {generateReceiptPreview()}
-                  </pre>
-                </div>
-              </div>
-            </div>
+          {/* Tab Navigation */}
+          <div className="flex border-b px-6">
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`px-6 py-3 font-medium transition-colors border-b-2 ${
+                activeTab === 'settings'
+                  ? 'border-red-500 text-red-500'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Settings
+            </button>
+            <button
+              onClick={() => setActiveTab('preview')}
+              className={`px-6 py-3 font-medium transition-colors border-b-2 ${
+                activeTab === 'preview'
+                  ? 'border-red-500 text-red-500'
+                  : 'border-transparent text-gray-500 hover:text-gray-700'
+              }`}
+            >
+              Preview
+            </button>
+          </div>
 
-            {/* Right Side - Settings */}
-            <div className="w-1/2 space-y-6">
+          {/* Content Area */}
+          <div className="flex-1 overflow-y-auto px-6 py-6">
+            {activeTab === 'settings' ? (
+              <div className="max-w-2xl mx-auto space-y-6">
               {/* Size */}
               <div className="flex items-center justify-between">
                 <label className="text-sm font-medium text-gray-700">Size</label>
@@ -495,24 +357,58 @@ ${settings.footer}`;
                 />
               </div>
 
-              {/* Print Test Button */}
-              <div className="pt-4">
-                <Button
-                  onClick={handlePrintTest}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print Test
-                </Button>
               </div>
-
-              {/* Settings Info */}
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                <div className="text-sm text-blue-700">
-                  <strong>Note:</strong> These settings will be automatically applied when printing receipts from the settlement screen. Changes are saved locally on this device.
+            ) : (
+              <div className="max-w-2xl mx-auto">
+                <div className="bg-white border-2 border-gray-200 rounded-lg p-8 shadow-sm">
+                  <div 
+                    className="bg-white p-6 rounded border mx-auto"
+                    style={{ 
+                      width: settings.size === '58mm' ? '58mm' : '80mm',
+                      fontFamily: 'monospace'
+                    }}
+                  >
+                    <div dangerouslySetInnerHTML={{ __html: generateTestReceipt() }} />
+                  </div>
+                </div>
+                <div className="mt-6 text-center text-sm text-gray-500">
+                  This is how your receipt will look when printed
                 </div>
               </div>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="px-6 py-4 border-t bg-gray-50 flex items-center justify-between gap-4">
+            <div className="flex-1">
+              <div className="text-xs text-gray-600">
+                <strong>Auto-applied:</strong> Settings are automatically used when printing from settlement
+              </div>
+            </div>
+            <div className="flex gap-3">
+              <Button
+                onClick={handlePrintTest}
+                variant="outline"
+                className="px-6"
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Test Print
+              </Button>
+              <Button
+                onClick={() => setActiveTab('preview')}
+                variant="outline"
+                className="px-6"
+              >
+                <Eye className="w-4 h-4 mr-2" />
+                Preview
+              </Button>
+              <Button
+                onClick={handleSave}
+                className="bg-red-500 hover:bg-red-600 text-white px-8"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                Save Settings
+              </Button>
             </div>
           </div>
         </DialogContent>
