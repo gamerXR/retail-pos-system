@@ -19,7 +19,7 @@ export default function App() {
     if (!appleTouchIcon) {
       appleTouchIcon = document.createElement('link');
       appleTouchIcon.setAttribute('rel', 'apple-touch-icon');
-      appleTouchIcon.setAttribute('href', '/nexpos-logo.png.jpg');
+      appleTouchIcon.setAttribute('href', '/nexpos-logo.png');
       document.head.appendChild(appleTouchIcon);
     }
 

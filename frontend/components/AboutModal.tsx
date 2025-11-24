@@ -25,7 +25,7 @@ export default function AboutModal({ isOpen, onClose }: AboutModalProps) {
         <div className="space-y-6">
           <div className="flex justify-center">
             <img 
-              src="/nexpos-logo.png.jpg" 
+              src="/nexpos-logo.png" 
               alt="NexPos Logo" 
               className="h-32 object-contain"
             />

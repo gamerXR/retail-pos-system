@@ -128,7 +128,7 @@ export default function LoginPage({ onLoginSuccess }: LoginPageProps) {
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="flex justify-center mb-8">
-            <img src="/nexpos-logo.png.jpg" alt="NX Your NexPos Logo" className="h-40 w-auto" />
+            <img src="/nexpos-logo.png" alt="NX Your NexPos Logo" className="h-40 w-auto" />
           </div>
           <div className="space-y-4">
             <div className="relative">

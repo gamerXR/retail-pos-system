@@ -9,27 +9,27 @@
   "orientation": "landscape",
   "icons": [
     {
-      "src": "/nexpos-logo.png.jpg",
+      "src": "/nexpos-logo.png",
       "sizes": "512x512",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/nexpos-logo.png.jpg",
+      "src": "/nexpos-logo.png",
       "sizes": "192x192",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/nexpos-logo.png.jpg",
+      "src": "/nexpos-logo.png",
       "sizes": "144x144",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     },
     {
-      "src": "/nexpos-logo.png.jpg",
+      "src": "/nexpos-logo.png",
       "sizes": "96x96",
-      "type": "image/jpeg",
+      "type": "image/png",
       "purpose": "any"
     }
   ],
