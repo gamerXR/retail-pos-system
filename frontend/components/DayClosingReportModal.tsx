@@ -29,6 +29,8 @@ interface ShiftData {
   currentTime: string;
   openingBalance: number;
   user: string;
+  totalExpenses: number;
+  netCashflow: number;
 }
 
 export default function DayClosingReportModal({ isOpen, onClose }: DayClosingReportModalProps) {
@@ -55,6 +57,11 @@ export default function DayClosingReportModal({ isOpen, onClose }: DayClosingRep
       });
 
       const openingBalanceResponse = await backend.pos.getOpeningBalance();
+
+      const cashflowResponse = await backend.pos.getCashflowReport({
+        startDate: new Date(selectedDate + 'T00:00:00'),
+        endDate: new Date(selectedDate + 'T23:59:59')
+      });
 
       if (response.success) {
         const data = response.data;
@@ -91,7 +98,9 @@ export default function DayClosingReportModal({ isOpen, onClose }: DayClosingRep
           shiftStart: `${selectedDate.split('-').reverse().join('-')} ${shiftStartTime}`,
           currentTime: new Date(selectedDate).toLocaleDateString('en-GB') + ' ' + new Date().toLocaleTimeString('en-GB', { hour12: false }),
           openingBalance: openingBalanceResponse.amount,
-          user: "Admin"
+          user: "Admin",
+          totalExpenses: cashflowResponse.totalExpenses,
+          netCashflow: cashflowResponse.netCashflow
         };
         
         setShiftData(mockShiftData);
@@ -202,6 +211,16 @@ export default function DayClosingReportModal({ isOpen, onClose }: DayClosingRep
           <span>Operation Income:</span>
           <span>$${shiftData.operationIncome.toFixed(2)}</span>
         </div>
+        ${shiftData.totalExpenses > 0 ? `
+        <div class="row">
+          <span style="color: #dc2626;">Total Expenses:</span>
+          <span style="color: #dc2626;">-$${shiftData.totalExpenses.toFixed(2)}</span>
+        </div>
+        <div class="row total" style="color: #059669;">
+          <span>Net Cashflow:</span>
+          <span>$${shiftData.netCashflow.toFixed(2)}</span>
+        </div>
+        ` : ''}
       </div>
       
       <div class="separator"></div>
@@ -380,6 +399,24 @@ export default function DayClosingReportModal({ isOpen, onClose }: DayClosingRep
                     <div className="text-lg text-gray-600">Total Income</div>
                   </div>
                 </div>
+
+                {shiftData.totalExpenses > 0 && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="text-center">
+                      <div className="text-6xl font-bold text-red-600 mb-2">
+                        -${shiftData.totalExpenses.toFixed(2)}
+                      </div>
+                      <div className="text-lg text-gray-600">Total Expenses</div>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="text-6xl font-bold text-green-600 mb-2">
+                        ${shiftData.netCashflow.toFixed(2)}
+                      </div>
+                      <div className="text-lg text-gray-600">Net Cashflow</div>
+                    </div>
+                  </div>
+                )}
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="p-6 rounded-lg border-2 border-red-300 bg-red-50">

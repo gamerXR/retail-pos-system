@@ -14,6 +14,7 @@ import {
   Send 
 } from "lucide-react";
 import { openCashDrawer } from "../lib/hardware";
+import { useBackend } from "../lib/auth";
 
 interface MoreMenuModalProps {
   isOpen: boolean;
@@ -23,6 +24,7 @@ interface MoreMenuModalProps {
   onReprint?: () => void;
   onReturn?: () => void;
   onSalesperson?: () => void;
+  onCashflow?: () => void;
 }
 
 export default function MoreMenuModal({ 
@@ -32,9 +34,11 @@ export default function MoreMenuModal({
   onShiftReport, 
   onReprint, 
   onReturn,
-  onSalesperson 
+  onSalesperson,
+  onCashflow
 }: MoreMenuModalProps) {
   const { toast } = useToast();
+  const backend = useBackend();
 
   const handleCashBox = async () => {
     try {
@@ -85,6 +89,66 @@ export default function MoreMenuModal({
       toast({
         title: "Return Items",
         description: "Opening return management...",
+      });
+    }
+    onClose();
+  };
+
+  const handleCashflow = () => {
+    if (onCashflow) {
+      onCashflow();
+    } else {
+      toast({
+        title: "Cashflow",
+        description: "Opening cashflow management...",
+      });
+    }
+    onClose();
+  };
+
+  const handleSync = async () => {
+    try {
+      toast({
+        title: "Synchronizing",
+        description: "Please wait while we sync and optimize your data...",
+      });
+      
+      const response = await backend.pos.syncData();
+      
+      toast({
+        title: "Sync Complete",
+        description: `Successfully synced ${response.stats.products} products, ${response.stats.sales} sales, and ${response.stats.expenses} expenses`,
+      });
+    } catch (error) {
+      console.error("Error syncing data:", error);
+      toast({
+        title: "Sync Failed",
+        description: "Failed to synchronize data. Please try again.",
+        variant: "destructive",
+      });
+    }
+    onClose();
+  };
+
+  const handleSendLogs = async () => {
+    try {
+      toast({
+        title: "Sending Logs",
+        description: "Preparing and sending transaction logs to email...",
+      });
+      
+      const response = await backend.pos.sendLogs();
+      
+      toast({
+        title: "Logs Sent",
+        description: response.message,
+      });
+    } catch (error) {
+      console.error("Error sending logs:", error);
+      toast({
+        title: "Send Failed",
+        description: "Failed to send logs. Please check your email settings.",
+        variant: "destructive",
       });
     }
     onClose();
@@ -161,15 +225,15 @@ export default function MoreMenuModal({
       icon: DollarSign,
       label: "Cashflow",
       action: "Cashflow",
-      description: "View cash flow reports",
-      handler: () => handleMenuAction("Cashflow")
+      description: "Manage expenses & view reports",
+      handler: handleCashflow
     },
     {
       icon: RefreshCw,
       label: "Sync",
       action: "Sync",
-      description: "Synchronize data with server",
-      handler: () => handleMenuAction("Sync")
+      description: "Synchronize and optimize data",
+      handler: handleSync
     },
     {
       icon: Power,
@@ -196,8 +260,8 @@ export default function MoreMenuModal({
       icon: Send,
       label: "Send logs",
       action: "Send logs",
-      description: "Send diagnostic logs",
-      handler: () => handleMenuAction("Send logs")
+      description: "Email transaction logs to admin",
+      handler: handleSendLogs
     }
   ];
 

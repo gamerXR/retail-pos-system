@@ -24,6 +24,7 @@ import ReturnModal from "./ReturnModal";
 import SettingsModal from "./SettingsModal";
 import CustomItemModal from "./CustomItemModal";
 import SalespersonManagementModal from "./SalespersonManagementModal";
+import CashflowModal from "./CashflowModal";
 
 interface SalesPageProps {
   onLogout?: () => void;
@@ -52,6 +53,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showCustomItemModal, setShowCustomItemModal] = useState(false);
   const [showSalespersonModal, setShowSalespersonModal] = useState(false);
+  const [showCashflowModal, setShowCashflowModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [contextMenuProduct, setContextMenuProduct] = useState<Product | null>(null);
@@ -1046,6 +1048,7 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
         onReprint={() => setShowReprintModal(true)}
         onReturn={() => setShowReturnModal(true)}
         onSalesperson={() => setShowSalespersonModal(true)}
+        onCashflow={() => setShowCashflowModal(true)}
       />
 
       <PrinterModal
@@ -1078,6 +1081,11 @@ export default function SalesPage({ onLogout, userType }: SalesPageProps) {
       <SalespersonManagementModal
         isOpen={showSalespersonModal}
         onClose={() => setShowSalespersonModal(false)}
+      />
+
+      <CashflowModal
+        isOpen={showCashflowModal}
+        onClose={() => setShowCashflowModal(false)}
       />
     </div>
   );
