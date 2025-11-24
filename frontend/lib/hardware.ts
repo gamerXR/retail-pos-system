@@ -266,18 +266,71 @@ const htmlToESCPOS = (html: string): Uint8Array => {
   
   const tempDiv = document.createElement('div');
   tempDiv.innerHTML = html;
-  const text = tempDiv.textContent || tempDiv.innerText || '';
   
-  const lines = text.split('\n');
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if (trimmed) {
-      for (let i = 0; i < trimmed.length; i++) {
-        commands.push(trimmed.charCodeAt(i));
+  const processNode = (node: Node) => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const text = node.textContent || '';
+      if (text.trim()) {
+        for (let i = 0; i < text.length; i++) {
+          commands.push(text.charCodeAt(i));
+        }
       }
-      commands.push(0x0A);
+    } else if (node.nodeType === Node.ELEMENT_NODE) {
+      const element = node as HTMLElement;
+      const style = element.style;
+      
+      if (style.fontWeight === 'bold' || element.tagName === 'STRONG' || element.tagName === 'B') {
+        commands.push(0x1B, 0x45, 0x01);
+      }
+      
+      if (style.textAlign === 'center') {
+        commands.push(0x1B, 0x61, 0x01);
+      } else if (style.textAlign === 'right') {
+        commands.push(0x1B, 0x61, 0x02);
+      }
+      
+      if (style.fontSize && parseInt(style.fontSize) > 14) {
+        commands.push(0x1D, 0x21, 0x11);
+      }
+      
+      if (element.tagName === 'BR' || element.tagName === 'DIV') {
+        if (element.previousSibling) {
+          commands.push(0x0A);
+        }
+      }
+      
+      if (element.style.borderTop && element.style.borderTop.includes('dashed')) {
+        for (let i = 0; i < 42; i++) {
+          commands.push(0x2D);
+        }
+        commands.push(0x0A);
+      }
+      
+      for (let i = 0; i < element.childNodes.length; i++) {
+        processNode(element.childNodes[i]);
+      }
+      
+      if (style.fontWeight === 'bold' || element.tagName === 'STRONG' || element.tagName === 'B') {
+        commands.push(0x1B, 0x45, 0x00);
+      }
+      
+      if (style.textAlign === 'center' || style.textAlign === 'right') {
+        commands.push(0x1B, 0x61, 0x00);
+      }
+      
+      if (style.fontSize && parseInt(style.fontSize) > 14) {
+        commands.push(0x1D, 0x21, 0x00);
+      }
+      
+      if (element.tagName === 'DIV') {
+        commands.push(0x0A);
+      }
     }
-  });
+  };
+  
+  processNode(tempDiv);
+  
+  commands.push(0x0A, 0x0A, 0x0A);
   
   commands.push(0x1D, 0x56, 0x42, 0x00);
   

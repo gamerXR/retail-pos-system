@@ -401,6 +401,14 @@ export default function SettlementModal({
       const settings = getReceiptSettings();
       const receiptContent = generateReceiptContent(saleId);
 
+      const savedPrinter = localStorage.getItem('selectedPrinter');
+      if (savedPrinter) {
+        const printerInfo = JSON.parse(savedPrinter);
+        const { printReceiptViaPrinter } = await import("../lib/hardware");
+        await printReceiptViaPrinter(receiptContent, printerInfo);
+        return;
+      }
+
       const printWindow = window.open('', '_blank');
       if (printWindow) {
         printWindow.document.write(`
