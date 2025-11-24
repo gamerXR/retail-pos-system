@@ -278,7 +278,7 @@ export default function CashflowModal({ isOpen, onClose }: CashflowModalProps) {
                             {expense.category || '-'}
                           </td>
                           <td className="px-4 py-3 text-sm text-right font-medium text-red-600">
-                            -${expense.amount.toFixed(2)}
+                            -${parseFloat(expense.amount as any).toFixed(2)}
                           </td>
                           <td className="px-4 py-3 text-center">
                             <Button

@@ -82,7 +82,7 @@ export const getCashflowReport = api(
     `;
 
     const totalSales = salesResult?.totalSales || 0;
-    const totalExpenses = expensesResult.reduce((sum: number, exp: Expense) => sum + exp.amount, 0);
+    const totalExpenses = expensesResult.reduce((sum: number, exp: Expense) => sum + parseFloat(exp.amount as any), 0);
 
     return {
       totalSales,
