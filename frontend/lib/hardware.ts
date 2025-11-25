@@ -175,14 +175,72 @@ export const printReceiptViaPrinter = async (content: string, printerInfo: Conne
 };
 
 const printViaUSB = async (content: string, printerInfo: ConnectedPrinter) => {
-  const printWindow = window.open('', '_blank');
-  if (printWindow) {
-    printWindow.document.write(content);
-    printWindow.document.close();
-    setTimeout(() => {
-      printWindow.print();
-      printWindow.close();
-    }, 500);
+  if (!('usb' in navigator)) {
+    throw new Error("WebUSB is not supported in this browser. Please use Chrome, Edge, or Opera.");
+  }
+
+  try {
+    const devices = await (navigator as any).usb.getDevices();
+    
+    const [vendorIdHex, productIdHex] = printerInfo.address.split(':').slice(1);
+    const vendorId = parseInt(vendorIdHex, 16);
+    const productId = parseInt(productIdHex, 16);
+
+    const device = devices.find((d: any) => d.vendorId === vendorId && d.productId === productId);
+
+    if (!device) {
+      throw new Error("Printer not found or permission not granted. Please go to Hardware Settings > Printers and reconnect.");
+    }
+
+    if (!device.opened) {
+      await device.open();
+    }
+
+    if (device.configuration === null) {
+      await device.selectConfiguration(1);
+    }
+
+    const printerInterface = device.configuration?.interfaces.find((iface: any) => 
+      iface.alternate.interfaceClass === 7
+    );
+    
+    if (!printerInterface) {
+      throw new Error("Printer interface not found.");
+    }
+    
+    if (!printerInterface.claimed) {
+      await device.claimInterface(printerInterface.interfaceNumber);
+    }
+
+    const outEndpoint = printerInterface.alternate.endpoints.find((ep: any) => ep.direction === 'out');
+    if (!outEndpoint) {
+      throw new Error("Printer OUT endpoint not found.");
+    }
+
+    const escposData = htmlToESCPOS(content);
+    
+    const maxChunkSize = 64;
+    for (let i = 0; i < escposData.length; i += maxChunkSize) {
+      const chunk = escposData.slice(i, Math.min(i + maxChunkSize, escposData.length));
+      await device.transferOut(outEndpoint.endpointNumber, chunk);
+      await new Promise(resolve => setTimeout(resolve, 10));
+    }
+
+    if (printerInterface.claimed) {
+      await device.releaseInterface(printerInterface.interfaceNumber);
+    }
+
+    if (device.opened) {
+      await device.close();
+    }
+
+    toast({
+      title: "Print Sent",
+      description: "Receipt sent to USB printer successfully"
+    });
+  } catch (error: any) {
+    console.error("Error printing via USB:", error);
+    throw new Error(`Failed to print via USB: ${error.message}`);
   }
 };
 

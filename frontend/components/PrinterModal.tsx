@@ -227,7 +227,7 @@ export default function PrinterModal({ isOpen, onClose }: PrinterModalProps) {
     });
   };
 
-  const handleTestPrint = () => {
+  const handleTestPrint = async () => {
     const printer = connectedPrinters.find(p => p.id === selectedPrinterId);
     if (!printer) {
       toast({
@@ -247,7 +247,7 @@ export default function PrinterModal({ isOpen, onClose }: PrinterModalProps) {
     const printWidth = paperSize === '58mm' ? '56mm' : '76mm';
 
     const testContent = `
-      <div style="font-family: monospace; font-size: 12px; line-height: 1.2; width: ${printWidth}; word-break: break-word;">
+      <div style="font-family: monospace; font-size: 12px; line-height: 1.2; width: ${printWidth}; margin: 0 auto; word-break: break-word;">
         <div style="text-align: center; margin-bottom: 10px;">
           <strong>PRINTER TEST</strong><br>
           ${new Date().toLocaleString()}
@@ -264,37 +264,21 @@ export default function PrinterModal({ isOpen, onClose }: PrinterModalProps) {
       </div>
     `;
 
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Printer Test</title>
-            <style>
-              body { margin: 0; padding: 0; }
-              @media print {
-                @page {
-                  size: ${paperSize} auto;
-                  margin: 3mm;
-                }
-              }
-            </style>
-          </head>
-          <body>
-            ${testContent}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
+    try {
+      const { printReceiptViaPrinter } = await import("../lib/hardware");
+      await printReceiptViaPrinter(testContent, printer);
       
-      setTimeout(() => {
-        printWindow.print();
-        printWindow.close();
-        toast({
-          title: "Test Print Sent",
-          description: `Test receipt sent to ${printer.name} successfully`,
-        });
-      }, 500);
+      toast({
+        title: "Test Print Successful",
+        description: `Test receipt sent to ${printer.name}`,
+      });
+    } catch (error: any) {
+      console.error("Test print error:", error);
+      toast({
+        title: "Test Print Failed",
+        description: error.message || "Failed to send test print",
+        variant: "destructive",
+      });
     }
   };
 

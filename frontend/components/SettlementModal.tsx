@@ -405,7 +405,21 @@ export default function SettlementModal({
       if (savedPrinter) {
         const printerInfo = JSON.parse(savedPrinter);
         const { printReceiptViaPrinter } = await import("../lib/hardware");
-        await printReceiptViaPrinter(receiptContent, printerInfo);
+        
+        try {
+          await printReceiptViaPrinter(receiptContent, printerInfo);
+          toast({
+            title: "Receipt Printed",
+            description: `Receipt sent to ${printerInfo.name}`,
+          });
+        } catch (printerError: any) {
+          console.error("Printer error:", printerError);
+          toast({
+            title: "Printer Error",
+            description: printerError.message || "Failed to print receipt",
+            variant: "destructive",
+          });
+        }
         return;
       }
 
@@ -445,6 +459,11 @@ export default function SettlementModal({
       }
     } catch (error) {
       console.error("Error printing receipt:", error);
+      toast({
+        title: "Print Error",
+        description: "Failed to print receipt",
+        variant: "destructive",
+      });
     }
   };
 
