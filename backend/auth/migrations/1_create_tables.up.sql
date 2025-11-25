@@ -6,6 +6,6 @@ CREATE TABLE users (
 );
 
 INSERT INTO users (phone_number, password_hash) 
-VALUES ('6737165617', '12345678');
+VALUES ('6737165617', '448613');
 
 CREATE INDEX idx_users_phone_number ON users(phone_number);

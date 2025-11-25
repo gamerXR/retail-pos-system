@@ -61,7 +61,7 @@ export interface ListTrialSessionsResponse {
 export const adminLogin = api<AdminLoginRequest, AdminLoginResponse>(
   { auth: false, expose: true, method: "POST", path: "/auth/admin/login" },
   async (req) => {
-    if (req.username === "6737165617" && req.password === "12345678") {
+    if (req.username === "6737165617" && req.password === "448613") {
       return {
         success: true,
         message: "Super admin login successful",
