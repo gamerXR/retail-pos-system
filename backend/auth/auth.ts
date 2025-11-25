@@ -21,6 +21,40 @@ export const auth = authHandler<AuthParams, AuthData>(
       throw APIError.unauthenticated("missing token");
     }
 
+    if (token.startsWith("client_")) {
+      const parts = token.split("_");
+      if (parts.length < 2) {
+        throw APIError.unauthenticated("invalid client token format");
+      }
+
+      const clientId = parseInt(parts[1]);
+      if (isNaN(clientId)) {
+        throw APIError.unauthenticated("invalid client token");
+      }
+
+      const client = await authDB.queryRow<{
+        id: number;
+        phone_number: string;
+        client_name: string;
+        status: string;
+      }>`
+        SELECT id, phone_number, client_name, status
+        FROM clients
+        WHERE id = ${clientId}
+      `;
+
+      if (!client || client.status !== 'active') {
+        throw APIError.unauthenticated("invalid token or inactive account");
+      }
+
+      return {
+        userID: `client_${client.id}`,
+        clientID: client.id,
+        phoneNumber: client.phone_number,
+        clientName: client.client_name
+      };
+    }
+
     if (token.startsWith("sp_")) {
       const parts = token.split("_");
       if (parts.length !== 3) {
