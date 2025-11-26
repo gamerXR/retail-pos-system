@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { LoginPage } from "./components/LoginPage";
 import { Dashboard } from "./components/Dashboard";
+import { Toaster } from "./components/ui/toaster";
 
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -30,8 +31,18 @@ export default function App() {
   };
 
   if (!isAuthenticated) {
-    return <LoginPage onLogin={handleLogin} />;
+    return (
+      <>
+        <LoginPage onLogin={handleLogin} />
+        <Toaster />
+      </>
+    );
   }
 
-  return <Dashboard clientData={clientData} onLogout={handleLogout} />;
+  return (
+    <>
+      <Dashboard clientData={clientData} onLogout={handleLogout} />
+      <Toaster />
+    </>
+  );
 }
