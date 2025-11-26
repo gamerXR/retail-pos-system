@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || "https://retail-pos-system-d299vgk82vjrnuv4rmbg.api.lp.dev";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "https://staging-retail-pos-system-mmn2.encr.app";
 
 async function apiCall(endpoint: string, options: RequestInit = {}) {
   const token = localStorage.getItem("client_token");

@@ -1,19 +1,36 @@
 import { useState, useEffect } from "react";
 import backend from "../client";
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { SalesReport } from "./SalesReport";
 import { CategoryReport } from "./CategoryReport";
 import { TopProductsReport } from "./TopProductsReport";
 import { CashflowReport } from "./CashflowReport";
+import { 
+  BarChart3, 
+  TrendingUp, 
+  Package, 
+  AlertTriangle, 
+  LogOut, 
+  ShoppingCart,
+  DollarSign,
+  PieChart,
+  Star,
+  Wallet,
+  Home
+} from "lucide-react";
 
 interface DashboardProps {
   clientData: any;
   onLogout: () => void;
 }
 
+type TabType = "overview" | "sales" | "categories" | "products" | "cashflow";
+
 export function Dashboard({ clientData, onLogout }: DashboardProps) {
-  const [activeTab, setActiveTab] = useState<"overview" | "sales" | "categories" | "products" | "cashflow">("overview");
+  const [activeTab, setActiveTab] = useState<TabType>("overview");
   const [stats, setStats] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
@@ -39,23 +56,34 @@ export function Dashboard({ clientData, onLogout }: DashboardProps) {
     }
   };
 
+  const tabs = [
+    { id: "overview" as TabType, label: "Overview", icon: Home },
+    { id: "sales" as TabType, label: "Sales Report", icon: ShoppingCart },
+    { id: "categories" as TabType, label: "Categories", icon: PieChart },
+    { id: "products" as TabType, label: "Top Products", icon: Star },
+    { id: "cashflow" as TabType, label: "Cashflow", icon: Wallet },
+  ];
+
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center justify-center w-10 h-10 bg-indigo-600 rounded-lg">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                </svg>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <header className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between h-16">
+            <div className="flex items-center gap-4">
+              <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-xl shadow-lg">
+                <BarChart3 className="w-6 h-6 text-white" />
               </div>
               <div>
                 <h1 className="text-xl font-bold text-gray-900">NexPOS Reports</h1>
                 <p className="text-sm text-gray-600">{clientData.clientName}</p>
               </div>
             </div>
-            <Button onClick={onLogout} variant="outline">
+            <Button 
+              onClick={onLogout} 
+              variant="outline"
+              className="flex items-center gap-2 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+            >
+              <LogOut className="w-4 h-4" />
               Sign Out
             </Button>
           </div>
@@ -63,128 +91,158 @@ export function Dashboard({ clientData, onLogout }: DashboardProps) {
       </header>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-6">
-          <div className="border-b border-gray-200">
-            <nav className="-mb-px flex space-x-8">
-              <button
-                onClick={() => setActiveTab("overview")}
-                className={`${
-                  activeTab === "overview"
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-              >
-                Overview
-              </button>
-              <button
-                onClick={() => setActiveTab("sales")}
-                className={`${
-                  activeTab === "sales"
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-              >
-                Sales Report
-              </button>
-              <button
-                onClick={() => setActiveTab("categories")}
-                className={`${
-                  activeTab === "categories"
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-              >
-                Categories
-              </button>
-              <button
-                onClick={() => setActiveTab("products")}
-                className={`${
-                  activeTab === "products"
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-              >
-                Top Products
-              </button>
-              <button
-                onClick={() => setActiveTab("cashflow")}
-                className={`${
-                  activeTab === "cashflow"
-                    ? "border-indigo-600 text-indigo-600"
-                    : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
-                } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-colors`}
-              >
-                Cashflow
-              </button>
+        <div className="mb-8">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-1">
+            <nav className="flex gap-1">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-lg font-medium text-sm transition-all duration-200 ${
+                      activeTab === tab.id
+                        ? "bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-md"
+                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
+                  >
+                    <Icon className="w-4 h-4" />
+                    <span className="hidden sm:inline">{tab.label}</span>
+                  </button>
+                );
+              })}
             </nav>
           </div>
         </div>
 
         {activeTab === "overview" && (
-          <div className="space-y-6">
+          <div className="space-y-6 animate-in fade-in duration-300">
             {isLoading ? (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                <p className="mt-2 text-gray-600">Loading...</p>
+              <div className="flex flex-col items-center justify-center py-20">
+                <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                <p className="mt-4 text-gray-600 font-medium">Loading dashboard...</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Sales</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalSales || 0}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
-                      </svg>
-                    </div>
-                  </div>
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <Card className="border-l-4 border-l-blue-500 hover:shadow-lg transition-shadow duration-200">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                      <CardTitle className="text-sm font-medium text-gray-600">
+                        Total Sales
+                      </CardTitle>
+                      <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <ShoppingCart className="w-5 h-5 text-blue-600" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-gray-900">{stats?.totalSales || 0}</div>
+                      <p className="text-xs text-gray-500 mt-1">Total transactions</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-green-500 hover:shadow-lg transition-shadow duration-200">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                      <CardTitle className="text-sm font-medium text-gray-600">
+                        Total Revenue
+                      </CardTitle>
+                      <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
+                        <DollarSign className="w-5 h-5 text-green-600" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-gray-900">฿{stats?.totalRevenue?.toLocaleString() || 0}</div>
+                      <p className="text-xs text-gray-500 mt-1">All time revenue</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-purple-500 hover:shadow-lg transition-shadow duration-200">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                      <CardTitle className="text-sm font-medium text-gray-600">
+                        Total Products
+                      </CardTitle>
+                      <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
+                        <Package className="w-5 h-5 text-purple-600" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-gray-900">{stats?.totalProducts || 0}</div>
+                      <p className="text-xs text-gray-500 mt-1">In inventory</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-red-500 hover:shadow-lg transition-shadow duration-200">
+                    <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
+                      <CardTitle className="text-sm font-medium text-gray-600">
+                        Low Stock Items
+                      </CardTitle>
+                      <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
+                        <AlertTriangle className="w-5 h-5 text-red-600" />
+                      </div>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-gray-900">{stats?.lowStockItems || 0}</div>
+                      <p className="text-xs text-gray-500 mt-1">Needs attention</p>
+                    </CardContent>
+                  </Card>
                 </div>
 
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">฿{stats?.totalRevenue?.toLocaleString() || 0}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card className="hover:shadow-lg transition-shadow duration-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-indigo-600" />
+                        Quick Stats
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="text-sm font-medium text-gray-700">Average Sale Value</span>
+                        <span className="text-lg font-bold text-gray-900">
+                          ฿{stats?.totalSales > 0 ? ((stats?.totalRevenue || 0) / stats?.totalSales).toFixed(2) : 0}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <span className="text-sm font-medium text-gray-700">Status</span>
+                        <Badge variant={stats?.lowStockItems > 5 ? "destructive" : "success"}>
+                          {stats?.lowStockItems > 5 ? "Action Required" : "All Good"}
+                        </Badge>
+                      </div>
+                    </CardContent>
+                  </Card>
 
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Total Products</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.totalProducts || 0}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                      </svg>
-                    </div>
-                  </div>
+                  <Card className="hover:shadow-lg transition-shadow duration-200">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BarChart3 className="w-5 h-5 text-purple-600" />
+                        Available Reports
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <button
+                        onClick={() => setActiveTab("sales")}
+                        className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-blue-50 to-blue-100 hover:from-blue-100 hover:to-blue-200 rounded-lg transition-colors"
+                      >
+                        <span className="text-sm font-medium text-gray-700">Sales Report</span>
+                        <ShoppingCart className="w-4 h-4 text-blue-600" />
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("categories")}
+                        className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-purple-50 to-purple-100 hover:from-purple-100 hover:to-purple-200 rounded-lg transition-colors"
+                      >
+                        <span className="text-sm font-medium text-gray-700">Category Analysis</span>
+                        <PieChart className="w-4 h-4 text-purple-600" />
+                      </button>
+                      <button
+                        onClick={() => setActiveTab("cashflow")}
+                        className="w-full flex items-center justify-between p-3 bg-gradient-to-r from-green-50 to-green-100 hover:from-green-100 hover:to-green-200 rounded-lg transition-colors"
+                      >
+                        <span className="text-sm font-medium text-gray-700">Cashflow Report</span>
+                        <Wallet className="w-4 h-4 text-green-600" />
+                      </button>
+                    </CardContent>
+                  </Card>
                 </div>
-
-                <div className="bg-white rounded-lg shadow p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium text-gray-600">Low Stock Items</p>
-                      <p className="text-3xl font-bold text-gray-900 mt-2">{stats?.lowStockItems || 0}</p>
-                    </div>
-                    <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center">
-                      <svg className="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                      </svg>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              </>
             )}
           </div>
         )}
