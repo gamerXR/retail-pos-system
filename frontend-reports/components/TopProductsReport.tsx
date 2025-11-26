@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { Star, Calendar, Trophy, Package, TrendingUp, Download, RefreshCw, AlertTriangle } from "lucide-react";
+import { Star, Trophy, Package, TrendingUp, Download, RefreshCw, AlertTriangle } from "lucide-react";
 
 export function TopProductsReport() {
   const [startDate, setStartDate] = useState("");

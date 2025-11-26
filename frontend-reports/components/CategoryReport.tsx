@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
-import { PieChart, Calendar, Package, TrendingUp, Download, RefreshCw } from "lucide-react";
+import { PieChart, Package, TrendingUp, Download, RefreshCw } from "lucide-react";
 
 export function CategoryReport() {
   const [startDate, setStartDate] = useState("");

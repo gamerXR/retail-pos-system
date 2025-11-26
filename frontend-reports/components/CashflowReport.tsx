@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { 
   Wallet, 
-  Calendar, 
   TrendingUp, 
   TrendingDown, 
   DollarSign, 
